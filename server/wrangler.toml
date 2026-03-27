@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "songlinh-db"
-database_id = "d4a859a1-e437-4daf-9230-1505968557b6"  # TODO: replace with full UUID from Cloudflare dashboard
+database_id = "d4a859a1-e437-4daf-9230-1505968557b6"
 migrations_dir = "migrations"
 
 # ─── R2 Object Storage ───
@@ -22,7 +22,7 @@ bucket_name = "songlinh-web"
 
 # ─── Environment Variables ───
 [vars]
-CORS_ORIGIN = "https://sltech.vn,https://songlinhweb.vercel.app"
+CORS_ORIGIN = "https://sltech.vn,https://songlinhweb.vercel.app,http://localhost:5173,http://localhost:3000"
 # ADMIN_API_KEY and RESEND_API_KEY should be set as secrets:
 #   wrangler secret put ADMIN_API_KEY
 #   wrangler secret put RESEND_API_KEY

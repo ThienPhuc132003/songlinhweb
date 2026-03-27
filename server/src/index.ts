@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import type { Env } from "./types";
 import { errorHandler } from "./middleware/error-handler";
 import solutions from "./routes/solutions";
@@ -16,34 +17,20 @@ const app = new Hono<{ Bindings: Env }>();
 
 /* ───────── Global Middleware ───────── */
 
-// CORS — support multiple origins (production + Vercel previews)
+// CORS — using Hono built-in cors middleware
 app.use("*", async (c, next) => {
-  const requestOrigin = c.req.header("Origin") || "";
-  const allowedOrigins = (c.env.CORS_ORIGIN || "*").split(",").map((s: string) => s.trim());
+  const corsOriginEnv = c.env.CORS_ORIGIN || "*";
 
-  // Check if request origin is allowed (supports wildcard *.vercel.app)
-  let corsOrigin = allowedOrigins[0]; // default
-  if (allowedOrigins.includes("*")) {
-    corsOrigin = "*";
-  } else if (allowedOrigins.includes(requestOrigin)) {
-    corsOrigin = requestOrigin;
-  } else if (allowedOrigins.some((o: string) => o.includes("vercel.app")) && requestOrigin.endsWith(".vercel.app")) {
-    corsOrigin = requestOrigin;
-  }
+  const corsMiddleware = cors({
+    origin: corsOriginEnv === "*"
+      ? "*"
+      : corsOriginEnv.split(",").map((s: string) => s.trim()),
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization", "X-API-Key"],
+    maxAge: 86400,
+  });
 
-  c.header("Access-Control-Allow-Origin", corsOrigin);
-  c.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  c.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type,Authorization,X-API-Key",
-  );
-  c.header("Access-Control-Max-Age", "86400");
-
-  if (c.req.method === "OPTIONS") {
-    return c.body(null, 204);
-  }
-
-  await next();
+  return corsMiddleware(c, next);
 });
 
 // Error handler

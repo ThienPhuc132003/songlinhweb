@@ -1,1 +1,0 @@
-const e={hidden:{opacity:0,y:30},visible:{opacity:1,y:0,transition:{duration:.6,ease:"easeOut"}}},n={hidden:{},visible:{transition:{staggerChildren:.1}}},t={once:!0,margin:"-50px",amount:.2};export{e as f,n as s,t as v};

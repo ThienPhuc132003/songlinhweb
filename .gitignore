@@ -1,1 +1,26 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.production
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Wrangler
+.wrangler/
