@@ -1,33 +1,46 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
 import { COMPANY_STATS } from "@/lib/constants";
-import { fadeInUp, staggerContainer, viewportOnce } from "@/lib/motion";
 
 function CountUp({ target, suffix }: { target: number; suffix: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true });
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!isInView) return;
-    const duration = 2000;
-    const steps = 60;
-    const increment = target / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, duration / steps);
-    return () => clearInterval(timer);
-  }, [isInView, target]);
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          const duration = 1800;
+          const steps = 50;
+          const increment = target / steps;
+          let current = 0;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              setCount(target);
+              clearInterval(timer);
+            } else {
+              setCount(Math.floor(current));
+            }
+          }, duration / steps);
+        }
+      },
+      { threshold: 0.3 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
 
   return (
-    <span ref={ref} className="font-mono text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+    <span
+      ref={ref}
+      className="font-mono text-4xl font-bold tabular-nums tracking-tight md:text-5xl"
+    >
       {count}
       {suffix}
     </span>
@@ -37,7 +50,7 @@ function CountUp({ target, suffix }: { target: number; suffix: string }) {
 export function StatsBar() {
   return (
     <section className="bg-primary relative overflow-hidden py-12 md:py-16">
-      {/* Subtle pattern overlay */}
+      {/* Subtle dot pattern overlay */}
       <div className="absolute inset-0 opacity-10">
         <div
           className="h-full w-full"
@@ -49,28 +62,18 @@ export function StatsBar() {
         />
       </div>
 
-      <motion.div
-        className="container-custom relative z-10"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewportOnce}
-      >
+      <div className="container-custom relative z-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {COMPANY_STATS.map((stat, i) => (
-            <motion.div
-              key={i}
-              variants={fadeInUp}
-              className="text-center text-white"
-            >
+            <div key={i} className="text-center text-white">
               <CountUp target={stat.value} suffix={stat.suffix} />
               <p className="mt-2 text-sm font-medium text-white/70 md:text-base">
                 {stat.label}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

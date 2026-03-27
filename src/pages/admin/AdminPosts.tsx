@@ -19,10 +19,12 @@ const defaultForm: Partial<Post> = {
   excerpt: "",
   content_md: "",
   thumbnail_url: "",
-  author: "SLTECH",
+  author: "Song Linh Technologies",
   tags: "[]",
   is_published: 0,
   published_at: null,
+  meta_title: null,
+  meta_description: null,
 };
 
 export default function AdminPosts() {
@@ -219,6 +221,26 @@ export default function AdminPosts() {
             className="font-mono text-sm"
           />
         </Field>
+
+        {/* SEO Meta */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SEO Metadata</p>
+          <Field label="Meta Title">
+            <Input
+              value={form.meta_title || ""}
+              onChange={(e) => setForm({ ...form, meta_title: e.target.value || null })}
+              placeholder={form.title || "Sử dụng tiêu đề"}
+            />
+          </Field>
+          <Field label="Meta Description">
+            <Textarea
+              value={form.meta_description || ""}
+              onChange={(e) => setForm({ ...form, meta_description: e.target.value || null })}
+              rows={2}
+              placeholder={form.excerpt || "Sử dụng tóm tắt"}
+            />
+          </Field>
+        </div>
       </FormDialog>
 
       <ConfirmDelete

@@ -45,7 +45,7 @@ export default function BlogPost() {
 
   const title = post?.title ?? staticPost?.title ?? "Bài viết";
   const excerpt = post?.excerpt ?? staticPost?.excerpt ?? "";
-  const author = post?.author ?? staticPost?.author ?? "SLTECH";
+  const author = post?.author ?? staticPost?.author ?? "Song Linh Technologies";
   const publishedAt =
     post?.published_at ?? post?.created_at ?? staticPost?.publishedAt ?? "";
   const thumbnail = post?.thumbnail_url ?? staticPost?.thumbnail ?? null;

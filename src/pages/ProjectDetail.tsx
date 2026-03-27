@@ -1,15 +1,30 @@
 import { useParams, Link } from "react-router";
-import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { useProject } from "@/hooks/useApi";
+import { useMarkdown } from "@/hooks/useMarkdown";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Calendar, Building2, Phone, ArrowLeft } from "lucide-react";
+import { ProjectMetricsBar } from "@/components/projects/ProjectMetricsBar";
+import { ProjectSystemsList } from "@/components/projects/ProjectSystemsList";
+import { ProjectComplianceBadges } from "@/components/projects/ProjectComplianceBadges";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { MapPin, Calendar, Building2, ArrowLeft } from "lucide-react";
+
+/** Safely parse JSON or return fallback */
+function parseJson<T>(raw: string | null | undefined, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
 
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading } = useProject(slug ?? "");
+  const contentRef = useScrollReveal();
 
   if (isLoading) {
     return (
@@ -61,6 +76,15 @@ export default function ProjectDetail() {
     );
   }
 
+  // Parse JSON fields (backward compatible — old data returns fallbacks)
+  const systemTypes = parseJson<string[]>(project.system_types, []);
+  const brandsUsed = parseJson<string[]>(project.brands_used, []);
+  const keyMetrics = parseJson<Record<string, number>>(project.key_metrics, {});
+  const complianceStandards = parseJson<string[]>(project.compliance_standards, []);
+
+  // Parse markdown content
+  const contentHtml = useMarkdown(project.content_md);
+
   return (
     <>
       <SEO
@@ -80,26 +104,17 @@ export default function ProjectDetail() {
 
       <section className="section-padding">
         <div className="container-custom max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Project thumbnail */}
-            {project.thumbnail_url && (
-              <img
-                src={project.thumbnail_url}
-                alt={project.title}
-                className="mb-8 aspect-video w-full rounded-xl border object-cover"
-              />
-            )}
-
-            {/* Meta info */}
-            <div className="mb-8 flex flex-wrap gap-4">
+          <div ref={contentRef} className="reveal">
+            {/* Meta info bar */}
+            <div className="mb-6 flex flex-wrap gap-3">
               {project.category && (
                 <span className="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium">
-                  <Building2 className="h-3.5 w-3.5" />
                   {project.category}
+                </span>
+              )}
+              {project.client_industry && (
+                <span className="bg-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium capitalize">
+                  {project.client_industry}
                 </span>
               )}
               {project.location && (
@@ -114,12 +129,52 @@ export default function ProjectDetail() {
                   {project.year}
                 </span>
               )}
+              {project.project_scale && (
+                <span className="text-muted-foreground inline-flex items-center gap-1.5 text-sm">
+                  <Building2 className="h-3.5 w-3.5" />
+                  {project.project_scale === "large"
+                    ? "Quy mô lớn"
+                    : project.project_scale === "medium"
+                      ? "Quy mô vừa"
+                      : "Quy mô nhỏ"}
+                </span>
+              )}
             </div>
 
-            {/* Description */}
+            {/* Project thumbnail */}
+            {project.thumbnail_url && (
+              <img
+                src={project.thumbnail_url}
+                alt={project.title}
+                className="mb-8 aspect-video w-full rounded-xl border object-cover"
+              />
+            )}
+
+            {/* Key Metrics Bar — the #1 trust signal for Technical Directors */}
+            <ProjectMetricsBar
+              metrics={keyMetrics}
+              areaSqm={project.area_sqm}
+              durationMonths={project.duration_months}
+              className="mb-8"
+            />
+
+            {/* Systems & Brands tags */}
+            <ProjectSystemsList
+              systemTypes={systemTypes}
+              brandsUsed={brandsUsed}
+              className="mb-8"
+            />
+
+            {/* Compliance Badges */}
+            <ProjectComplianceBadges
+              standards={complianceStandards}
+              className="mb-8"
+            />
+
+            {/* Description / Content */}
             <div className="prose prose-lg dark:prose-invert max-w-none">
-              {project.content_md ? (
-                <div dangerouslySetInnerHTML={{ __html: project.content_md }} />
+              {contentHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
               ) : (
                 <p className="text-muted-foreground leading-relaxed">
                   {project.description}
@@ -132,7 +187,7 @@ export default function ProjectDetail() {
               <div className="mt-10">
                 <h2 className="mb-4 text-xl font-semibold">Hình ảnh dự án</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {project.images.map((img) => (
+                  {project.images.map((img: { id: number; image_url: string; caption?: string | null }) => (
                     <img
                       key={img.id}
                       src={img.image_url}
@@ -145,22 +200,32 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            {/* CTA */}
-            <div className="bg-muted mt-10 rounded-xl p-6 text-center">
-              <h3 className="mb-2 text-lg font-semibold">
-                Bạn có dự án tương tự?
-              </h3>
-              <p className="text-muted-foreground mb-4 text-sm">
-                Liên hệ SLTECH để được tư vấn giải pháp phù hợp
-              </p>
-              <Button asChild>
-                <Link to="/lien-he">
-                  <Phone className="mr-2 h-4 w-4" />
-                  Liên hệ tư vấn
-                </Link>
-              </Button>
+            {/* Contextual CTAs — B2B optimized */}
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border bg-primary/5 p-6 text-center">
+                <h3 className="mb-2 text-lg font-semibold">
+                  Bạn có dự án tương tự?
+                </h3>
+                <p className="text-muted-foreground mb-4 text-sm">
+                  Đội ngũ kỹ sư Song Linh Technologies sẵn sàng khảo sát và tư vấn
+                </p>
+                <Button asChild>
+                  <Link to="/lien-he">Yêu cầu Khảo sát Mặt bằng</Link>
+                </Button>
+              </div>
+              <div className="rounded-xl border bg-muted/30 p-6 text-center">
+                <h3 className="mb-2 text-lg font-semibold">
+                  Cần báo giá kỹ thuật?
+                </h3>
+                <p className="text-muted-foreground mb-4 text-sm">
+                  Nhận đề xuất giải pháp và báo giá chi tiết cho dự án của bạn
+                </p>
+                <Button asChild variant="outline">
+                  <Link to="/lien-he">Nhận Báo giá Kỹ thuật</Link>
+                </Button>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </>

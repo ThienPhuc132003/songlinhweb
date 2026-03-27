@@ -1,11 +1,11 @@
 import { Link } from "react-router";
-import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight, Building2 } from "lucide-react";
-import { FEATURED_PROJECTS } from "@/lib/constants";
+import { FEATURED_PROJECTS, SITE } from "@/lib/constants";
 import { useProjects } from "@/hooks/useApi";
 import { Button } from "@/components/ui/button";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { cn } from "@/lib/utils";
 
 function ProjectCard({
@@ -24,13 +24,16 @@ function ProjectCard({
   return (
     <Link
       to={`/du-an/${slug}`}
-      className="group block overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
     >
-      <div className="bg-muted relative aspect-4/3 overflow-hidden">
+      {/* Fixed aspect ratio image area */}
+      <div className="bg-muted relative aspect-4/3 shrink-0 overflow-hidden">
         {imgError ? (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
-            <Building2 className="text-muted-foreground/40 h-12 w-12" />
-            <span className="text-muted-foreground text-center text-sm font-medium">
+          <div className="flex h-full w-full flex-col items-end justify-end bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary)]/80 to-slate-800 p-5">
+            <span className="mb-1 inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white/80 backdrop-blur-sm">
+              {category}
+            </span>
+            <span className="line-clamp-2 text-right text-sm font-semibold leading-snug text-white drop-shadow-md">
               {title}
             </span>
           </div>
@@ -43,13 +46,14 @@ function ProjectCard({
             onError={() => setImgError(true)}
           />
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       </div>
-      <div className="p-4">
+      {/* Fixed height content area */}
+      <div className="flex flex-1 flex-col justify-center p-4">
         <span className="text-primary mb-1 block text-xs font-medium">
           {category}
         </span>
-        <h3 className="group-hover:text-primary text-sm font-semibold transition-colors">
+        <h3 className="group-hover:text-primary line-clamp-2 text-sm font-semibold leading-snug transition-colors duration-150">
           {title}
         </h3>
       </div>
@@ -76,6 +80,7 @@ export function FeaturedProjects({ className }: { className?: string }) {
   });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
+  const headingRef = useScrollReveal();
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -97,19 +102,17 @@ export function FeaturedProjects({ className }: { className?: string }) {
   return (
     <section className={cn("section-padding", className)}>
       <div className="container-custom">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-10 flex flex-col items-start justify-between gap-4 md:mb-14 md:flex-row md:items-end"
+        <div
+          ref={headingRef}
+          className="reveal mb-10 flex flex-col items-start justify-between gap-4 md:mb-14 md:flex-row md:items-end"
         >
           <div>
             <h2 className="text-primary mb-3 text-2xl font-bold md:text-3xl">
               Dự án tiêu biểu
             </h2>
             <p className="text-muted-foreground max-w-lg">
-              Những dự án được SLTECH tư vấn, thiết kế và thi công thành công
+              Những dự án được {SITE.displayName} tư vấn, thiết kế và thi công
+              thành công
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -134,7 +137,7 @@ export function FeaturedProjects({ className }: { className?: string }) {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         <div ref={emblaRef} className="overflow-hidden">
           <div className="-ml-4 flex">
@@ -150,7 +153,7 @@ export function FeaturedProjects({ className }: { className?: string }) {
         </div>
 
         <div className="mt-8 text-center">
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="min-h-11">
             <Link to="/du-an">
               Xem tất cả dự án
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -161,4 +164,3 @@ export function FeaturedProjects({ className }: { className?: string }) {
     </section>
   );
 }
-

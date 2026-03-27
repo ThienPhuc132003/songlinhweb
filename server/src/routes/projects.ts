@@ -73,8 +73,8 @@ projects.post("/", requireAuth, async (c) => {
   if (!body.slug || !body.title) return err("slug and title are required");
 
   const result = await c.env.DB.prepare(
-    `INSERT INTO projects (slug, title, description, location, client_name, thumbnail_url, content_md, category, year, sort_order, is_featured, is_active)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+    `INSERT INTO projects (slug, title, description, location, client_name, thumbnail_url, content_md, category, year, sort_order, is_featured, is_active, system_types, brands_used, area_sqm, duration_months, key_metrics, compliance_standards, client_industry, project_scale)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       body.slug,
@@ -88,6 +88,14 @@ projects.post("/", requireAuth, async (c) => {
       body.year ?? null,
       body.sort_order ?? 0,
       body.is_featured ?? 0,
+      body.system_types ?? "[]",
+      body.brands_used ?? "[]",
+      body.area_sqm ?? null,
+      body.duration_months ?? null,
+      body.key_metrics ?? "{}",
+      body.compliance_standards ?? "[]",
+      body.client_industry ?? null,
+      body.project_scale ?? null,
     )
     .run();
 
@@ -145,6 +153,39 @@ projects.put("/:id", requireAuth, async (c) => {
   if (body.is_active !== undefined) {
     sets.push("is_active = ?");
     values.push(body.is_active);
+  }
+  // Case study metadata fields
+  if (body.system_types !== undefined) {
+    sets.push("system_types = ?");
+    values.push(body.system_types);
+  }
+  if (body.brands_used !== undefined) {
+    sets.push("brands_used = ?");
+    values.push(body.brands_used);
+  }
+  if (body.area_sqm !== undefined) {
+    sets.push("area_sqm = ?");
+    values.push(body.area_sqm);
+  }
+  if (body.duration_months !== undefined) {
+    sets.push("duration_months = ?");
+    values.push(body.duration_months);
+  }
+  if (body.key_metrics !== undefined) {
+    sets.push("key_metrics = ?");
+    values.push(body.key_metrics);
+  }
+  if (body.compliance_standards !== undefined) {
+    sets.push("compliance_standards = ?");
+    values.push(body.compliance_standards);
+  }
+  if (body.client_industry !== undefined) {
+    sets.push("client_industry = ?");
+    values.push(body.client_industry);
+  }
+  if (body.project_scale !== undefined) {
+    sets.push("project_scale = ?");
+    values.push(body.project_scale);
   }
 
   if (sets.length === 0) return err("No fields to update");

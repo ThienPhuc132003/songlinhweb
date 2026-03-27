@@ -48,13 +48,13 @@ export default function Gallery() {
     <>
       <SEO
         title="Thư viện hình ảnh"
-        description="Hình ảnh các dự án thi công hệ thống công nghệ của SLTECH."
+        description="Hình ảnh các dự án thi công hệ thống công nghệ của Song Linh Technologies."
         url="/thu-vien"
       />
 
       <PageHero
         title="Thư viện hình ảnh"
-        subtitle="Hình ảnh tiêu biểu từ các dự án của SLTECH"
+        subtitle="Hình ảnh tiêu biểu từ các dự án của Song Linh Technologies"
         breadcrumbs={[{ label: "Thư viện hình ảnh" }]}
       />
 

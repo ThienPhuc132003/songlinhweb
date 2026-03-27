@@ -31,13 +31,13 @@ export default function Projects() {
     <>
       <SEO
         title="Dự án tiêu biểu"
-        description="Những dự án tích hợp hệ thống được SLTECH tư vấn, thiết kế và thi công."
+        description="Những dự án tích hợp hệ thống được Song Linh Technologies tư vấn, thiết kế và thi công."
         url="/du-an"
       />
 
       <PageHero
         title="Dự án tiêu biểu"
-        subtitle="Những dự án được SLTECH tư vấn, thiết kế và thi công thành công"
+        subtitle="Những dự án được Song Linh Technologies tư vấn, thiết kế và thi công thành công"
         breadcrumbs={[{ label: "Dự án" }]}
       />
 

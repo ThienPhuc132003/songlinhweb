@@ -34,8 +34,11 @@ export interface SolutionRow {
   description: string;
   content_md: string | null;
   icon: string;
+  hero_image_url: string | null;
   sort_order: number;
   is_active: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,11 +59,18 @@ export interface ProductRow {
   slug: string;
   name: string;
   description: string;
+  brand: string;
+  model_number: string;
   image_url: string | null;
   spec_sheet_url: string | null;
+  specifications: string; // JSON object
+  features: string;       // JSON array
   sort_order: number;
   is_active: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface ProjectRow {
@@ -78,6 +88,17 @@ export interface ProjectRow {
   is_featured: number;
   is_active: number;
   created_at: string;
+  // Case study metadata (Phase P0)
+  system_types: string;        // JSON array: '["CCTV", "Access Control"]'
+  brands_used: string;         // JSON array: '["Hikvision", "ZKTeco"]'
+  area_sqm: number | null;
+  duration_months: number | null;
+  key_metrics: string;         // JSON object: '{"cameras": 120}'
+  compliance_standards: string; // JSON array: '["TCVN 7336:2003"]'
+  client_industry: string | null;
+  project_scale: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
 }
 
 export interface PostRow {
@@ -91,6 +112,8 @@ export interface PostRow {
   tags: string; // JSON array string
   is_published: number;
   published_at: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
 }

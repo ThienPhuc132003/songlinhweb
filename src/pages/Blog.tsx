@@ -32,13 +32,13 @@ export default function Blog() {
     <>
       <SEO
         title="Tin tức"
-        description="Tin tức, kiến thức và xu hướng công nghệ từ SLTECH."
+        description="Tin tức, kiến thức và xu hướng công nghệ từ Song Linh Technologies."
         url="/tin-tuc"
       />
 
       <PageHero
         title="Tin tức"
-        subtitle="Cập nhật kiến thức, xu hướng công nghệ và hoạt động của SLTECH"
+        subtitle="Cập nhật kiến thức, xu hướng công nghệ và hoạt động của Song Linh Technologies"
         breadcrumbs={[{ label: "Tin tức" }]}
       />
 

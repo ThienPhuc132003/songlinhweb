@@ -78,6 +78,17 @@ products.get("/all", requireAuth, async (c) => {
   return ok(rows.results);
 });
 
+/** GET /api/admin/products/items/all — list ALL products including inactive */
+products.get("/items/all", requireAuth, async (c) => {
+  const rows = await c.env.DB.prepare(
+    `SELECT p.*, pc.name as category_name, pc.slug as category_slug
+     FROM products p
+     LEFT JOIN product_categories pc ON pc.id = p.category_id
+     ORDER BY p.sort_order ASC`,
+  ).all<ProductRow & { category_name: string; category_slug: string }>();
+  return ok(rows.results);
+});
+
 /** GET /api/products/:slug — get product detail */
 products.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
@@ -185,17 +196,23 @@ products.post("/", requireAuth, async (c) => {
     return err("slug, name, and category_id are required");
 
   const result = await c.env.DB.prepare(
-    `INSERT INTO products (category_id, slug, name, description, image_url, spec_sheet_url, sort_order, is_active)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
+    `INSERT INTO products (category_id, slug, name, description, brand, model_number, image_url, spec_sheet_url, specifications, features, sort_order, is_active, meta_title, meta_description)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
   )
     .bind(
       body.category_id,
       body.slug,
       body.name,
       body.description ?? "",
+      body.brand ?? "",
+      body.model_number ?? "",
       body.image_url ?? null,
       body.spec_sheet_url ?? null,
+      body.specifications ?? "{}",
+      body.features ?? "[]",
       body.sort_order ?? 0,
+      body.meta_title ?? null,
+      body.meta_description ?? null,
     )
     .run();
 
@@ -210,36 +227,32 @@ products.put("/:id", requireAuth, async (c) => {
   const sets: string[] = [];
   const values: unknown[] = [];
 
-  if (body.name !== undefined) {
-    sets.push("name = ?");
-    values.push(body.name);
-  }
-  if (body.slug !== undefined) {
-    sets.push("slug = ?");
-    values.push(body.slug);
-  }
-  if (body.description !== undefined) {
-    sets.push("description = ?");
-    values.push(body.description);
-  }
-  if (body.image_url !== undefined) {
-    sets.push("image_url = ?");
-    values.push(body.image_url);
-  }
-  if (body.category_id !== undefined) {
-    sets.push("category_id = ?");
-    values.push(body.category_id);
-  }
-  if (body.sort_order !== undefined) {
-    sets.push("sort_order = ?");
-    values.push(body.sort_order);
-  }
-  if (body.is_active !== undefined) {
-    sets.push("is_active = ?");
-    values.push(body.is_active);
+  const fields: Array<[keyof ProductRow, string]> = [
+    ["name", "name"],
+    ["slug", "slug"],
+    ["description", "description"],
+    ["brand", "brand"],
+    ["model_number", "model_number"],
+    ["image_url", "image_url"],
+    ["spec_sheet_url", "spec_sheet_url"],
+    ["specifications", "specifications"],
+    ["features", "features"],
+    ["category_id", "category_id"],
+    ["sort_order", "sort_order"],
+    ["is_active", "is_active"],
+    ["meta_title", "meta_title"],
+    ["meta_description", "meta_description"],
+  ];
+
+  for (const [key, col] of fields) {
+    if ((body as Record<string, unknown>)[key] !== undefined) {
+      sets.push(`${col} = ?`);
+      values.push((body as Record<string, unknown>)[key]);
+    }
   }
 
   if (sets.length === 0) return err("No fields to update");
+  sets.push("updated_at = datetime('now')");
   values.push(id);
 
   await c.env.DB.prepare(`UPDATE products SET ${sets.join(", ")} WHERE id = ?`)

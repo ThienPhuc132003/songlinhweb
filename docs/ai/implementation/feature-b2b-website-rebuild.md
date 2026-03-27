@@ -41,6 +41,19 @@ feature: b2b-website-rebuild
 
 ### Phase 6-7: Pending
 
+### Phase 8: UI Refinement ✅
+- [x] `src/styles/globals.css` — CSS scroll reveal (`.reveal`, `.reveal-stagger`), marquee animation, `section-alt`, `prefers-reduced-motion`
+- [x] `src/hooks/useScrollReveal.ts` — NEW: IntersectionObserver hook thay framer-motion
+- [x] `src/components/layout/Header.tsx` — Scroll shadow detection, clean formatting
+- [x] `src/components/home/HeroSlider.tsx` — SVG geometric pattern, multi-layer gradient, tighter typography
+- [x] `src/components/home/SolutionCards.tsx` — Short descriptions, framer-motion → useScrollReveal
+- [x] `src/components/home/StatsBar.tsx` — Native IntersectionObserver CountUp, stat icons, tabular-nums
+- [x] `src/components/home/ProcessSteps.tsx` — framer-motion → useScrollReveal
+- [x] `src/components/home/FeaturedProjects.tsx` — Better fallback card, useScrollReveal, hover:border-primary
+- [x] `src/components/home/CTABanner.tsx` — framer-motion → useScrollReveal, min-h-11 buttons
+- [x] `src/components/home/PartnerLogos.tsx` — framer-motion → useScrollReveal, pure CSS marquee
+- [x] TypeScript check passed ✅
+
 ## Notes
 
 - Server code đã solid: Hono + D1 + R2 + KV, 10 route files, types, middleware

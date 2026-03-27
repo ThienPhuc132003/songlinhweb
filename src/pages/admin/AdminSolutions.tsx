@@ -13,6 +13,7 @@ import {
   StatusBadge,
   type Column,
 } from "@/components/admin/CrudHelpers";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 const defaultForm: Partial<Solution> = {
   slug: "",
@@ -20,8 +21,11 @@ const defaultForm: Partial<Solution> = {
   description: "",
   content_md: "",
   icon: "FileCheck",
+  hero_image_url: null,
   sort_order: 0,
   is_active: 1,
+  meta_title: null,
+  meta_description: null,
 };
 
 export default function AdminSolutions() {
@@ -181,6 +185,35 @@ export default function AdminSolutions() {
               <option value={1}>Hoạt động</option>
               <option value={0}>Ẩn</option>
             </select>
+          </Field>
+        </div>
+
+        {/* Hero Image */}
+        <ImageUploadField
+          label="Ảnh Hero"
+          value={form.hero_image_url ? [form.hero_image_url] : []}
+          onChange={(urls) => setForm({ ...form, hero_image_url: urls[0] || null })}
+          folder="solutions"
+          single
+        />
+
+        {/* SEO Meta */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SEO Metadata</p>
+          <Field label="Meta Title">
+            <Input
+              value={form.meta_title || ""}
+              onChange={(e) => setForm({ ...form, meta_title: e.target.value || null })}
+              placeholder={form.title || "Sử dụng tiêu đề"}
+            />
+          </Field>
+          <Field label="Meta Description">
+            <Textarea
+              value={form.meta_description || ""}
+              onChange={(e) => setForm({ ...form, meta_description: e.target.value || null })}
+              rows={2}
+              placeholder={form.description || "Sử dụng mô tả"}
+            />
           </Field>
         </div>
       </FormDialog>

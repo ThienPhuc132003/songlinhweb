@@ -1,5 +1,4 @@
-﻿import { Link } from "react-router";
-import { Phone, Mail, MapPin, Clock, ChevronRight } from "lucide-react";
+import { Link } from "react-router";
 import { SITE, NAV_LINKS, SOLUTIONS_DATA } from "@/lib/constants";
 import { Separator } from "@/components/ui/separator";
 
@@ -10,60 +9,58 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt={SITE.shortName} className="h-10 w-auto brightness-200" />
-              <span className="text-lg font-bold">{SITE.shortName}</span>
+              <img src="/logo.webp" alt={SITE.shortName} className="h-10 w-auto brightness-200" />
+              <span className="text-lg font-bold">{SITE.displayName}</span>
             </Link>
             <p className="text-primary-foreground/80 text-sm leading-relaxed">{SITE.tagline}</p>
             <div className="space-y-2.5 text-sm">
-              <a href={`tel:${SITE.phoneRaw}`} className="flex items-center gap-2 transition-opacity hover:opacity-80">
-                <Phone className="h-4 w-4 shrink-0" />
-                <span>Hotline: {SITE.phone}</span>
+              <a href={`tel:${SITE.phoneRaw}`} className="block transition-opacity hover:opacity-80">
+                Hotline: {SITE.phone}
               </a>
-              <a href={`mailto:${SITE.email}`} className="flex items-center gap-2 transition-opacity hover:opacity-80">
-                <Mail className="h-4 w-4 shrink-0" />
-                <span>{SITE.email}</span>
+              <a href={`mailto:${SITE.email}`} className="block transition-opacity hover:opacity-80">
+                {SITE.email}
               </a>
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{SITE.address}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 shrink-0" />
-                <span>Th&#7913; 2 - Th&#7913; 7: {SITE.workingHours}</span>
-              </div>
+              <p className="text-primary-foreground/80">{SITE.address}</p>
+              <p className="text-primary-foreground/80">Thứ 2 - Thứ 7: {SITE.workingHours}</p>
             </div>
           </div>
           <div>
-            <h3 className="mb-4 text-base font-semibold">Li&#234;n k&#7871;t nhanh</h3>
+            <h3 className="mb-4 text-base font-semibold">Liên kết nhanh</h3>
             <nav className="space-y-2">
+              <Link to="/" className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
+                Trang chủ
+              </Link>
               {NAV_LINKS.map((link) => (
-                <Link key={link.href} to={link.href} className="text-primary-foreground/80 hover:text-primary-foreground flex items-center gap-1.5 text-sm transition-colors">
-                  <ChevronRight className="h-3 w-3" />{link.label}
+                <Link key={link.href} to={link.href} className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
+                  {link.label}
                 </Link>
               ))}
+              <Link to="/lien-he" className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
+                Liên hệ
+              </Link>
             </nav>
           </div>
           <div>
-            <h3 className="mb-4 text-base font-semibold">Gi&#7843;i ph&#225;p</h3>
+            <h3 className="mb-4 text-base font-semibold">Giải pháp</h3>
             <nav className="space-y-2">
               {SOLUTIONS_DATA.slice(0, 6).map((solution) => (
-                <Link key={solution.slug} to={`/giai-phap/${solution.slug}`} className="text-primary-foreground/80 hover:text-primary-foreground flex items-center gap-1.5 text-sm transition-colors">
-                  <ChevronRight className="h-3 w-3" />{solution.title}
+                <Link key={solution.slug} to={`/giai-phap/${solution.slug}`} className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
+                  {solution.title}
                 </Link>
               ))}
             </nav>
           </div>
           <div>
-            <h3 className="mb-4 text-base font-semibold">B&#7843;n &#273;&#7891;</h3>
+            <h3 className="mb-4 text-base font-semibold">Bản đồ</h3>
             <div className="aspect-square w-full overflow-hidden rounded-lg">
-              <iframe src={SITE.mapEmbedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="SLTECH location map" />
+              <iframe src={SITE.mapEmbedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Song Linh Technologies location map" />
             </div>
           </div>
         </div>
       </div>
       <Separator className="bg-primary-foreground/20" />
       <div className="container-custom flex flex-col items-center justify-between gap-2 py-4 text-sm md:flex-row">
-        <p className="text-primary-foreground/60">&copy; {new Date().getFullYear()} {SITE.shortName}. B&#7843;n quy&#7873;n thu&#7897;c {SITE.name}.</p>
+        <p className="text-primary-foreground/60">&copy; {new Date().getFullYear()} {SITE.displayName}. Bản quyền thuộc {SITE.name}.</p>
         <p className="text-primary-foreground/60">MST: {SITE.taxId}</p>
       </div>
     </footer>

@@ -38,7 +38,7 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">
-            SLTECH Admin
+            Song Linh Admin
           </CardTitle>
           <p className="text-muted-foreground mt-1 text-sm">
             Nhập API Key để đăng nhập

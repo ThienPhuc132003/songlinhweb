@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface BreadcrumbItem {
@@ -37,10 +37,9 @@ export function PageHero({
               <li>
                 <Link
                   to="/"
-                  className="hover:text-primary flex items-center gap-1 transition-colors"
+                  className="hover:text-primary transition-colors"
                 >
-                  <Home className="h-3.5 w-3.5" />
-                  <span className="sr-only">Trang chủ</span>
+                  Trang chủ
                 </Link>
               </li>
               {breadcrumbs.map((crumb, i) => (

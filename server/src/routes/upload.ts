@@ -19,9 +19,10 @@ upload.post("/", requireAuth, async (c) => {
     "image/png",
     "image/webp",
     "image/svg+xml",
+    "application/pdf",
   ];
   if (!allowedTypes.includes(file.type)) {
-    return err("Invalid file type. Allowed: JPEG, PNG, WebP, SVG");
+    return err("Invalid file type. Allowed: JPEG, PNG, WebP, SVG, PDF");
   }
 
   // Max 10MB

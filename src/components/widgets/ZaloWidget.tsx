@@ -14,7 +14,7 @@ export function ZaloWidget() {
     const widget = document.createElement("div");
     widget.className = "zalo-chat-widget";
     widget.setAttribute("data-oaid", ZALO_OA_ID);
-    widget.setAttribute("data-welcome-message", "Xin chào! SLTECH có thể hỗ trợ gì cho bạn?");
+    widget.setAttribute("data-welcome-message", "Xin chào! Song Linh Technologies có thể hỗ trợ gì cho bạn?");
     widget.setAttribute("data-autopopup", "0");
     widget.setAttribute("data-width", "350");
     widget.setAttribute("data-height", "420");

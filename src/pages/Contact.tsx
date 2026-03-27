@@ -113,7 +113,7 @@ export default function Contact() {
     <>
       <SEO
         title="Liên hệ"
-        description="Liên hệ SLTECH để được tư vấn giải pháp công nghệ cho doanh nghiệp."
+        description="Liên hệ Song Linh Technologies để được tư vấn giải pháp công nghệ cho doanh nghiệp."
         url="/lien-he"
       />
 
@@ -326,7 +326,7 @@ export default function Contact() {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="SLTECH map"
+                  title="Song Linh Technologies map"
                 />
               </div>
             </motion.div>

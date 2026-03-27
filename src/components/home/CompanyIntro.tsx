@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { COMPANY_STATS, COMPANY_ACTIVITIES, SITE } from "@/lib/constants";
-import { CheckCircle } from "lucide-react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { cn } from "@/lib/utils";
 
 /** Animated counter hook */
@@ -16,7 +15,6 @@ function useCounter(target: number, duration = 2000, start = false) {
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      // easeOutQuart
       const eased = 1 - Math.pow(1 - progress, 4);
       setCount(Math.floor(eased * target));
       if (progress < 1) {
@@ -58,6 +56,8 @@ function StatItem({
 export function CompanyIntro({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [started, setStarted] = useState(false);
+  const leftRef = useScrollReveal();
+  const rightRef = useScrollReveal();
 
   useEffect(() => {
     if (!ref.current) return;
@@ -79,14 +79,9 @@ export function CompanyIntro({ className }: { className?: string }) {
       <div className="container-custom">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Left — text content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <div ref={leftRef} className="reveal">
             <h2 className="text-primary mb-4 text-2xl font-bold md:text-3xl">
-              Về {SITE.shortName}
+              Về {SITE.displayName}
             </h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               {SITE.name} chuyên cung cấp giải pháp và dịch vụ trọn gói trong
@@ -100,22 +95,22 @@ export function CompanyIntro({ className }: { className?: string }) {
                 Lĩnh vực hoạt động
               </h3>
               {COMPANY_ACTIVITIES.map((activity, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <CheckCircle className="text-primary mt-0.5 h-5 w-5 shrink-0" />
+                <div key={i} className="flex items-start gap-2.5">
+                  <span className="bg-primary mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />
                   <span className="text-sm">{activity}</span>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Right — stats grid */}
-          <motion.div
-            ref={ref}
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid grid-cols-2 gap-6 md:gap-8"
+          <div
+            ref={(el) => {
+              // Merge refs
+              (rightRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+              (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+            }}
+            className="reveal grid grid-cols-2 gap-6 md:gap-8"
           >
             {COMPANY_STATS.map((stat) => (
               <div
@@ -130,7 +125,7 @@ export function CompanyIntro({ className }: { className?: string }) {
                 />
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

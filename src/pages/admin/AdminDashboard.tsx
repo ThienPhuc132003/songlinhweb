@@ -92,7 +92,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Tổng quan hệ thống SLTECH</p>
+        <p className="text-muted-foreground">Tổng quan hệ thống Song Linh Technologies</p>
       </div>
 
       {/* Stats grid */}

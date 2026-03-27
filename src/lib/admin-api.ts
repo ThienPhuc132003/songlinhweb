@@ -152,6 +152,25 @@ export const adminApi = {
       }),
   },
 
+  // Products (individual items)
+  products: {
+    list: () => adminFetch<Product[]>("/products/items/all"),
+    create: (data: Partial<Product>) =>
+      adminFetch<{ id: number }>("/products", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<Product>) =>
+      adminFetch<{ id: number }>(`/products/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) =>
+      adminFetch<{ deleted: boolean }>(`/products/${id}`, {
+        method: "DELETE",
+      }),
+  },
+
   // Partners
   partners: {
     list: () => adminFetch<Partner[]>("/partners/all"),
@@ -227,8 +246,11 @@ export interface Solution {
   description: string;
   content_md: string | null;
   icon: string;
+  hero_image_url: string | null;
   sort_order: number;
   is_active: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -248,6 +270,17 @@ export interface Project {
   is_featured: number;
   is_active: number;
   created_at: string;
+  // Case study metadata
+  system_types: string;
+  brands_used: string;
+  area_sqm: number | null;
+  duration_months: number | null;
+  key_metrics: string;
+  compliance_standards: string;
+  client_industry: string | null;
+  project_scale: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
 }
 
 export interface Post {
@@ -261,8 +294,33 @@ export interface Post {
   tags: string;
   is_published: number;
   published_at: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Product {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  category_id: number | null;
+  brand: string;
+  model_number: string;
+  image_url: string | null;
+  spec_sheet_url: string | null;
+  specifications: string; // JSON
+  features: string;       // JSON
+  sort_order: number;
+  is_active: number;
+  meta_title: string | null;
+  meta_description: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  category_name?: string;
+  category_slug?: string;
 }
 
 export interface ProductCategory {

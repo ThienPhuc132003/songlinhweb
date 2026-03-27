@@ -7,8 +7,11 @@ export interface Solution {
   description: string;
   content_md: string | null;
   icon: string;
+  hero_image_url: string | null;
   sort_order: number;
   is_active: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
   images?: EntityImage[];
@@ -40,12 +43,22 @@ export interface Product {
   slug: string;
   name: string;
   description: string;
+  brand: string;
+  model_number: string;
   image_url: string | null;
   spec_sheet_url: string | null;
+  specifications: string; // JSON object
+  features: string;       // JSON array
   is_active: number;
   sort_order: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
+  updated_at: string;
   category?: ProductCategory;
+  // Joined fields from backend
+  category_name?: string;
+  category_slug?: string;
 }
 
 export interface Project {
@@ -64,6 +77,17 @@ export interface Project {
   is_active: number;
   created_at: string;
   images?: EntityImage[];
+  // Case study metadata
+  system_types?: string;
+  brands_used?: string;
+  area_sqm?: number | null;
+  duration_months?: number | null;
+  key_metrics?: string;
+  compliance_standards?: string;
+  client_industry?: string | null;
+  project_scale?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
 }
 
 export interface Post {
@@ -77,6 +101,8 @@ export interface Post {
   tags: string[];
   is_published: number;
   published_at: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
 }

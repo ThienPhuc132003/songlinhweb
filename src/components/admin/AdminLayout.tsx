@@ -68,7 +68,7 @@ export default function AdminLayout() {
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
-          <span className="text-primary text-lg font-bold">SLTECH Admin</span>
+          <span className="text-primary text-lg font-bold">Song Linh Admin</span>
           <button
             className="rounded p-1 hover:bg-slate-100 lg:hidden"
             onClick={() => setSidebarOpen(false)}

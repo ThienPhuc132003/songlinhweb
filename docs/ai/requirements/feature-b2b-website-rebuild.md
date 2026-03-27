@@ -16,6 +16,28 @@ Song Linh Technologies (SLTECH) hiện có website WordPress cũ ([sltech.vn](ht
 4. **SEO & Performance** — Edge-deployed (Cloudflare), optimized loading, meta tags
 5. **Nhận diện thương hiệu** — Đúng brand colors (#3C5DAA), logo, slogan "Giải pháp tối ưu — Chất lượng vượt trội"
 
+## Business Context
+
+SLTECH là **System Integrator ngành ELV** (Extra Low Voltage / Điện nhẹ), phục vụ **tòa nhà lớn, công trình quy mô**, cung cấp thiết bị **số lượng lớn** (camera, switch, AP WiFi, tủ rack, controller, loa PA, báo cháy). Mô hình **B2B thuần túy** — doanh nghiệp phục vụ doanh nghiệp.
+
+## Design Principles
+
+> **5 từ khóa cốt lõi: Tinh tế — Uy tín — Nhanh — Minh bạch — Bảo mật**
+
+1. **Tinh tế** — Chú ý từng chi tiết nhỏ (button states, spacing, alignment). Không animation trang trí, chỉ micro-interactions có mục đích
+2. **Uy tín** — Partner logos, case study, chứng nhận đối tác. Visual tạo trust cho executive
+3. **Nhanh** — Performance-first. KHÔNG animation nặng. CSS transitions đơn giản, IntersectionObserver
+4. **Minh bạch** — Thông tin liên hệ luôn hiển thị, RFQ flow rõ ràng, specs đầy đủ
+5. **Bảo mật** — Form validation, rate limiting, admin panel riêng biệt
+
+## User Personas
+
+| Persona | Tuổi | Hành vi | Thiết bị |
+|---------|------|---------|----------|
+| **CTO/IT Director** | 35-55 | Scan nhanh, đánh giá năng lực qua visual → case study → chứng nhận | Desktop, iPad |
+| **Procurement Manager** | 28-45 | Tìm sản phẩm cụ thể, so sánh spec, gửi RFQ nhanh | Desktop |
+| **CEO/Chủ DN** | 40-60 | Xem overview nhanh, đánh giá brand trust | Mobile (Zalo/email link) |
+
 ## Non-Goals
 
 - ❌ E-commerce (không có thanh toán online, không hiển thị giá)
@@ -24,6 +46,9 @@ Song Linh Technologies (SLTECH) hiện có website WordPress cũ ([sltech.vn](ht
 - ❌ Newsletter / Email marketing
 - ❌ Tuyển dụng page
 - ❌ Custom image resize (dùng Cloudflare Image Resizing nếu cần)
+- ❌ Animated page transitions phức tạp, parallax, video backgrounds
+- ❌ Heavy animation libraries (chỉ CSS transitions + IntersectionObserver)
+- ❌ 3D animations, particle effects
 
 ## User Stories
 
@@ -49,12 +74,14 @@ Song Linh Technologies (SLTECH) hiện có website WordPress cũ ([sltech.vn](ht
 
 ## Success Criteria
 
-1. ✅ Homepage load < 3s (Lighthouse Performance > 80)
+1. ✅ Homepage FCP < 1.5s, LCP < 2.5s (Lighthouse Performance > 90)
 2. ✅ RFQ flow: Thêm SP → Giỏ hàng → Submit → Email nhận được CSV < 30s
 3. ✅ Tất cả trang hoạt động responsive (mobile/tablet/desktop)
 4. ✅ SEO: Mỗi trang có title, meta description, Open Graph
 5. ✅ Admin CRUD: Tạo/sửa/xóa content hoạt động đúng
 6. ✅ Brand consistency: Logo blue #3C5DAA, typography Inter
+7. ✅ UI chi tiết: Every button có 5 states (default/hover/active/disabled/loading)
+8. ✅ Desktop header: full nav menu (KHÔNG hamburger trên viewport > 1024px)
 
 ## Constraints
 

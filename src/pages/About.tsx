@@ -29,7 +29,7 @@ export default function About() {
     <>
       <SEO
         title="Giới thiệu"
-        description="SLTECH — Hơn 10 năm kinh nghiệm trong lĩnh vực tư vấn, thiết kế và thi công hệ thống công nghệ cho doanh nghiệp."
+        description="Song Linh Technologies — Hơn 10 năm kinh nghiệm trong lĩnh vực tư vấn, thiết kế và thi công hệ thống công nghệ cho doanh nghiệp."
         url="/gioi-thieu"
       />
 
@@ -140,7 +140,7 @@ export default function About() {
           <motion.div {...fadeUp} className="mb-8 text-center">
             <h2 className="text-2xl font-bold md:text-3xl">Lĩnh vực hoạt động</h2>
             <p className="text-muted-foreground mt-2">
-              3 mảng kinh doanh chính của SLTECH
+              3 mảng kinh doanh chính của Song Linh Technologies
             </p>
           </motion.div>
 
