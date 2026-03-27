@@ -2,10 +2,10 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 // ===== Solutions =====
-export function useSolutions() {
+export function useSolutions(search?: string) {
   return useQuery({
-    queryKey: ["solutions"],
-    queryFn: api.solutions.list,
+    queryKey: ["solutions", search],
+    queryFn: () => api.solutions.list(search),
   });
 }
 
@@ -25,10 +25,14 @@ export function useProductCategories() {
   });
 }
 
-export function useProducts(category?: string) {
+export function useProducts(opts?: {
+  category?: string;
+  search?: string;
+  page?: number;
+}) {
   return useQuery({
-    queryKey: ["products", category],
-    queryFn: () => api.products.list(category),
+    queryKey: ["products", opts],
+    queryFn: () => api.products.list(opts),
   });
 }
 
@@ -41,10 +45,14 @@ export function useProduct(slug: string) {
 }
 
 // ===== Projects =====
-export function useProjects(page = 1, category?: string) {
+export function useProjects(opts?: {
+  page?: number;
+  category?: string;
+  featured?: boolean;
+}) {
   return useQuery({
-    queryKey: ["projects", page, category],
-    queryFn: () => api.projects.list(page, category),
+    queryKey: ["projects", opts],
+    queryFn: () => api.projects.list(opts),
   });
 }
 

@@ -9,6 +9,8 @@ import type {
   Partner,
   ContactForm,
   PaginatedResponse,
+  EntityImage,
+  QuoteRequestPayload,
 } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -59,22 +61,36 @@ async function fetchPaginated<T>(
 
 export const api = {
   solutions: {
-    list: () => fetchApi<Solution[]>("/solutions"),
+    list: (search?: string) => {
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      const qs = params.toString();
+      return fetchApi<Solution[]>(`/solutions${qs ? `?${qs}` : ""}`);
+    },
     get: (slug: string) => fetchApi<Solution>(`/solutions/${slug}`),
   },
   products: {
-    list: (category?: string) =>
-      fetchPaginated<Product>(
-        `/products${category ? `?category=${category}` : ""}`,
-      ),
-    get: (slug: string) => fetchApi<Product>(`/products/${slug}`),
-    categories: () => fetchApi<ProductCategory[]>("/product-categories"),
+    list: (opts?: { category?: string; search?: string; page?: number; limit?: number }) => {
+      const params = new URLSearchParams();
+      if (opts?.category) params.set("category", opts.category);
+      if (opts?.search) params.set("search", opts.search);
+      if (opts?.page) params.set("page", String(opts.page));
+      if (opts?.limit) params.set("limit", String(opts.limit));
+      const qs = params.toString();
+      return fetchPaginated<Product>(`/products${qs ? `?${qs}` : ""}`);
+    },
+    get: (slug: string) => fetchApi<Product & { images?: EntityImage[] }>(`/products/${slug}`),
+    categories: () => fetchApi<ProductCategory[]>(`/product-categories`),
   },
   projects: {
-    list: (page = 1, category?: string) =>
-      fetchPaginated<Project>(
-        `/projects?page=${page}${category ? `&category=${category}` : ""}`,
-      ),
+    list: (opts?: { page?: number; category?: string; featured?: boolean }) => {
+      const params = new URLSearchParams();
+      if (opts?.page) params.set("page", String(opts.page));
+      if (opts?.category) params.set("category", opts.category);
+      if (opts?.featured) params.set("featured", "true");
+      const qs = params.toString();
+      return fetchPaginated<Project>(`/projects${qs ? `?${qs}` : ""}`);
+    },
     get: (slug: string) => fetchApi<Project>(`/projects/${slug}`),
   },
   posts: {
@@ -93,4 +109,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  quotes: {
+    submit: (data: QuoteRequestPayload) =>
+      fetchApi<{ message: string }>("/quotes", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  },
 };
+

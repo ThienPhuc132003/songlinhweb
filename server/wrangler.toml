@@ -1,0 +1,32 @@
+name = "sltech-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+
+# ─── D1 Database ───
+[[d1_databases]]
+binding = "DB"
+database_name = "songlinh-db"
+database_id = "d4a859a1-e437-4daf-9230-1505968557b6"  # TODO: replace with full UUID from Cloudflare dashboard
+migrations_dir = "migrations"
+
+# ─── R2 Object Storage ───
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "songlinh-web"
+
+# ─── KV Namespace (cache) ───
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = ""  # TODO: create KV namespace and add ID
+
+# ─── Environment Variables ───
+[vars]
+CORS_ORIGIN = "https://sltech.vn"
+# ADMIN_API_KEY and RESEND_API_KEY should be set as secrets:
+#   wrangler secret put ADMIN_API_KEY
+#   wrangler secret put RESEND_API_KEY
+
+# ─── Dev server ───
+[dev]
+port = 8787

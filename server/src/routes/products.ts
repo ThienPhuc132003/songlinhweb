@@ -27,6 +27,7 @@ products.get("/", async (c) => {
   const url = new URL(c.req.url);
   const { page, limit } = parsePagination(url);
   const category = url.searchParams.get("category");
+  const search = url.searchParams.get("search");
   const offset = (page - 1) * limit;
 
   let where = "WHERE p.is_active = 1";
@@ -35,6 +36,10 @@ products.get("/", async (c) => {
   if (category) {
     where += " AND pc.slug = ?";
     params.push(category);
+  }
+  if (search) {
+    where += " AND (p.name LIKE ? OR p.description LIKE ?)";
+    params.push(`%${search}%`, `%${search}%`);
   }
 
   const countResult = await c.env.DB.prepare(
@@ -86,7 +91,15 @@ products.get("/:slug", async (c) => {
     .first<ProductRow & { category_name: string; category_slug: string }>();
 
   if (!row) return err("Product not found", 404);
-  return ok(row);
+
+  // Fetch related images
+  const images = await c.env.DB.prepare(
+    "SELECT * FROM entity_images WHERE entity_type = 'product' AND entity_id = ? ORDER BY sort_order",
+  )
+    .bind(row.id)
+    .all();
+
+  return ok({ ...row, images: images.results });
 });
 
 /* ───────── Admin CRUD ───────── */

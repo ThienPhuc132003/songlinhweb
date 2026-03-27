@@ -81,7 +81,7 @@ export function HeroSlider() {
                     <Button
                       asChild
                       size="lg"
-                      className="bg-white text-(--color-primary) hover:bg-white/90"
+                      className="bg-white !text-[var(--color-primary)] hover:bg-white/90"
                     >
                       <Link to={slide.cta.href}>
                         {slide.cta.label}
@@ -93,7 +93,7 @@ export function HeroSlider() {
                         asChild
                         variant="outline"
                         size="lg"
-                        className="border-white/40 text-white hover:bg-white/10"
+                        className="border-white/40 bg-transparent !text-white hover:bg-white/10"
                       >
                         {slide.ctaSecondary.href.startsWith("http") ? (
                           <a

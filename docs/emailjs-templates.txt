@@ -1,0 +1,185 @@
+===============================================
+  EMAILJS SETUP GUIDE - SLTECH B2B WEBSITE
+===============================================
+
+1. TẠO TÀI KHOẢN
+   - Vào https://www.emailjs.com/ → Sign Up (free 200 emails/tháng)
+   - Dashboard → Email Services → Add New Service
+   - Chọn Gmail hoặc Outlook → Connect → Authorize
+   - Ghi lại SERVICE_ID (vd: "service_abc123")
+
+2. LẤY PUBLIC KEY
+   - Dashboard → Account → API Keys
+   - Copy "Public Key" (vd: "user_xyz789")
+
+3. TẠO TEMPLATE
+   - Dashboard → Email Templates → Create New Template
+   - Paste nội dung bên dưới vào mục Content (chọn tab Code Editor / HTML)
+   - Cấu hình To Email, Reply To, Subject theo hướng dẫn
+
+LƯU Ý: Đây là email CÔNG TY NHẬN ĐƯỢC khi khách hàng gửi form
+trên website. Reply To = email khách → bạn reply trực tiếp cho khách.
+
+
+===============================================
+  TEMPLATE 1: THÔNG BÁO YÊU CẦU TƯ VẤN MỚI
+  (Công ty nhận khi khách gửi form Liên hệ)
+===============================================
+
+Template Name: sltech_contact
+Template ID:   (tự sinh khi tạo)
+
+--- To Email ---
+songlinh@sltech.vn
+
+--- Subject ---
+[Website] Yêu cầu tư vấn mới từ {{company_name}}
+
+--- Reply To ---
+{{from_email}}
+
+--- Content (HTML) — paste vào tab Code Editor ---
+
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+  <div style="background:#3C5DAA;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0">
+    <h2 style="margin:0;font-size:18px">📩 Yêu cầu tư vấn mới từ website</h2>
+  </div>
+
+  <div style="border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;padding:0">
+    <table style="border-collapse:collapse;width:100%">
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;width:140px;color:#6b7280;font-size:14px">Công ty</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:600">{{company_name}}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Người liên hệ</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px">{{contact_person}}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Email</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px"><a href="mailto:{{from_email}}" style="color:#3C5DAA">{{from_email}}</a></td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Điện thoại</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px"><a href="tel:{{phone}}" style="color:#3C5DAA">{{phone}}</a></td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Địa chỉ</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px">{{address}}</td>
+      </tr>
+    </table>
+
+    <div style="padding:16px;background:#f9fafb;border-top:2px solid #3C5DAA">
+      <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Nội dung yêu cầu</p>
+      <p style="margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap">{{message}}</p>
+    </div>
+  </div>
+
+  <p style="color:#9ca3af;font-size:11px;margin-top:16px;text-align:center">
+    Gửi tự động từ form Liên hệ trên sltech.vn — Reply email này để trả lời trực tiếp cho khách.
+  </p>
+</div>
+
+
+===============================================
+  TEMPLATE 2: THÔNG BÁO YÊU CẦU BÁO GIÁ MỚI
+  (Công ty nhận khi khách gửi form Báo giá)
+===============================================
+
+Template Name: sltech_quote
+Template ID:   (tự sinh khi tạo)
+
+--- To Email ---
+songlinh@sltech.vn
+
+--- Subject ---
+[Website] Yêu cầu báo giá từ {{company_name}} — {{item_count}} sản phẩm
+
+--- Reply To ---
+{{from_email}}
+
+--- Content (HTML) — paste vào tab Code Editor ---
+
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+  <div style="background:#3C5DAA;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0">
+    <h2 style="margin:0;font-size:18px">📋 Yêu cầu báo giá mới từ website</h2>
+    <p style="margin:4px 0 0;font-size:13px;opacity:0.85">{{item_count}} sản phẩm</p>
+  </div>
+
+  <div style="border:1px solid #e5e7eb;border-top:none;padding:0">
+    <table style="border-collapse:collapse;width:100%">
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;width:140px;color:#6b7280;font-size:14px">Công ty</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:600">{{company_name}}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Người liên hệ</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px">{{contact_person}}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Email</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px"><a href="mailto:{{from_email}}" style="color:#3C5DAA">{{from_email}}</a></td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:14px">Điện thoại</td>
+        <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;font-size:14px"><a href="tel:{{phone}}" style="color:#3C5DAA">{{phone}}</a></td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;overflow:hidden">
+    <div style="background:#f0f4ff;padding:12px 16px;border-bottom:1px solid #e5e7eb">
+      <p style="margin:0;font-size:13px;color:#3C5DAA;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Danh sách sản phẩm yêu cầu</p>
+    </div>
+    <pre style="margin:0;padding:16px;font-family:'Courier New',monospace;font-size:13px;line-height:1.8;white-space:pre-wrap;background:#fafafa">{{items_summary}}</pre>
+
+    <div style="padding:16px;background:#f9fafb;border-top:1px solid #e5e7eb">
+      <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Ghi chú từ khách hàng</p>
+      <p style="margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap">{{note}}</p>
+    </div>
+  </div>
+
+  <p style="color:#9ca3af;font-size:11px;margin-top:16px;text-align:center">
+    Gửi tự động từ form Báo giá trên sltech.vn — Dữ liệu cũng đã lưu vào Admin Dashboard.<br/>
+    Reply email này để trả lời trực tiếp cho khách.
+  </p>
+</div>
+
+
+===============================================
+  CẤU HÌNH .env
+===============================================
+
+Sau khi tạo xong 2 templates, điền vào file .env:
+
+VITE_EMAILJS_SERVICE_ID=service_xxxxxxx
+VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx
+VITE_EMAILJS_CONTACT_TEMPLATE_ID=template_xxxxxxx
+VITE_EMAILJS_QUOTE_TEMPLATE_ID=template_xxxxxxx
+
+
+===============================================
+  LƯU Ý BẢO MẬT
+===============================================
+
+- EmailJS Public Key là an toàn để expose trên frontend
+- Anti-spam đã được config trong code:
+  • Honeypot field (hidden "website" input → bot fill → reject)
+  • Rate limit: max 3 submissions/giờ (localStorage)
+- EmailJS dashboard cũng có thêm:
+  • Auto-reply: Bật để gửi email xác nhận cho khách
+  • Domain restriction: Settings → chỉ cho phép gửi từ sltech.vn
+  • reCAPTCHA: Settings → Enable reCAPTCHA (tuỳ chọn thêm)
+
+
+===============================================
+  TEST NHANH
+===============================================
+
+1. Điền .env với các giá trị thật
+2. Restart dev server (npm run dev)
+3. Vào /lien-he → điền form → Gửi
+4. Kiểm tra hộp mail songlinh@sltech.vn
+5. Reply thử email → xác nhận reply đến email khách
+6. Vào sản phẩm → thêm vào giỏ → gửi báo giá
+7. Kiểm tra hộp mail songlinh@sltech.vn

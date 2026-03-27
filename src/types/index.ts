@@ -166,3 +166,35 @@ export interface BreadcrumbItem {
   label: string;
   href?: string;
 }
+
+// ===== RFQ Cart Types =====
+
+export interface CartItem {
+  productId: number;
+  slug: string;
+  name: string;
+  imageUrl: string | null;
+  categoryName: string | null;
+  quantity: number;
+}
+
+export interface QuoteFormData {
+  company_name: string;
+  customer_name: string;
+  phone: string;
+  email: string;
+  notes: string;
+}
+
+export interface QuoteRequestPayload {
+  company_name: string;
+  customer_name: string;
+  phone: string;
+  email: string;
+  notes: string;
+  items: Array<{
+    product_id: number;
+    product_name: string;
+    quantity: number;
+  }>;
+}

@@ -120,6 +120,48 @@ export const PARTNERS = [
   "TOA",
   "Axis",
   "ZKTeco",
+  "LS Cable & System",
+  "Legrand",
+] as const;
+
+/** Partner certificates — images will be added by user */
+export const PARTNER_CERTIFICATES = [
+  {
+    title: "Axis Silver Partner",
+    partner: "Axis Communications",
+    image: "/images/certificates/axis-silver-partner.jpg",
+    year: "2021",
+  },
+  {
+    title: "Top 1 Axis Camera Station Seller 2024",
+    partner: "Axis Communications",
+    image: "/images/certificates/axis-top1-seller-2024.jpg",
+    year: "2024",
+  },
+  {
+    title: "Hikvision Authorized Partner",
+    partner: "Hikvision",
+    image: "/images/certificates/hikvision-project-partner.jpg",
+    year: "",
+  },
+  {
+    title: "LS Cable & System Partner",
+    partner: "LS Cable & System",
+    image: "/images/certificates/ls-cable-partner.jpg",
+    year: "2021",
+  },
+  {
+    title: "Hanwha Techwin Authorized Distributor",
+    partner: "Hanwha Techwin",
+    image: "/images/certificates/hanwha-techwin-gold.jpg",
+    year: "2020",
+  },
+  {
+    title: "Legrand Authorized Distributor",
+    partner: "Legrand",
+    image: "/images/certificates/legrand-distributor.jpg",
+    year: "2024–2025",
+  },
 ] as const;
 
 /** Hero slider data — static for now, will come from API later */

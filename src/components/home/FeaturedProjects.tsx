@@ -2,16 +2,64 @@ import { Link } from "react-router";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Building2 } from "lucide-react";
 import { FEATURED_PROJECTS } from "@/lib/constants";
 import { useProjects } from "@/hooks/useApi";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function FeaturedProjects({ className }: { className?: string }) {
-  const { data: apiData } = useProjects();
+function ProjectCard({
+  slug,
+  title,
+  category,
+  image,
+}: {
+  slug: string;
+  title: string;
+  category: string;
+  image: string;
+}) {
+  const [imgError, setImgError] = useState(false);
 
-  /* Use API projects if available, otherwise fall back to static constants */
+  return (
+    <Link
+      to={`/du-an/${slug}`}
+      className="group block overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
+    >
+      <div className="bg-muted relative aspect-4/3 overflow-hidden">
+        {imgError ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
+            <Building2 className="text-muted-foreground/40 h-12 w-12" />
+            <span className="text-muted-foreground text-center text-sm font-medium">
+              {title}
+            </span>
+          </div>
+        ) : (
+          <img
+            src={image}
+            alt={title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+      </div>
+      <div className="p-4">
+        <span className="text-primary mb-1 block text-xs font-medium">
+          {category}
+        </span>
+        <h3 className="group-hover:text-primary text-sm font-semibold transition-colors">
+          {title}
+        </h3>
+      </div>
+    </Link>
+  );
+}
+
+export function FeaturedProjects({ className }: { className?: string }) {
+  const { data: apiData } = useProjects({ featured: true });
+
   const projects = apiData?.items?.length
     ? apiData.items.map((p) => ({
         slug: p.slug,
@@ -95,44 +143,7 @@ export function FeaturedProjects({ className }: { className?: string }) {
                 key={project.slug}
                 className="min-w-0 flex-[0_0_100%] pl-4 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%]"
               >
-                <Link
-                  to={`/du-an/${project.slug}`}
-                  className="group block overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div className="bg-muted relative aspect-4/3 overflow-hidden">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                      onError={(e) => {
-                        // Fallback placeholder if image missing
-                        const target = e.currentTarget;
-                        target.src = "";
-                        target.style.display = "none";
-                        target.parentElement!.classList.add(
-                          "flex",
-                          "items-center",
-                          "justify-center",
-                        );
-                        const span = document.createElement("span");
-                        span.className =
-                          "text-muted-foreground text-sm text-center px-4";
-                        span.textContent = project.title;
-                        target.parentElement!.appendChild(span);
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                  </div>
-                  <div className="p-4">
-                    <span className="text-primary mb-1 text-xs font-medium">
-                      {project.category}
-                    </span>
-                    <h3 className="group-hover:text-primary text-sm font-semibold transition-colors">
-                      {project.title}
-                    </h3>
-                  </div>
-                </Link>
+                <ProjectCard {...project} />
               </div>
             ))}
           </div>
@@ -150,3 +161,4 @@ export function FeaturedProjects({ className }: { className?: string }) {
     </section>
   );
 }
+

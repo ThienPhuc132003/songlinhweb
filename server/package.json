@@ -1,0 +1,22 @@
+{
+  "name": "sltech-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply songlinh-db",
+    "db:migrate:local": "wrangler d1 migrations apply songlinh-db --local",
+    "db:seed": "wrangler d1 execute songlinh-db --file=seed/seed.sql",
+    "db:seed:local": "wrangler d1 execute songlinh-db --local --file=seed/seed.sql",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.0.0"
+  }
+}

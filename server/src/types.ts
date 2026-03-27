@@ -147,3 +147,15 @@ export interface ImageRow {
   caption: string | null;
   sort_order: number;
 }
+
+export interface QuoteRequestRow {
+  id: number;
+  customer_name: string;
+  email: string | null;
+  phone: string;
+  company: string | null;
+  items: string; // JSON [{product_id, product_name, qty}]
+  note: string | null;
+  status: string;
+  created_at: string;
+}

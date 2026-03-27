@@ -10,6 +10,7 @@ import partners from "./routes/partners";
 import siteConfig from "./routes/site-config";
 import contact from "./routes/contact";
 import upload from "./routes/upload";
+import quotes from "./routes/quotes";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -58,6 +59,7 @@ app.route("/api/gallery", gallery);
 app.route("/api/partners", partners);
 app.route("/api/site-config", siteConfig);
 app.route("/api/contact", contact);
+app.route("/api/quotes", quotes);
 
 /* ───────── Admin Routes ───────── */
 
@@ -70,6 +72,7 @@ app.route("/api/admin/partners", partners);
 app.route("/api/admin/site-config", siteConfig);
 app.route("/api/admin/contacts", contact);
 app.route("/api/admin/upload", upload);
+app.route("/api/admin/quotes", quotes);
 
 /* ───────── 404 Fallback ───────── */
 

@@ -5,11 +5,24 @@ import { requireAuth } from "../middleware/auth";
 
 const solutions = new Hono<{ Bindings: Env }>();
 
-/** GET /api/solutions — list all active solutions */
+/** GET /api/solutions — list all active solutions, with optional search */
 solutions.get("/", async (c) => {
+  const url = new URL(c.req.url);
+  const search = url.searchParams.get("search");
+
+  let where = "WHERE is_active = 1";
+  const params: unknown[] = [];
+
+  if (search) {
+    where += " AND (title LIKE ? OR description LIKE ?)";
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
   const rows = await c.env.DB.prepare(
-    "SELECT * FROM solutions WHERE is_active = 1 ORDER BY sort_order ASC",
-  ).all<SolutionRow>();
+    `SELECT * FROM solutions ${where} ORDER BY sort_order ASC`,
+  )
+    .bind(...params)
+    .all<SolutionRow>();
   return ok(rows.results);
 });
 

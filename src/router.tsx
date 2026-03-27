@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import { lazy, Suspense } from "react";
 import Layout from "./components/layout/Layout";
 import LoadingSpinner from "./components/ui/loading-spinner";
+import { ErrorBoundary } from "./components/ui/error-boundary";
 
 // Lazy-load all page components for code splitting
 const Home = lazy(() => import("./pages/Home"));
@@ -35,7 +36,11 @@ import AdminLayout from "./components/admin/AdminLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+    </ErrorBoundary>
+  );
 }
 
 export const router = createBrowserRouter([

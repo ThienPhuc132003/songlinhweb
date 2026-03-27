@@ -7,9 +7,14 @@ import Footer from "./Footer";
 import FloatingBar from "./FloatingBar";
 import { PageTransition } from "@/components/ui/page-transition";
 import { Toaster } from "@/components/ui/sonner";
+import { ZaloWidget } from "@/components/widgets/ZaloWidget";
+import { useGA4 } from "@/components/widgets/GA4";
 
 export default function Layout() {
   const { pathname } = useLocation();
+
+  // GA4 page tracking
+  useGA4();
 
   // Scroll to top on route change
   useEffect(() => {
@@ -30,6 +35,7 @@ export default function Layout() {
       <Footer />
       <FloatingBar />
       <Toaster richColors position="top-right" />
+      <ZaloWidget />
     </div>
   );
 }

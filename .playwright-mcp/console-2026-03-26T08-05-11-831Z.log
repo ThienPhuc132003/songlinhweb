@@ -1,0 +1,2 @@
+[     331ms] [WARNING] You are using new BrowserTracing() even though this bundle does not include tracing. @ https://stc-zlogin.zdn.vn/js/sentry.min.js:1
+[     331ms] [WARNING] You are using new Replay() even though this bundle does not include replay. @ https://stc-zlogin.zdn.vn/js/sentry.min.js:1

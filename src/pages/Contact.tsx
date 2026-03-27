@@ -1,44 +1,335 @@
-﻿import { SEO } from "@/components/ui/seo";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { SEO } from "@/components/ui/seo";
+import { PageHero } from "@/components/ui/page-hero";
 import { SITE } from "@/lib/constants";
+import {
+  sendContactEmail,
+  isHoneypotTriggered,
+  EmailRateLimitError,
+} from "@/lib/email";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Send,
+  Loader2,
+  Building2,
+} from "lucide-react";
+import type { ContactForm as ContactFormData } from "@/types";
+
+const initialForm: ContactFormData = {
+  company_name: "",
+  contact_person: "",
+  email: "",
+  phone: "",
+  address: "",
+  message: "",
+};
 
 export default function Contact() {
+  const [form, setForm] = useState<ContactFormData>(initialForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ContactFormData, string>>
+  >({});
+
+  function validate(): boolean {
+    const errs: typeof errors = {};
+    if (!form.company_name.trim())
+      errs.company_name = "Vui lòng nhập tên công ty";
+    if (!form.email.trim()) {
+      errs.email = "Vui lòng nhập email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errs.email = "Email không hợp lệ";
+    }
+    if (!form.phone.trim()) errs.phone = "Vui lòng nhập số điện thoại";
+    if (!form.message.trim()) errs.message = "Vui lòng nhập nội dung";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  function update(field: keyof ContactFormData, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validate()) return;
+    if (isHoneypotTriggered(honeypot)) return; // silent fail for bots
+    setSubmitting(true);
+    try {
+      await sendContactEmail(form);
+      toast.success("Gửi yêu cầu thành công!", {
+        description: "Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.",
+      });
+      setForm(initialForm);
+    } catch (err) {
+      if (err instanceof EmailRateLimitError) {
+        toast.error("Gửi quá nhiều yêu cầu", {
+          description: err.message,
+        });
+      } else {
+        toast.error("Gửi yêu cầu thất bại", {
+          description: "Vui lòng thử lại hoặc gọi trực tiếp qua hotline.",
+        });
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const contactInfo = [
+    {
+      icon: Phone,
+      label: "Hotline",
+      value: SITE.phone,
+      href: `tel:${SITE.phoneRaw}`,
+    },
+    {
+      icon: Mail,
+      label: "Email",
+      value: SITE.email,
+      href: `mailto:${SITE.email}`,
+    },
+    { icon: MapPin, label: "Địa chỉ", value: SITE.address },
+    {
+      icon: Clock,
+      label: "Giờ làm việc",
+      value: `Thứ 2 – Thứ 7: ${SITE.workingHours}`,
+    },
+  ];
+
   return (
     <>
-      <SEO title="Lien he" description="Lien he voi SLTECH." url="/lien-he" />
+      <SEO
+        title="Liên hệ"
+        description="Liên hệ SLTECH để được tư vấn giải pháp công nghệ cho doanh nghiệp."
+        url="/lien-he"
+      />
+
+      <PageHero
+        title="Liên hệ"
+        subtitle="Liên hệ ngay để được tư vấn giải pháp phù hợp"
+        breadcrumbs={[{ label: "Liên hệ" }]}
+      />
+
       <section className="section-padding">
         <div className="container-custom">
-          <h1 className="text-primary mb-8 text-center text-3xl font-bold">Lien he</h1>
           <div className="grid gap-10 lg:grid-cols-2">
-            <Card>
-              <CardHeader><CardTitle>Gui yeu cau tu van</CardTitle></CardHeader>
-              <CardContent>
-                <form className="space-y-4">
-                  <div className="space-y-2"><Label htmlFor="company">Ten cong ty *</Label><Input id="company" placeholder="Nhap ten cong ty" /></div>
-                  <div className="space-y-2"><Label htmlFor="email">Email *</Label><Input id="email" type="email" placeholder="email@example.com" /></div>
-                  <div className="space-y-2"><Label htmlFor="phone">So dien thoai *</Label><Input id="phone" placeholder="0xxx xxx xxx" /></div>
-                  <div className="space-y-2"><Label htmlFor="message">Noi dung *</Label><Textarea id="message" placeholder="Mo ta yeu cau..." rows={4} /></div>
-                  <Button type="submit" className="w-full">Gui yeu cau</Button>
-                </form>
-              </CardContent>
-            </Card>
-            <div className="space-y-6">
+            {/* Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <Card>
-                <CardHeader><CardTitle>Thong tin lien he</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3"><Phone className="text-primary h-5 w-5" /><div><p className="text-sm font-medium">Hotline</p><a href={"tel:" + SITE.phoneRaw} className="text-primary hover:underline">{SITE.phone}</a></div></div>
-                  <div className="flex items-center gap-3"><Mail className="text-primary h-5 w-5" /><div><p className="text-sm font-medium">Email</p><a href={"mailto:" + SITE.email} className="text-primary hover:underline">{SITE.email}</a></div></div>
-                  <div className="flex items-start gap-3"><MapPin className="text-primary mt-0.5 h-5 w-5" /><div><p className="text-sm font-medium">Dia chi</p><p className="text-muted-foreground">{SITE.address}</p></div></div>
-                  <div className="flex items-center gap-3"><Clock className="text-primary h-5 w-5" /><div><p className="text-sm font-medium">Gio lam viec</p><p className="text-muted-foreground">Thu 2 - Thu 7: {SITE.workingHours}</p></div></div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Send className="h-5 w-5" />
+                    Gửi yêu cầu tư vấn
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Honeypot — hidden from real users */}
+                    <div className="absolute -left-[9999px] opacity-0" aria-hidden>
+                      <input
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label htmlFor="company_name">
+                          Tên công ty{" "}
+                          <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="company_name"
+                          placeholder="VD: Công ty TNHH ABC"
+                          value={form.company_name}
+                          onChange={(e) =>
+                            update("company_name", e.target.value)
+                          }
+                        />
+                        {errors.company_name && (
+                          <p className="text-destructive text-xs">
+                            {errors.company_name}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="contact_person">Người liên hệ</Label>
+                        <Input
+                          id="contact_person"
+                          placeholder="Họ và tên"
+                          value={form.contact_person}
+                          onChange={(e) =>
+                            update("contact_person", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phone">
+                          Số điện thoại{" "}
+                          <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="0901 234 567"
+                          value={form.phone}
+                          onChange={(e) => update("phone", e.target.value)}
+                        />
+                        {errors.phone && (
+                          <p className="text-destructive text-xs">
+                            {errors.phone}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label htmlFor="email">
+                          Email <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="email@company.com"
+                          value={form.email}
+                          onChange={(e) => update("email", e.target.value)}
+                        />
+                        {errors.email && (
+                          <p className="text-destructive text-xs">
+                            {errors.email}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label htmlFor="address">Địa chỉ</Label>
+                        <Input
+                          id="address"
+                          placeholder="Địa chỉ công ty"
+                          value={form.address}
+                          onChange={(e) => update("address", e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <Label htmlFor="message">
+                          Nội dung{" "}
+                          <span className="text-destructive">*</span>
+                        </Label>
+                        <Textarea
+                          id="message"
+                          placeholder="Mô tả yêu cầu tư vấn, nhu cầu hệ thống..."
+                          rows={4}
+                          value={form.message}
+                          onChange={(e) => update("message", e.target.value)}
+                        />
+                        {errors.message && (
+                          <p className="text-destructive text-xs">
+                            {errors.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      size="lg"
+                      disabled={submitting}
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Đang gửi...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Gửi yêu cầu
+                        </>
+                      )}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
-              <div className="aspect-video overflow-hidden rounded-lg"><iframe src={SITE.mapEmbedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="SLTECH map" /></div>
-            </div>
+            </motion.div>
+
+            {/* Info + Map */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="space-y-6"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    Thông tin liên hệ
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  {contactInfo.map((item) => (
+                    <div key={item.label} className="flex items-start gap-3">
+                      <div className="bg-primary/10 flex-shrink-0 rounded-lg p-2">
+                        <item.icon className="text-primary h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{item.label}</p>
+                        {item.href ? (
+                          <a
+                            href={item.href}
+                            className="text-primary text-sm hover:underline"
+                          >
+                            {item.value}
+                          </a>
+                        ) : (
+                          <p className="text-muted-foreground text-sm">
+                            {item.value}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Map */}
+              <div className="aspect-video overflow-hidden rounded-xl border">
+                <iframe
+                  src={SITE.mapEmbedUrl}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="SLTECH map"
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
