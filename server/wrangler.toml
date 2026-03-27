@@ -22,7 +22,7 @@ bucket_name = "songlinh-web"
 
 # ─── Environment Variables ───
 [vars]
-CORS_ORIGIN = "https://sltech.vn"
+CORS_ORIGIN = "https://sltech.vn,https://songlinhweb.vercel.app"
 # ADMIN_API_KEY and RESEND_API_KEY should be set as secrets:
 #   wrangler secret put ADMIN_API_KEY
 #   wrangler secret put RESEND_API_KEY

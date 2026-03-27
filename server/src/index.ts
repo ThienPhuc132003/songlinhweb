@@ -16,10 +16,22 @@ const app = new Hono<{ Bindings: Env }>();
 
 /* ───────── Global Middleware ───────── */
 
-// CORS
+// CORS — support multiple origins (production + Vercel previews)
 app.use("*", async (c, next) => {
-  const origin = c.env.CORS_ORIGIN || "*";
-  c.header("Access-Control-Allow-Origin", origin);
+  const requestOrigin = c.req.header("Origin") || "";
+  const allowedOrigins = (c.env.CORS_ORIGIN || "*").split(",").map((s: string) => s.trim());
+
+  // Check if request origin is allowed (supports wildcard *.vercel.app)
+  let corsOrigin = allowedOrigins[0]; // default
+  if (allowedOrigins.includes("*")) {
+    corsOrigin = "*";
+  } else if (allowedOrigins.includes(requestOrigin)) {
+    corsOrigin = requestOrigin;
+  } else if (allowedOrigins.some((o: string) => o.includes("vercel.app")) && requestOrigin.endsWith(".vercel.app")) {
+    corsOrigin = requestOrigin;
+  }
+
+  c.header("Access-Control-Allow-Origin", corsOrigin);
   c.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   c.header(
     "Access-Control-Allow-Headers",
