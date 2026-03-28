@@ -49,6 +49,18 @@ export interface ProductCategoryRow {
   name: string;
   description: string;
   image_url: string | null;
+  parent_id: number | null;
+  sort_order: number;
+  is_active: number;
+}
+
+export interface BrandRow {
+  id: number;
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  description: string;
+  website_url: string | null;
   sort_order: number;
   is_active: number;
 }
@@ -56,6 +68,7 @@ export interface ProductCategoryRow {
 export interface ProductRow {
   id: number;
   category_id: number;
+  brand_id: number | null;
   slug: string;
   name: string;
   description: string;

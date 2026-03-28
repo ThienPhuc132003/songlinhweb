@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { usePost } from "@/hooks/useApi";
+import { useMarkdown } from "@/hooks/useMarkdown";
 import { BLOG_POSTS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,7 @@ export default function BlogPost() {
   const thumbnail = post?.thumbnail_url ?? staticPost?.thumbnail ?? null;
   const tags = post?.tags ?? (staticPost?.tags as unknown as string[]) ?? [];
   const content = post?.content_md ?? null;
+  const contentHtml = useMarkdown(content);
 
   return (
     <>
@@ -119,10 +121,10 @@ export default function BlogPost() {
             )}
 
             {/* Content */}
-            {content ? (
+            {contentHtml ? (
               <div
                 className="prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: content }}
+                dangerouslySetInnerHTML={{ __html: contentHtml }}
               />
             ) : (
               <div className="prose prose-lg max-w-none">

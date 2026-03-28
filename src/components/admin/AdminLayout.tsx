@@ -13,15 +13,17 @@ import {
   LogOut,
   Menu,
   X,
+  Tags,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/admin/solutions", icon: Lightbulb, label: "Giải pháp" },
   { to: "/admin/projects", icon: FolderKanban, label: "Dự án" },
   { to: "/admin/products", icon: Package, label: "Sản phẩm" },
+  { to: "/admin/brands", icon: Tags, label: "Thương hiệu" },
+  { to: "/admin/categories", icon: FolderKanban, label: "Danh mục" },
   { to: "/admin/posts", icon: FileText, label: "Bài viết" },
   { to: "/admin/gallery", icon: Image, label: "Thư viện" },
   { to: "/admin/partners", icon: Handshake, label: "Đối tác" },

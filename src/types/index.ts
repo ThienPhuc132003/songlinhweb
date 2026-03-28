@@ -32,6 +32,7 @@ export interface ProductCategory {
   name: string;
   description: string;
   image_url: string | null;
+  parent_id?: number | null;
   sort_order: number;
   is_active: number;
   product_count?: number;
@@ -40,6 +41,7 @@ export interface ProductCategory {
 export interface Product {
   id: number;
   category_id: number;
+  brand_id?: number | null;
   slug: string;
   name: string;
   description: string;
@@ -59,6 +61,10 @@ export interface Product {
   // Joined fields from backend
   category_name?: string;
   category_slug?: string;
+  brand_name?: string | null;
+  brand_slug?: string | null;
+  brand_logo?: string | null;
+  brand_website?: string | null;
 }
 
 export interface Project {

@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { Env } from "./types";
 import { errorHandler } from "./middleware/error-handler";
-import solutions from "./routes/solutions";
 import products from "./routes/products";
+import brands from "./routes/brands";
 import projects from "./routes/projects";
 import posts from "./routes/posts";
 import gallery from "./routes/gallery";
@@ -49,9 +49,9 @@ app.get("/", (c) => {
 
 /* ───────── Public API Routes ───────── */
 
-app.route("/api/solutions", solutions);
 app.route("/api/products", products);
 app.route("/api/product-categories", products); // alias for /api/products/categories
+app.route("/api/brands", brands);
 app.route("/api/projects", projects);
 app.route("/api/posts", posts);
 app.route("/api/gallery", gallery);
@@ -62,8 +62,8 @@ app.route("/api/quotes", quotes);
 
 /* ───────── Admin Routes ───────── */
 
-app.route("/api/admin/solutions", solutions);
 app.route("/api/admin/products", products);
+app.route("/api/admin/brands", brands);
 app.route("/api/admin/projects", projects);
 app.route("/api/admin/posts", posts);
 app.route("/api/admin/gallery", gallery);

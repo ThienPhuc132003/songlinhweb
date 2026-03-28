@@ -1,9 +1,9 @@
 import { Link } from "react-router";
-import { SOLUTIONS_DATA } from "@/lib/constants";
-import { useSolutions } from "@/hooks/useApi";
+import { SOLUTIONS } from "@/data/solutions";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { cn } from "@/lib/utils";
 import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
+import { useState } from "react";
 
 interface SolutionCardsProps {
   limit?: number;
@@ -11,9 +11,7 @@ interface SolutionCardsProps {
 }
 
 export function SolutionCards({ limit, className }: SolutionCardsProps) {
-  const { data: apiSolutions } = useSolutions();
-  const allSolutions = apiSolutions ?? SOLUTIONS_DATA;
-  const solutions = limit ? allSolutions.slice(0, limit) : allSolutions;
+  const solutions = limit ? SOLUTIONS.slice(0, limit) : SOLUTIONS;
   const headingRef = useScrollReveal();
   const gridRef = useScrollReveal();
 
@@ -35,30 +33,18 @@ export function SolutionCards({ limit, className }: SolutionCardsProps) {
           className="reveal-stagger grid gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4"
         >
           {solutions.map((solution) => (
-            <Link
+            <SolutionCard
               key={solution.slug}
-              to={`/giai-phap/${solution.slug}`}
-              className="reveal-item bg-card hover:border-primary/30 group flex flex-col rounded-xl border p-5 shadow-sm transition-all duration-200 hover:shadow-md"
-            >
-              <div className="mb-3 flex items-center gap-3">
-                <SolutionIconBadge name={solution.icon} size="md" />
-                <h3 className="group-hover:text-primary text-sm font-semibold transition-colors">
-                  {solution.title}
-                </h3>
-              </div>
-              {"description" in solution && (
-                <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                  {(solution as { description: string }).description}
-                </p>
-              )}
-              <span className="text-primary mt-auto pt-3 text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
-                Xem chi tiết →
-              </span>
-            </Link>
+              slug={solution.slug}
+              title={solution.title}
+              icon={solution.icon}
+              description={solution.description}
+              image={solution.heroImage}
+            />
           ))}
         </div>
 
-        {limit && limit < allSolutions.length && (
+        {limit && limit < SOLUTIONS.length && (
           <div className="mt-8 text-center">
             <Link
               to="/giai-phap"
@@ -70,5 +56,67 @@ export function SolutionCards({ limit, className }: SolutionCardsProps) {
         )}
       </div>
     </section>
+  );
+}
+
+function SolutionCard({
+  slug,
+  title,
+  icon,
+  description,
+  image,
+}: {
+  slug: string;
+  title: string;
+  icon: string;
+  description?: string;
+  image?: string;
+}) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <Link
+      to={`/giai-phap/${slug}`}
+      className="reveal-item bg-card group flex flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
+    >
+      {/* Image — zero-gap, full bleed */}
+      <div className="relative overflow-hidden">
+        {image && !imgError ? (
+          <>
+            <img
+              src={image}
+              alt={title}
+              className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              loading="lazy"
+              onError={() => setImgError(true)}
+            />
+            {/* Hover overlay — darken + gradient */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          </>
+        ) : (
+          <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+            <SolutionIconBadge name={icon} size="lg" className="opacity-40" />
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <SolutionIconBadge name={icon} size="sm" />
+          <h3 className="line-clamp-2 text-sm font-semibold transition-colors group-hover:text-primary">
+            {title}
+          </h3>
+        </div>
+        {description && (
+          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        )}
+        <span className="mt-auto pt-2 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          Xem chi tiết →
+        </span>
+      </div>
+    </Link>
   );
 }

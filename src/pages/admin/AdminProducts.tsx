@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminApi, type Product, type ProductCategory } from "@/lib/admin-api";
+import { adminApi, type Product, type ProductCategory, type Brand } from "@/lib/admin-api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -53,6 +53,11 @@ export default function AdminProducts() {
   const { data: categories = [] } = useQuery({
     queryKey: ["admin", "productCategories"],
     queryFn: adminApi.productCategories.list,
+  });
+
+  const { data: brands = [] } = useQuery({
+    queryKey: ["admin", "brands"],
+    queryFn: adminApi.brands.list,
   });
 
   const saveMutation = useMutation({
@@ -216,11 +221,24 @@ export default function AdminProducts() {
 
         <div className="grid grid-cols-3 gap-4">
           <Field label="Thương hiệu">
-            <Input
+            <select
+              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
               value={form.brand || ""}
-              onChange={(e) => setForm({ ...form, brand: e.target.value })}
-              placeholder="Hikvision"
-            />
+              onChange={(e) => {
+                const selected = brands.find((b: Brand) => b.name === e.target.value);
+                setForm({ ...form, brand: e.target.value || "" });
+                if (selected) {
+                  // Also populate brand text field for backward compatibility
+                }
+              }}
+            >
+              <option value="">Chọn thương hiệu</option>
+              {brands.map((b: Brand) => (
+                <option key={b.id} value={b.name}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field label="Model">
             <Input
@@ -239,11 +257,17 @@ export default function AdminProducts() {
               required
             >
               <option value="">Chọn danh mục</option>
-              {categories.map((c: ProductCategory) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories
+                .sort((a: ProductCategory, b: ProductCategory) => {
+                  const aOrder = a.parent_id ? 1000 + a.sort_order : a.sort_order;
+                  const bOrder = b.parent_id ? 1000 + b.sort_order : b.sort_order;
+                  return aOrder - bOrder;
+                })
+                .map((c: ProductCategory) => (
+                  <option key={c.id} value={c.id}>
+                    {c.parent_id ? `  └ ${c.name}` : c.name}
+                  </option>
+                ))}
             </select>
           </Field>
         </div>

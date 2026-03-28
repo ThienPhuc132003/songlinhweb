@@ -70,17 +70,22 @@ export const api = {
     get: (slug: string) => fetchApi<Solution>(`/solutions/${slug}`),
   },
   products: {
-    list: (opts?: { category?: string; search?: string; page?: number; limit?: number }) => {
+    list: (opts?: { category?: string; brand?: string; search?: string; page?: number; limit?: number }) => {
       const params = new URLSearchParams();
       if (opts?.category) params.set("category", opts.category);
+      if (opts?.brand) params.set("brand", opts.brand);
       if (opts?.search) params.set("search", opts.search);
       if (opts?.page) params.set("page", String(opts.page));
       if (opts?.limit) params.set("limit", String(opts.limit));
       const qs = params.toString();
       return fetchPaginated<Product>(`/products${qs ? `?${qs}` : ""}`);
     },
-    get: (slug: string) => fetchApi<Product & { images?: EntityImage[] }>(`/products/${slug}`),
+    get: (slug: string) => fetchApi<Product & { images?: EntityImage[]; related?: Product[] }>(`/products/${slug}`),
     categories: () => fetchApi<ProductCategory[]>(`/product-categories`),
+  },
+  brands: {
+    list: () => fetchApi<Array<{ id: number; slug: string; name: string; logo_url: string | null; description: string }>>(`/brands`),
+    get: (slug: string) => fetchApi<{ id: number; slug: string; name: string; logo_url: string | null; description: string; website_url: string | null }>(`/brands/${slug}`),
   },
   projects: {
     list: (opts?: { page?: number; category?: string; featured?: boolean }) => {

@@ -74,7 +74,7 @@ async function adminUpload(file: File, folder?: string) {
 
 export const adminApi = {
   // Auth verify - use a protected route to validate key
-  verify: () => adminFetch<Solution[]>("/solutions/all?limit=1"),
+  verify: () => adminFetch<Product[]>("/products/items/all?limit=1"),
 
   // Solutions
   solutions: {
@@ -135,7 +135,7 @@ export const adminApi = {
 
   // Product Categories
   productCategories: {
-    list: () => adminFetch<ProductCategory[]>("/products/all"),
+    list: () => adminFetch<ProductCategory[]>("/products/categories/all"),
     create: (data: Partial<ProductCategory>) =>
       adminFetch<{ id: number }>("/products/categories", {
         method: "POST",
@@ -167,6 +167,25 @@ export const adminApi = {
       }),
     delete: (id: number) =>
       adminFetch<{ deleted: boolean }>(`/products/${id}`, {
+        method: "DELETE",
+      }),
+  },
+
+  // Brands
+  brands: {
+    list: () => adminFetch<Brand[]>("/brands/all"),
+    create: (data: Partial<Brand>) =>
+      adminFetch<{ id: number }>("/brands", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<Brand>) =>
+      adminFetch<{ id: number }>(`/brands/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) =>
+      adminFetch<{ deleted: boolean }>(`/brands/${id}`, {
         method: "DELETE",
       }),
   },
@@ -329,6 +348,18 @@ export interface ProductCategory {
   name: string;
   description: string;
   image_url: string | null;
+  parent_id: number | null;
+  sort_order: number;
+  is_active: number;
+}
+
+export interface Brand {
+  id: number;
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  description: string;
+  website_url: string | null;
   sort_order: number;
   is_active: number;
 }

@@ -22,9 +22,10 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 // Admin pages
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminSolutions = lazy(() => import("./pages/admin/AdminSolutions"));
 const AdminProjects = lazy(() => import("./pages/admin/AdminProjects"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminBrands = lazy(() => import("./pages/admin/AdminBrands"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
 const AdminPosts = lazy(() => import("./pages/admin/AdminPosts"));
 const AdminGallery = lazy(() => import("./pages/admin/AdminGallery"));
 const AdminPartners = lazy(() => import("./pages/admin/AdminPartners"));
@@ -182,14 +183,6 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "solutions",
-        element: (
-          <SuspenseWrapper>
-            <AdminSolutions />
-          </SuspenseWrapper>
-        ),
-      },
-      {
         path: "projects",
         element: (
           <SuspenseWrapper>
@@ -202,6 +195,22 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <AdminProducts />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: "brands",
+        element: (
+          <SuspenseWrapper>
+            <AdminBrands />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: "categories",
+        element: (
+          <SuspenseWrapper>
+            <AdminCategories />
           </SuspenseWrapper>
         ),
       },

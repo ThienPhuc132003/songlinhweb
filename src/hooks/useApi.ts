@@ -1,22 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-// ===== Solutions =====
-export function useSolutions(search?: string) {
-  return useQuery({
-    queryKey: ["solutions", search],
-    queryFn: () => api.solutions.list(search),
-  });
-}
-
-export function useSolution(slug: string) {
-  return useQuery({
-    queryKey: ["solution", slug],
-    queryFn: () => api.solutions.get(slug),
-    enabled: !!slug,
-  });
-}
-
 // ===== Products =====
 export function useProductCategories() {
   return useQuery({
@@ -27,6 +11,7 @@ export function useProductCategories() {
 
 export function useProducts(opts?: {
   category?: string;
+  brand?: string;
   search?: string;
   page?: number;
 }) {
@@ -41,6 +26,14 @@ export function useProduct(slug: string) {
     queryKey: ["product", slug],
     queryFn: () => api.products.get(slug),
     enabled: !!slug,
+  });
+}
+
+// ===== Brands =====
+export function useBrands() {
+  return useQuery({
+    queryKey: ["brands"],
+    queryFn: api.brands.list,
   });
 }
 
