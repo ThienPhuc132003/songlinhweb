@@ -295,6 +295,10 @@ export const adminApi = {
   // Gallery
   gallery: {
     albums: () => adminFetch<GalleryAlbum[]>("/gallery/all"),
+    albumDetail: (id: number) =>
+      adminFetch<GalleryAlbum & { images: GalleryImage[]; image_count: number }>(
+        `/gallery/albums/${id}`,
+      ),
     createAlbum: (data: Partial<GalleryAlbum>) =>
       adminFetch<{ id: number }>("/gallery/albums", {
         method: "POST",
@@ -305,9 +309,45 @@ export const adminApi = {
         method: "PUT",
         body: JSON.stringify(data),
       }),
-    deleteAlbum: (id: number) =>
-      adminFetch<{ deleted: boolean }>(`/gallery/albums/${id}`, {
+    deleteAlbum: (id: number, deleteR2 = true) =>
+      adminFetch<{ deleted: boolean }>(
+        `/gallery/albums/${id}?delete_r2=${deleteR2}`,
+        { method: "DELETE" },
+      ),
+    setCover: (albumId: number, imageUrl: string) =>
+      adminFetch<{ id: number; cover_url: string }>(
+        `/gallery/albums/${albumId}/cover`,
+        { method: "PUT", body: JSON.stringify({ image_url: imageUrl }) },
+      ),
+    // Image CRUD
+    addImage: (data: { album_id: number; image_url: string; caption?: string; sort_order?: number }) =>
+      adminFetch<{ id: number }>("/gallery/images", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    addImagesBatch: (album_id: number, images: Array<{ image_url: string; caption?: string; sort_order?: number }>) =>
+      adminFetch<{ inserted: number }>("/gallery/images/batch", {
+        method: "POST",
+        body: JSON.stringify({ album_id, images }),
+      }),
+    updateImage: (id: number, data: { caption?: string; sort_order?: number }) =>
+      adminFetch<{ id: number }>(`/gallery/images/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    reorderImages: (items: Array<{ id: number; sort_order: number }>) =>
+      adminFetch<{ updated: number }>("/gallery/images/reorder", {
+        method: "PUT",
+        body: JSON.stringify({ items }),
+      }),
+    deleteImage: (id: number) =>
+      adminFetch<{ deleted: boolean }>(`/gallery/images/${id}`, {
         method: "DELETE",
+      }),
+    bulkDeleteImages: (ids: number[]) =>
+      adminFetch<{ deleted: number }>("/gallery/images/bulk-delete", {
+        method: "POST",
+        body: JSON.stringify({ ids }),
       }),
   },
 
@@ -551,8 +591,19 @@ export interface GalleryAlbum {
   slug: string;
   title: string;
   cover_url: string | null;
+  description: string;
+  category: string;
   sort_order: number;
   is_active: number;
+  image_count?: number;
+}
+
+export interface GalleryImage {
+  id: number;
+  album_id: number;
+  image_url: string;
+  caption: string | null;
+  sort_order: number;
 }
 
 export interface Contact {

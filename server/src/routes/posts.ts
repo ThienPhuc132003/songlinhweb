@@ -150,35 +150,49 @@ posts.post("/", requireAuth, async (c) => {
     ? (typeof body.references === 'string' ? body.references : JSON.stringify(body.references))
     : '[]';
 
-  const result = await c.env.DB.prepare(
-    `INSERT INTO posts (slug, title, excerpt, content_md, thumbnail_url, author, tags, 
-                        is_published, published_at, status, category, is_featured, 
-                        reading_time_min, meta_title, meta_description,
-                        reviewed_by, references)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
-      body.slug,
-      body.title,
-      body.excerpt ?? "",
-      body.content_md ?? null,
-      body.thumbnail_url ?? null,
-      body.author ?? "Song Linh Technologies",
-      tags,
-      isPublished,
-      body.published_at ?? null,
-      status,
-      body.category ?? "general",
-      body.is_featured ?? 0,
-      readingTime,
-      body.meta_title ?? null,
-      body.meta_description ?? null,
-      body.reviewed_by ?? null,
-      references,
+  try {
+    const result = await c.env.DB.prepare(
+      `INSERT INTO posts (slug, title, excerpt, content_md, thumbnail_url, author, tags, 
+                          is_published, published_at, status, category, is_featured, 
+                          reading_time_min, meta_title, meta_description,
+                          reviewed_by, [references])
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run();
+      .bind(
+        body.slug,
+        body.title,
+        body.excerpt ?? "",
+        body.content_md ?? null,
+        body.thumbnail_url ?? null,
+        body.author ?? "Song Linh Technologies",
+        tags,
+        isPublished,
+        body.published_at ?? null,
+        status,
+        body.category ?? "general",
+        body.is_featured ?? 0,
+        readingTime,
+        body.meta_title ?? null,
+        body.meta_description ?? null,
+        body.reviewed_by ?? null,
+        references,
+      )
+      .run();
 
-  return ok({ id: result.meta.last_row_id });
+    return ok({ id: result.meta.last_row_id });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // Parse D1 column errors
+    const colMatch = msg.match(/has no column named (\w+)/);
+    if (colMatch) {
+      return c.json({ ok: false, error: `DB thiếu cột "${colMatch[1]}". Chạy migration mới nhất.` }, 500);
+    }
+    const uniqMatch = msg.match(/UNIQUE constraint failed: posts\.(\w+)/);
+    if (uniqMatch) {
+      return c.json({ ok: false, error: `Trùng "${uniqMatch[1]}". Slug đã tồn tại.` }, 409);
+    }
+    return c.json({ ok: false, error: msg }, 500);
+  }
 });
 
 /** PUT /api/admin/posts/:id */
@@ -256,7 +270,7 @@ posts.put("/:id", requireAuth, async (c) => {
     values.push(body.reviewed_by);
   }
   if (body.references !== undefined) {
-    sets.push("references = ?");
+    sets.push("[references] = ?");
     values.push(typeof body.references === 'string' ? body.references : JSON.stringify(body.references));
   }
 
@@ -269,11 +283,20 @@ posts.put("/:id", requireAuth, async (c) => {
   }
   values.push(id);
 
-  await c.env.DB.prepare(`UPDATE posts SET ${sets.join(", ")} WHERE id = ?`)
-    .bind(...values)
-    .run();
+  try {
+    await c.env.DB.prepare(`UPDATE posts SET ${sets.join(", ")} WHERE id = ?`)
+      .bind(...values)
+      .run();
 
-  return ok({ id });
+    return ok({ id });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const colMatch = msg.match(/has no column named (\w+)/);
+    if (colMatch) {
+      return c.json({ ok: false, error: `DB thiếu cột "${colMatch[1]}". Chạy migration mới nhất.` }, 500);
+    }
+    return c.json({ ok: false, error: msg }, 500);
+  }
 });
 
 /** DELETE /api/admin/posts/:id */

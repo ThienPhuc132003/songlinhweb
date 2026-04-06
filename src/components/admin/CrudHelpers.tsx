@@ -22,7 +22,54 @@ import {
   ArrowUp,
   ArrowDown,
   Loader2,
+  SearchX,
+  DatabaseZap,
 } from "lucide-react";
+
+/* ─── Empty State Illustration ──────────────────────────────────────────────── */
+
+interface EmptyStateProps {
+  title?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  /** Variant controls icon style */
+  variant?: "search" | "empty";
+}
+
+export function EmptyState({
+  title,
+  description,
+  icon,
+  variant = "empty",
+}: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+      {/* Illustration */}
+      <div className="relative mb-5">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 blur-2xl scale-150" />
+        <div className="relative flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/60 shadow-sm">
+          {icon || (
+            variant === "search" ? (
+              <SearchX className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+            ) : (
+              <DatabaseZap className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+            )
+          )}
+        </div>
+      </div>
+      <h3 className="text-sm font-semibold text-foreground">
+        {title || (variant === "search" ? "Không tìm thấy kết quả" : "Chưa có dữ liệu")}
+      </h3>
+      <p className="mt-1.5 text-xs text-muted-foreground max-w-[280px] leading-relaxed">
+        {description || (
+          variant === "search"
+            ? "Thử thay đổi từ khóa tìm kiếm hoặc bỏ bộ lọc để xem tất cả."
+            : "Bắt đầu bằng cách thêm mới dữ liệu vào hệ thống."
+        )}
+      </p>
+    </div>
+  );
+}
 
 /* ─── Data Table ───────────────────────────────────────────────────────────── */
 
@@ -43,7 +90,10 @@ interface DataTableProps<T extends { id: number }> {
   onDelete?: (row: T) => void;
   isLoading?: boolean;
   searchable?: boolean;
+  /** Single search field (backward compat) */
   searchField?: keyof T;
+  /** Multiple search fields for global search */
+  searchFields?: (keyof T)[];
   searchPlaceholder?: string;
   /** Items per page. 0 = show all. Default 15 */
   pageSize?: number;
@@ -54,8 +104,11 @@ interface DataTableProps<T extends { id: number }> {
   onSelectionChange?: (ids: Set<number>) => void;
   /** Extra actions per row */
   rowActions?: (row: T) => React.ReactNode;
-  /** Empty state */
+  /** Empty state customization */
   emptyText?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyIcon?: React.ReactNode;
 }
 
 export function DataTable<T extends { id: number }>({
@@ -66,13 +119,17 @@ export function DataTable<T extends { id: number }>({
   isLoading,
   searchable = true,
   searchField,
+  searchFields,
   searchPlaceholder = "Tìm kiếm...",
   pageSize: initialPageSize = 15,
   filterBar,
   selectedIds,
   onSelectionChange,
   rowActions,
-  emptyText = "Không có dữ liệu",
+  emptyText,
+  emptyTitle,
+  emptyDescription,
+  emptyIcon,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
@@ -81,15 +138,26 @@ export function DataTable<T extends { id: number }>({
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>(null);
 
+  // ─── Resolve search fields (support both single and multi-field) ───
+  const resolvedSearchFields = useMemo(() => {
+    if (searchFields && searchFields.length > 0) return searchFields;
+    if (searchField) return [searchField];
+    return [];
+  }, [searchField, searchFields]);
+
   // ─── Search filter ───
   const searched = useMemo(() => {
-    if (!searchable || !searchField || !debouncedSearch.trim()) return data;
+    if (!searchable || resolvedSearchFields.length === 0 || !debouncedSearch.trim()) return data;
     const q = debouncedSearch.toLowerCase();
     return data.filter((row) => {
-      const val = String(row[searchField] ?? "").toLowerCase();
-      return val.includes(q);
+      return resolvedSearchFields.some((field) => {
+        const val = String(row[field] ?? "").toLowerCase();
+        return val.includes(q);
+      });
     });
-  }, [data, searchable, searchField, debouncedSearch]);
+  }, [data, searchable, resolvedSearchFields, debouncedSearch]);
+
+  const isSearchActive = debouncedSearch.trim().length > 0;
 
   // ─── Sort ───
   const sorted = useMemo(() => {
@@ -171,10 +239,10 @@ export function DataTable<T extends { id: number }>({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col">
       {/* ─── Toolbar: Search + Filters ─── */}
-      <div className="flex flex-wrap items-center gap-3">
-        {searchable && searchField && (
+      <div className="flex flex-wrap items-center gap-3 mb-3">
+        {searchable && resolvedSearchFields.length > 0 && (
           <div className="relative max-w-xs flex-1">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
@@ -251,9 +319,13 @@ export function DataTable<T extends { id: number }>({
                       (hasSelection ? 1 : 0) +
                       (onEdit || onDelete || rowActions ? 1 : 0)
                     }
-                    className="text-muted-foreground px-4 py-8 text-center"
                   >
-                    {emptyText}
+                    <EmptyState
+                      variant={isSearchActive ? "search" : "empty"}
+                      title={emptyTitle || emptyText}
+                      description={emptyDescription}
+                      icon={emptyIcon}
+                    />
                   </td>
                 </tr>
               ) : (
@@ -323,9 +395,9 @@ export function DataTable<T extends { id: number }>({
         </div>
       </div>
 
-      {/* ─── Pagination Controls ─── */}
+      {/* ─── Sticky Pagination Controls ─── */}
       {pageSizeState > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="sticky bottom-0 z-10 flex items-center justify-between border-t bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm px-4 py-2.5 text-sm -mx-0 mt-3 rounded-b-lg">
           <span className="text-muted-foreground text-xs">
             Hiển thị {(safeCurrentPage - 1) * effectivePageSize + 1}–
             {Math.min(safeCurrentPage * effectivePageSize, totalItems)} / {totalItems}

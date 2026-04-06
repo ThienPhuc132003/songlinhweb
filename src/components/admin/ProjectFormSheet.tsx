@@ -14,7 +14,7 @@ import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { RelationalMultiSelect } from "@/components/admin/RelationalMultiSelect";
 import { KeyMetricsEditor } from "@/components/admin/KeyMetricsEditor";
 import { adminApi, type Solution, type Product } from "@/lib/admin-api";
-import { FileText, Loader2, PenLine, Image as ImageIcon } from "lucide-react";
+import { FileText, Loader2, PenLine, Image as ImageIcon, Wrench } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -315,7 +315,7 @@ export function ProjectFormSheet({
                   <ImageUploadField
                     label="Hình đại diện (Cover)"
                     value={form.thumbnail_url ? [form.thumbnail_url] : []}
-                    onChange={(urls) => setForm((f) => ({ ...f, thumbnail_url: urls[0] || "" }))}
+                    onChange={(urls) => setForm((f) => ({ ...f, thumbnail_url: urls[0] || null }))}
                     folder="projects" single
                   />
                   <ImageUploadField

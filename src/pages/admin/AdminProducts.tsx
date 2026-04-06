@@ -1,21 +1,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi, type Product, type ProductCategory, type Brand, type ProductFeature } from "@/lib/admin-api";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   DataTable,
   PageHeader,
   ConfirmDelete,
-  FormDialog,
-  Field,
   StatusBadge,
   BulkActionBar,
   type Column,
 } from "@/components/admin/CrudHelpers";
-import { ImageUploadField } from "@/components/admin/ImageUploadField";
-import { SearchableFeatureSelect } from "@/components/admin/SearchableFeatureSelect";
+import { ProductFormSheet } from "@/components/admin/ProductFormSheet";
 
 const INVENTORY_OPTIONS = [
   { value: "in-stock", label: "Còn hàng", color: "bg-green-100 text-green-700" },
@@ -370,12 +365,7 @@ export default function AdminProducts() {
     },
   ];
 
-  /** Inline error message component */
-  const FieldError = ({ field }: { field: string }) => {
-    const error = validationErrors[field];
-    if (!error) return null;
-    return <p className="text-xs text-destructive mt-1">{error}</p>;
-  };
+
 
   return (
     <div className="space-y-6">
@@ -433,288 +423,41 @@ export default function AdminProducts() {
         columns={columns}
         isLoading={isLoading}
         searchField="name"
-        searchPlaceholder="Tìm theo tên sản phẩm..."
+        searchFields={["name", "brand", "model_number", "slug"] as (keyof Product)[]}
+        searchPlaceholder="Tìm theo tên, thương hiệu, model..."
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         onEdit={openEdit}
         onDelete={setDeleteTarget}
+        emptyTitle="Chưa có sản phẩm nào"
+        emptyDescription="Thêm sản phẩm đầu tiên vào hệ thống để bắt đầu quản lý."
       />
 
-      <FormDialog
+      <ProductFormSheet
         open={formOpen}
         onClose={() => {
           setFormOpen(false);
           setValidationErrors({});
         }}
-        title={editId ? "Sửa sản phẩm" : "Thêm sản phẩm"}
+        editId={editId}
+        form={form}
+        setForm={setForm}
         onSubmit={handleSubmit}
         loading={saveMutation.isPending}
-      >
-        {/* ═══════ Section: Thông tin cơ bản ═══════ */}
-        <div className="rounded-lg border p-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Thông tin
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Tên sản phẩm" required>
-              <Input
-                value={form.name || ""}
-                onChange={(e) => handleNameChange(e.target.value)}
-                placeholder="VD: Camera IP 4MP Dome"
-                required
-                className={validationErrors.name ? "border-destructive" : ""}
-              />
-              <FieldError field="name" />
-            </Field>
-            <Field label="Slug" required>
-              <Input
-                value={form.slug || ""}
-                onChange={(e) => {
-                  setForm({ ...form, slug: e.target.value });
-                  if (validationErrors.slug) {
-                    setValidationErrors((prev) => {
-                      const next = { ...prev };
-                      delete next.slug;
-                      return next;
-                    });
-                  }
-                }}
-                placeholder="camera-ip-4mp-dome"
-                required
-                className={validationErrors.slug ? "border-destructive" : ""}
-              />
-              <FieldError field="slug" />
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <Field label="Thương hiệu">
-              <select
-                className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-                value={form.brand_id ?? ""}
-                onChange={(e) => {
-                  const brandId = Number(e.target.value) || null;
-                  const selected = brands.find((b: Brand) => b.id === brandId);
-                  setForm({
-                    ...form,
-                    brand_id: brandId,
-                    brand: selected?.name || "",
-                  });
-                }}
-              >
-                <option value="">Chọn thương hiệu</option>
-                {brands.map((b: Brand) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Model">
-              <Input
-                value={form.model_number || ""}
-                onChange={(e) => setForm({ ...form, model_number: e.target.value })}
-                placeholder="DS-2CD2143G2-I"
-              />
-            </Field>
-            <Field label="Danh mục" required>
-              <select
-                className={`border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm ${validationErrors.category_id ? "border-destructive" : ""}`}
-                value={form.category_id ?? ""}
-                onChange={(e) => {
-                  setForm({ ...form, category_id: Number(e.target.value) || null });
-                  if (validationErrors.category_id) {
-                    setValidationErrors((prev) => {
-                      const next = { ...prev };
-                      delete next.category_id;
-                      return next;
-                    });
-                  }
-                }}
-                required
-              >
-                <option value="">Chọn danh mục</option>
-                {categories
-                  .sort((a: ProductCategory, b: ProductCategory) => {
-                    const aOrder = a.parent_id ? 1000 + a.sort_order : a.sort_order;
-                    const bOrder = b.parent_id ? 1000 + b.sort_order : b.sort_order;
-                    return aOrder - bOrder;
-                  })
-                  .map((c: ProductCategory) => (
-                    <option key={c.id} value={c.id}>
-                      {c.parent_id ? `  └ ${c.name}` : c.name}
-                    </option>
-                  ))}
-              </select>
-              <FieldError field="category_id" />
-            </Field>
-          </div>
-
-          <Field label="Mô tả">
-            <Textarea
-              value={form.description || ""}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              rows={3}
-              placeholder="Mô tả chi tiết sản phẩm..."
-            />
-          </Field>
-        </div>
-
-        {/* ═══════ Section: Hình ảnh ═══════ */}
-        <div className="rounded-lg border p-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Hình ảnh
-          </p>
-          <ImageUploadField
-            label="Hình chính"
-            value={form.image_url ? [form.image_url] : []}
-            onChange={(urls) => setForm({ ...form, image_url: urls[0] || null })}
-            folder="products"
-            single
-          />
-          <ImageUploadField
-            label="Gallery (tối đa 6 ảnh)"
-            value={galleryUrls}
-            onChange={(urls) => setGalleryUrls(urls)}
-            folder="products"
-            maxImages={6}
-          />
-        </div>
-
-        {/* ═══════ Section: Thông số kỹ thuật ═══════ */}
-        <div className="rounded-lg border p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Thông số kỹ thuật
-            </p>
-            <button
-              type="button"
-              onClick={addSpec}
-              className="text-xs text-primary hover:underline"
-            >
-              + Thêm thông số
-            </button>
-          </div>
-          {specEntries.map(([key, val], idx) => (
-            <div key={idx} className="flex gap-2">
-              <Input
-                value={key}
-                onChange={(e) => updateSpec(idx, e.target.value, val)}
-                placeholder="Tên (VD: Resolution)"
-                className="flex-1"
-              />
-              <Input
-                value={val}
-                onChange={(e) => updateSpec(idx, key, e.target.value)}
-                placeholder="Giá trị (VD: 4MP)"
-                className="flex-1"
-              />
-              <button
-                type="button"
-                onClick={() => removeSpec(idx)}
-                className="text-xs text-destructive hover:underline px-2"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          {specEntries.length === 0 && (
-            <p className="text-xs text-muted-foreground italic">
-              Chưa có thông số. Nhấn "+ Thêm thông số" để bắt đầu.
-            </p>
-          )}
-        </div>
-
-        {/* ═══════ Section: Tính năng (Searchable Multi-select) ═══════ */}
-        <SearchableFeatureSelect
-          features={allFeatures}
-          selectedIds={selectedFeatureIds}
-          onChange={setSelectedFeatureIds}
-        />
-
-        {/* ═══════ Section: B2B Data ═══════ */}
-        <div className="rounded-lg border p-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Dữ liệu B2B
-          </p>
-          <Field label="Datasheet PDF (URL)">
-            <Input
-              value={form.spec_sheet_url || ""}
-              onChange={(e) => setForm({ ...form, spec_sheet_url: e.target.value || null })}
-              placeholder="https://... hoặc upload PDF rồi dán link"
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Tình trạng kho">
-              <select
-                className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-                value={form.inventory_status || "in-stock"}
-                onChange={(e) => setForm({ ...form, inventory_status: e.target.value })}
-              >
-                {INVENTORY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Bảo hành">
-              <Input
-                value={form.warranty || ""}
-                onChange={(e) => setForm({ ...form, warranty: e.target.value })}
-                placeholder="VD: 24 Tháng"
-              />
-            </Field>
-          </div>
-        </div>
-
-        {/* ═══════ Section: Sort / Status ═══════ */}
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Thứ tự">
-            <Input
-              type="number"
-              value={form.sort_order ?? 0}
-              onChange={(e) =>
-                setForm({ ...form, sort_order: Number(e.target.value) })
-              }
-            />
-          </Field>
-          <Field label="Trạng thái">
-            <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-              value={form.is_active ?? 1}
-              onChange={(e) =>
-                setForm({ ...form, is_active: Number(e.target.value) })
-              }
-            >
-              <option value={1}>Hoạt động</option>
-              <option value={0}>Ẩn</option>
-            </select>
-          </Field>
-        </div>
-
-        {/* ═══════ Section: SEO ═══════ */}
-        <div className="rounded-lg border p-4 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            SEO Metadata
-          </p>
-          <Field label="Meta Title">
-            <Input
-              value={form.meta_title || ""}
-              onChange={(e) => setForm({ ...form, meta_title: e.target.value || null })}
-              placeholder={form.name || "Sử dụng tên sản phẩm"}
-            />
-          </Field>
-          <Field label="Meta Description">
-            <Textarea
-              value={form.meta_description || ""}
-              onChange={(e) => setForm({ ...form, meta_description: e.target.value || null })}
-              rows={2}
-              placeholder={form.description || "Sử dụng mô tả"}
-            />
-          </Field>
-        </div>
-      </FormDialog>
+        onNameChange={handleNameChange}
+        specEntries={specEntries}
+        onSpecChange={updateSpec}
+        onSpecAdd={addSpec}
+        onSpecRemove={removeSpec}
+        galleryUrls={galleryUrls}
+        onGalleryChange={setGalleryUrls}
+        selectedFeatureIds={selectedFeatureIds}
+        onFeatureIdsChange={setSelectedFeatureIds}
+        allFeatures={allFeatures}
+        categories={categories}
+        brands={brands}
+        validationErrors={validationErrors}
+      />
 
       <ConfirmDelete
         open={!!deleteTarget}

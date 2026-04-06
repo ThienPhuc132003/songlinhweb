@@ -4,6 +4,16 @@ import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { logAudit } from "../lib/audit";
 
+/** Ensure a value is a valid JSON string, fallback to default */
+function safeJson(val: unknown, fallback: string): string {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') {
+    try { JSON.parse(val); return val; } catch { return fallback; }
+  }
+  // If it's an object/array, serialize it
+  try { return JSON.stringify(val); } catch { return fallback; }
+}
+
 const projects = new Hono<{ Bindings: Env }>();
 
 /** GET /api/projects — list projects, with optional category, industry filter */
@@ -124,6 +134,11 @@ projects.post("/", requireAuth, async (c) => {
     const body = await c.req.json<Partial<ProjectRow>>();
     if (!body.slug || !body.title) return err("slug and title are required", 400);
 
+    // Validate slug format
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(body.slug)) {
+      return err("Slug chỉ được chứa chữ thường, số và dấu gạch ngang", 400);
+    }
+
     // Check for duplicate slug
     const existing = await c.env.DB.prepare("SELECT id FROM projects WHERE slug = ?")
       .bind(body.slug)
@@ -140,25 +155,25 @@ projects.post("/", requireAuth, async (c) => {
         body.description ?? "",
         body.location ?? "",
         body.client_name ?? null,
-        body.thumbnail_url ?? null,
+        body.thumbnail_url || null,
         body.content_md ?? null,
         body.category ?? "",
         body.year ?? null,
         body.sort_order ?? 0,
         body.is_featured ?? 0,
-        body.system_types ?? "[]",
-        body.brands_used ?? "[]",
+        safeJson(body.system_types, "[]"),
+        safeJson(body.brands_used, "[]"),
         body.area_sqm ?? null,
         body.duration_months ?? null,
-        body.key_metrics ?? "{}",
-        body.compliance_standards ?? "[]",
+        safeJson(body.key_metrics, "{}"),
+        safeJson(body.compliance_standards, "[]"),
         body.client_industry ?? null,
         body.project_scale ?? null,
         body.meta_title ?? null,
         body.meta_description ?? null,
         body.completion_year ?? null,
-        body.related_solutions ?? "[]",
-        body.related_products ?? "[]",
+        safeJson(body.related_solutions, "[]"),
+        safeJson(body.related_products, "[]"),
         body.challenges ?? null,
         body.outcomes ?? null,
         body.testimonial_name ?? null,
@@ -182,8 +197,15 @@ projects.post("/", requireAuth, async (c) => {
     logAudit(c.env.DB, 'project', newId as number, 'create', { name: body.title, slug: body.slug });
     return ok({ id: newId });
   } catch (e) {
-    console.error("Project CREATE error:", e);
-    return err(`Lỗi tạo dự án: ${e instanceof Error ? e.message : "Unknown error"}`, 500);
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("Project CREATE error:", message);
+
+    // Parse D1 column errors
+    const colMatch = message.match(/has no column named (\w+)/);
+    if (colMatch) {
+      return err(`Cột "${colMatch[1]}" chưa tồn tại trong database. Vui lòng chạy migration 0020_project_schema_sync.sql.`, 500);
+    }
+    return err(`Lỗi tạo dự án: ${message}`, 500);
   }
 });
 
@@ -296,8 +318,15 @@ projects.put("/:id", requireAuth, async (c) => {
     logAudit(c.env.DB, 'project', id, 'update', body as Record<string, unknown>);
     return ok({ id });
   } catch (e) {
-    console.error("Project UPDATE error:", e);
-    return err(`Lỗi cập nhật dự án: ${e instanceof Error ? e.message : "Unknown error"}`, 500);
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("Project UPDATE error:", message);
+
+    // Parse D1 column errors
+    const colMatch = message.match(/has no column named (\w+)/);
+    if (colMatch) {
+      return err(`Cột "${colMatch[1]}" chưa tồn tại trong database. Vui lòng chạy migration 0020_project_schema_sync.sql.`, 500);
+    }
+    return err(`Lỗi cập nhật dự án: ${message}`, 500);
   }
 });
 

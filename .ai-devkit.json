@@ -8,11 +8,23 @@
     "monitoring"
   ],
   "createdAt": "2026-03-25T07:50:00.451Z",
-  "updatedAt": "2026-03-26T02:00:50.619Z",
+  "updatedAt": "2026-04-06T10:05:09.199Z",
   "skills": [
     {
       "registry": "codeaholicguy/ai-devkit",
       "name": "dev-lifecycle"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "debug"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "verify"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "simplify-implementation"
     }
   ]
 }

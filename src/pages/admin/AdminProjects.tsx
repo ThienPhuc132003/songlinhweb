@@ -53,7 +53,29 @@ export default function AdminProjects() {
       setFormOpen(false);
       toast.success(editId ? "Đã cập nhật dự án" : "Đã tạo dự án mới");
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      const msg = err.message || "";
+      // Parse D1 column errors for user-friendly messages
+      const colMatch = msg.match(/has no column named (\w+)/);
+      if (colMatch) {
+        toast.error(`Lỗi cơ sở dữ liệu`, {
+          description: `Cột "${colMatch[1]}" chưa tồn tại. Vui lòng chạy migration 0020 trước.`,
+          duration: 8000,
+        });
+      } else if (msg.includes("UNIQUE constraint") || msg.includes("đã tồn tại")) {
+        toast.error("Slug trùng lặp", {
+          description: msg,
+        });
+      } else if (msg.includes("slug and title are required")) {
+        toast.error("Thiếu thông tin bắt buộc", {
+          description: "Tiêu đề và Slug là bắt buộc.",
+        });
+      } else {
+        toast.error("Lỗi lưu dự án", {
+          description: msg.length > 200 ? msg.substring(0, 200) + "..." : msg,
+        });
+      }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -118,36 +140,37 @@ export default function AdminProjects() {
       | Array<{ image_url: string }>
       | undefined;
     setForm({
-      slug: row.slug,
-      title: row.title,
-      description: row.description,
-      location: row.location,
-      client_name: row.client_name,
-      thumbnail_url: row.thumbnail_url,
-      content_md: row.content_md,
-      category: row.category,
-      year: row.year,
-      completion_year: row.completion_year,
-      sort_order: row.sort_order,
-      is_featured: row.is_featured,
-      is_active: row.is_active,
-      system_types: row.system_types,
-      brands_used: row.brands_used,
-      area_sqm: row.area_sqm,
-      duration_months: row.duration_months,
-      key_metrics: row.key_metrics,
-      compliance_standards: row.compliance_standards,
-      client_industry: row.client_industry,
-      project_scale: row.project_scale,
-      meta_title: row.meta_title,
-      meta_description: row.meta_description,
-      related_solutions: row.related_solutions,
-      related_products: row.related_products,
-      challenges: row.challenges,
-      outcomes: row.outcomes,
-      testimonial_name: row.testimonial_name,
-      testimonial_content: row.testimonial_content,
-      video_url: row.video_url,
+      slug: row.slug || "",
+      title: row.title || "",
+      description: row.description || "",
+      location: row.location || "",
+      client_name: row.client_name || "",
+      thumbnail_url: row.thumbnail_url || null,
+      content_md: row.content_md || "",
+      category: row.category || "Công trình",
+      year: row.year ?? null,
+      completion_year: row.completion_year || null,
+      sort_order: row.sort_order ?? 0,
+      is_featured: row.is_featured ?? 0,
+      is_active: row.is_active ?? 1,
+      // Ensure JSON fields always have safe string defaults (never null/undefined)
+      system_types: row.system_types || "[]",
+      brands_used: row.brands_used || "[]",
+      area_sqm: row.area_sqm ?? null,
+      duration_months: row.duration_months ?? null,
+      key_metrics: row.key_metrics || "{}",
+      compliance_standards: row.compliance_standards || "[]",
+      client_industry: row.client_industry || null,
+      project_scale: row.project_scale || null,
+      meta_title: row.meta_title || null,
+      meta_description: row.meta_description || null,
+      related_solutions: row.related_solutions || "[]",
+      related_products: row.related_products || "[]",
+      challenges: row.challenges || null,
+      outcomes: row.outcomes || null,
+      testimonial_name: row.testimonial_name || null,
+      testimonial_content: row.testimonial_content || null,
+      video_url: row.video_url || null,
       gallery_urls: images?.map((img) => img.image_url) ?? [],
     });
     setFormOpen(true);
@@ -310,12 +333,15 @@ export default function AdminProjects() {
         columns={columns}
         isLoading={isLoading}
         searchField="title"
-        searchPlaceholder="Tìm theo tên dự án..."
+        searchFields={["title", "client_name", "location", "category"] as (keyof Project)[]}
+        searchPlaceholder="Tìm theo tên, khách hàng, địa điểm..."
         filterBar={filterBar}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         onEdit={openEdit}
         onDelete={setDeleteTarget}
+        emptyTitle="Chưa có dự án nào"
+        emptyDescription="Thêm dự án đầu tiên vào hệ thống để bắt đầu."
       />
 
       <ProjectFormSheet

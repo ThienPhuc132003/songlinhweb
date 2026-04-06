@@ -159,6 +159,8 @@ export interface GalleryAlbum {
   slug: string;
   title: string;
   cover_url: string | null;
+  description: string;
+  category: string; // 'du-an' | 'ky-thuat' | 'hoat-dong' | 'general'
   sort_order: number;
   is_active: number;
   image_count?: number;

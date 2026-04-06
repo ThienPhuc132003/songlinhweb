@@ -60,7 +60,16 @@ export default function AdminPosts() {
       setFormOpen(false);
       toast.success(editId ? "Đã cập nhật tin tức" : "Đã tạo tin tức mới");
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      const msg = err.message || "Unknown error";
+      if (msg.includes("thiếu cột") || msg.includes("has no column")) {
+        toast.error(`Lỗi Schema DB: ${msg}`, { duration: 8000 });
+      } else if (msg.includes("Trùng") || msg.includes("UNIQUE")) {
+        toast.error(`Slug đã tồn tại. Vui lòng chọn slug khác.`, { duration: 5000 });
+      } else {
+        toast.error(`Lỗi: ${msg}`);
+      }
+    },
   });
 
   const deleteMutation = useMutation({

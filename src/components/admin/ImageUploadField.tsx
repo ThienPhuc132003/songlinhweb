@@ -55,6 +55,7 @@ export function ImageUploadField({
     safeValue.map((url) => ({ url, isUploaded: true })),
   );
   const [isDragging, setIsDragging] = useState(false);
+  const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
 
   // ─── Fix: Sync images state when parent value changes (e.g., opening edit dialog) ───
   useEffect(() => {
@@ -209,23 +210,21 @@ export function ImageUploadField({
             key={img.url}
             className="group relative h-24 w-24 overflow-hidden rounded-lg border bg-muted"
           >
-            <img
-              src={img.url}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={(e) => {
-                // Show broken image placeholder
-                (e.target as HTMLImageElement).style.display = "none";
-                const parent = (e.target as HTMLImageElement).parentElement;
-                if (parent && !parent.querySelector(".img-error")) {
-                  const placeholder = document.createElement("div");
-                  placeholder.className =
-                    "img-error absolute inset-0 flex items-center justify-center text-xs text-muted-foreground";
-                  placeholder.textContent = "⚠️";
-                  parent.appendChild(placeholder);
-                }
-              }}
-            />
+            {brokenUrls.has(img.url) ? (
+              /* Broken image fallback — rendered in React, not DOM manipulation */
+              <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+                ⚠️
+              </div>
+            ) : (
+              <img
+                src={img.url}
+                alt=""
+                className="h-full w-full object-cover"
+                onError={() => {
+                  setBrokenUrls((prev) => new Set(prev).add(img.url));
+                }}
+              />
+            )}
 
             {/* Size reduction badge */}
             {img.originalSize && img.convertedSize && (
@@ -244,11 +243,15 @@ export function ImageUploadField({
               </div>
             )}
 
-            {/* Remove button */}
+            {/* Remove button — z-50 ensures it's always clickable above error overlays */}
             <button
               type="button"
-              onClick={() => removeImage(i)}
-              className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground group-hover:flex"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                removeImage(i);
+              }}
+              className="absolute right-1 top-1 z-50 hidden h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground group-hover:flex"
             >
               <X className="h-3 w-3" />
             </button>
