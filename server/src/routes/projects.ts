@@ -50,7 +50,18 @@ projects.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
     "SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC",
   ).all<ProjectRow>();
-  return ok(rows.results);
+
+  // Attach gallery images for each project
+  const data = await Promise.all(
+    rows.results.map(async (row) => {
+      const imgs = await c.env.DB.prepare(
+        "SELECT image_url FROM entity_images WHERE entity_type = 'project' AND entity_id = ? ORDER BY sort_order",
+      ).bind(row.id).all<{ image_url: string }>();
+      return { ...row, images: imgs.results };
+    }),
+  );
+
+  return ok(data);
 });
 
 /** GET /api/projects/:slug — get project detail with images + linked solutions/products */

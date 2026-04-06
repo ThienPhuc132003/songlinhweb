@@ -26,6 +26,8 @@ export function TagInput({
   maxTags = 10,
   label = "Tags",
 }: TagInputProps) {
+  // Defensive: ensure value is always an array
+  const safeValue: string[] = Array.isArray(value) ? value : (() => { try { return JSON.parse(value as unknown as string); } catch { return []; } })();
   const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,16 +36,16 @@ export function TagInput({
     (tag: string) => {
       const normalized = tag.trim().toLowerCase().replace(/\s+/g, "-");
       if (!normalized) return;
-      if (value.includes(normalized)) return;
-      if (value.length >= maxTags) return;
-      onChange([...value, normalized]);
+      if (safeValue.includes(normalized)) return;
+      if (safeValue.length >= maxTags) return;
+      onChange([...safeValue, normalized]);
       setInputValue("");
     },
-    [value, onChange, maxTags],
+    [safeValue, onChange, maxTags],
   );
 
   const removeTag = (tag: string) => {
-    onChange(value.filter((t) => t !== tag));
+    onChange(safeValue.filter((t) => t !== tag));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -51,8 +53,8 @@ export function TagInput({
       e.preventDefault();
       addTag(inputValue);
     }
-    if (e.key === "Backspace" && !inputValue && value.length > 0) {
-      removeTag(value[value.length - 1]);
+    if (e.key === "Backspace" && !inputValue && safeValue.length > 0) {
+      removeTag(safeValue[safeValue.length - 1]);
     }
     if (e.key === "Escape") {
       setShowSuggestions(false);
@@ -62,7 +64,7 @@ export function TagInput({
   const filteredSuggestions = suggestions
     .filter(
       (s) =>
-        s.includes(inputValue.toLowerCase()) && !value.includes(s),
+        s.includes(inputValue.toLowerCase()) && !safeValue.includes(s),
     )
     .slice(0, 8);
 
@@ -74,7 +76,7 @@ export function TagInput({
 
       {/* Tag pills */}
       <div className="flex flex-wrap items-center gap-1.5 rounded-md border bg-background p-1.5 min-h-[36px] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1">
-        {value.map((tag) => (
+        {safeValue.map((tag) => (
           <span
             key={tag}
             className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium"
@@ -100,9 +102,9 @@ export function TagInput({
           onKeyDown={handleKeyDown}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          placeholder={value.length === 0 ? placeholder : ""}
+          placeholder={safeValue.length === 0 ? placeholder : ""}
           className="flex-1 min-w-[100px] bg-transparent outline-none text-xs px-1 py-0.5"
-          disabled={value.length >= maxTags}
+          disabled={safeValue.length >= maxTags}
         />
       </div>
 
@@ -127,7 +129,7 @@ export function TagInput({
         </div>
       )}
 
-      {value.length >= maxTags && (
+      {safeValue.length >= maxTags && (
         <p className="text-[10px] text-muted-foreground">
           Đã đạt tối đa {maxTags} tags
         </p>

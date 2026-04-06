@@ -46,17 +46,19 @@ export function ImageUploadField({
   label = "Hình ảnh",
   className,
 }: ImageUploadFieldProps) {
+  // Defensive: ensure value is always an array
+  const safeValue: string[] = Array.isArray(value) ? value : [];
   const inputRef = useRef<HTMLInputElement>(null);
   const { convert, isConverting } = useWebPConverter();
   const [uploadingCount, setUploadingCount] = useState(0);
   const [images, setImages] = useState<UploadedImage[]>(() =>
-    value.map((url) => ({ url, isUploaded: true })),
+    safeValue.map((url) => ({ url, isUploaded: true })),
   );
   const [isDragging, setIsDragging] = useState(false);
 
   // ─── Fix: Sync images state when parent value changes (e.g., opening edit dialog) ───
   useEffect(() => {
-    const valueKey = value.join(",");
+    const valueKey = safeValue.join(",");
     const imagesKey = images
       .filter((img) => img.isUploaded)
       .map((img) => img.url)
@@ -64,10 +66,10 @@ export function ImageUploadField({
 
     // Only resync if the uploaded URLs don't match the incoming value
     if (valueKey !== imagesKey) {
-      setImages(value.map((url) => ({ url, isUploaded: true })));
+      setImages(safeValue.map((url) => ({ url, isUploaded: true })));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value.join(",")]);
+  }, [safeValue.join(",")]);
 
   const effectiveMax = single ? 1 : maxImages;
   const canAdd = images.length < effectiveMax && !isConverting && uploadingCount === 0;
@@ -119,7 +121,7 @@ export function ImageUploadField({
             if (single) {
               onChange([result.url]);
             } else {
-              onChange([...value, result.url]);
+              onChange([...safeValue, result.url]);
             }
           } finally {
             setUploadingCount((c) => c - 1);

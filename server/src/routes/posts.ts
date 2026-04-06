@@ -75,7 +75,11 @@ posts.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
     "SELECT * FROM posts ORDER BY is_featured DESC, published_at DESC, created_at DESC",
   ).all<PostRow>();
-  return ok(rows.results);
+  const data = rows.results.map((row) => ({
+    ...row,
+    tags: JSON.parse(row.tags || "[]") as string[],
+  }));
+  return ok(data);
 });
 
 /** GET /api/posts/:slug — get full post + increment view count */
