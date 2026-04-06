@@ -13,15 +13,20 @@ const METRIC_LABELS: Record<string, string> = {
   endpoints: "Điểm cuối",
   speakers: "Loa",
   controllers: "Bộ điều khiển",
+  nodes: "Nodes",
 };
 
 interface ProjectMetricsBarProps {
-  metrics: Record<string, number>;
+  metrics: Record<string, string | number>;
   areaSqm?: number | null;
   durationMonths?: number | null;
   className?: string;
 }
 
+/**
+ * PDF-style metrics bar with accent border and monospace values.
+ * Renders horizontally with subtle separators.
+ */
 export function ProjectMetricsBar({
   metrics,
   areaSqm,
@@ -38,7 +43,7 @@ export function ProjectMetricsBar({
   }
 
   for (const [key, val] of Object.entries(metrics)) {
-    if (val > 0) {
+    if (val && val !== 0) {
       items.push({ label: METRIC_LABELS[key] ?? key, value: val });
     }
   }
@@ -48,16 +53,25 @@ export function ProjectMetricsBar({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-4 rounded-xl border bg-muted/30 p-5 sm:grid-cols-3 md:grid-cols-4",
+        "relative overflow-hidden rounded-xl border-l-4 border-l-primary border bg-muted/20 px-6 py-5",
         className,
       )}
     >
-      {items.map((item, i) => (
-        <div key={i} className="text-center">
-          <div className="text-primary text-2xl font-bold">{item.value}</div>
-          <div className="text-muted-foreground mt-0.5 text-xs">{item.label}</div>
-        </div>
-      ))}
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+        Implementation Scale
+      </p>
+      <div className="flex flex-wrap gap-6 md:gap-8">
+        {items.map((item, i) => (
+          <div key={i} className="min-w-[80px]">
+            <div className="font-mono text-xl font-bold text-primary tabular-nums">
+              {item.value}
+            </div>
+            <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {item.label}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

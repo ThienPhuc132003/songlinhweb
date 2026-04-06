@@ -136,7 +136,6 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 ))}
               </div>
 
-              {/* Footer */}
               <div className="space-y-3 border-t pt-4">
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Tổng sản phẩm</span>
@@ -153,11 +152,21 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                   }}
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  Gửi yêu cầu báo giá
+                  Gửi yêu cầu nhanh
                 </Button>
+                <Link to="/gio-hang-bao-gia" onClick={() => onOpenChange(false)}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    size="sm"
+                  >
+                    <ShoppingCart className="mr-2 h-3.5 w-3.5" />
+                    Xem chi tiết giỏ hàng
+                  </Button>
+                </Link>
                 <Button
-                  variant="outline"
-                  className="w-full"
+                  variant="ghost"
+                  className="w-full text-red-500 hover:text-red-700"
                   size="sm"
                   onClick={clearCart}
                 >

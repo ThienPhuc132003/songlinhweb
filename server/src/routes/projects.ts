@@ -2,23 +2,29 @@ import { Hono } from "hono";
 import type { Env, ProjectRow } from "../types";
 import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
+import { logAudit } from "../lib/audit";
 
 const projects = new Hono<{ Bindings: Env }>();
 
-/** GET /api/projects — list projects, with optional category filter */
+/** GET /api/projects — list projects, with optional category, industry filter */
 projects.get("/", async (c) => {
   const url = new URL(c.req.url);
   const { page, limit } = parsePagination(url);
   const category = url.searchParams.get("category");
+  const industry = url.searchParams.get("industry");
   const featured = url.searchParams.get("featured");
   const offset = (page - 1) * limit;
 
-  let where = "WHERE is_active = 1";
+  let where = "WHERE is_active = 1 AND deleted_at IS NULL";
   const params: unknown[] = [];
 
   if (category) {
     where += " AND category = ?";
     params.push(category);
+  }
+  if (industry) {
+    where += " AND client_industry = ?";
+    params.push(industry);
   }
   if (featured === "true") {
     where += " AND is_featured = 1";
@@ -47,162 +53,282 @@ projects.get("/all", requireAuth, async (c) => {
   return ok(rows.results);
 });
 
-/** GET /api/projects/:slug — get project detail with images */
+/** GET /api/projects/:slug — get project detail with images + linked solutions/products */
 projects.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
   const row = await c.env.DB.prepare(
-    "SELECT * FROM projects WHERE slug = ? AND is_active = 1",
+    "SELECT * FROM projects WHERE slug = ? AND is_active = 1 AND deleted_at IS NULL",
   )
     .bind(slug)
     .first<ProjectRow>();
 
   if (!row) return err("Project not found", 404);
 
+  // Fetch gallery images
   const images = await c.env.DB.prepare(
     "SELECT * FROM entity_images WHERE entity_type = 'project' AND entity_id = ? ORDER BY sort_order",
   )
     .bind(row.id)
     .all();
 
-  return ok({ ...row, images: images.results });
+  // Resolve linked solutions from JSON array of IDs
+  let linked_solutions: Array<{ id: number; title: string; slug: string; icon: string }> = [];
+  try {
+    const solutionIds: number[] = JSON.parse(row.related_solutions || "[]");
+    if (solutionIds.length > 0) {
+      const placeholders = solutionIds.map(() => "?").join(",");
+      const solRows = await c.env.DB.prepare(
+        `SELECT id, title, slug, icon FROM solutions WHERE id IN (${placeholders}) AND is_active = 1`,
+      )
+        .bind(...solutionIds)
+        .all<{ id: number; title: string; slug: string; icon: string }>();
+      linked_solutions = solRows.results;
+    }
+  } catch { /* ignore parse errors */ }
+
+  // Resolve linked products from JSON array of IDs
+  let linked_products: Array<{ id: number; name: string; slug: string; image_url: string | null; category_name: string | null }> = [];
+  try {
+    const productIds: number[] = JSON.parse(row.related_products || "[]");
+    if (productIds.length > 0) {
+      const placeholders = productIds.map(() => "?").join(",");
+      const prodRows = await c.env.DB.prepare(
+        `SELECT p.id, p.name, p.slug, p.image_url, c.name as category_name
+         FROM products p
+         LEFT JOIN product_categories c ON p.category_id = c.id
+         WHERE p.id IN (${placeholders}) AND p.is_active = 1`,
+      )
+        .bind(...productIds)
+        .all<{ id: number; name: string; slug: string; image_url: string | null; category_name: string | null }>();
+      linked_products = prodRows.results;
+    }
+  } catch { /* ignore parse errors */ }
+
+  return ok({ ...row, images: images.results, linked_solutions, linked_products });
 });
 
 /** POST /api/admin/projects */
 projects.post("/", requireAuth, async (c) => {
-  const body = await c.req.json<Partial<ProjectRow>>();
-  if (!body.slug || !body.title) return err("slug and title are required");
+  try {
+    const body = await c.req.json<Partial<ProjectRow>>();
+    if (!body.slug || !body.title) return err("slug and title are required", 400);
 
-  const result = await c.env.DB.prepare(
-    `INSERT INTO projects (slug, title, description, location, client_name, thumbnail_url, content_md, category, year, sort_order, is_featured, is_active, system_types, brands_used, area_sqm, duration_months, key_metrics, compliance_standards, client_industry, project_scale)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
-      body.slug,
-      body.title,
-      body.description ?? "",
-      body.location ?? "",
-      body.client_name ?? null,
-      body.thumbnail_url ?? null,
-      body.content_md ?? null,
-      body.category ?? "",
-      body.year ?? null,
-      body.sort_order ?? 0,
-      body.is_featured ?? 0,
-      body.system_types ?? "[]",
-      body.brands_used ?? "[]",
-      body.area_sqm ?? null,
-      body.duration_months ?? null,
-      body.key_metrics ?? "{}",
-      body.compliance_standards ?? "[]",
-      body.client_industry ?? null,
-      body.project_scale ?? null,
+    // Check for duplicate slug
+    const existing = await c.env.DB.prepare("SELECT id FROM projects WHERE slug = ?")
+      .bind(body.slug)
+      .first();
+    if (existing) return err(`Slug "${body.slug}" đã tồn tại. Vui lòng chọn slug khác.`, 409);
+
+    const result = await c.env.DB.prepare(
+      `INSERT INTO projects (slug, title, description, location, client_name, thumbnail_url, content_md, category, year, sort_order, is_featured, is_active, system_types, brands_used, area_sqm, duration_months, key_metrics, compliance_standards, client_industry, project_scale, meta_title, meta_description, completion_year, related_solutions, related_products, challenges, outcomes, testimonial_name, testimonial_content, video_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run();
+      .bind(
+        body.slug,
+        body.title,
+        body.description ?? "",
+        body.location ?? "",
+        body.client_name ?? null,
+        body.thumbnail_url ?? null,
+        body.content_md ?? null,
+        body.category ?? "",
+        body.year ?? null,
+        body.sort_order ?? 0,
+        body.is_featured ?? 0,
+        body.system_types ?? "[]",
+        body.brands_used ?? "[]",
+        body.area_sqm ?? null,
+        body.duration_months ?? null,
+        body.key_metrics ?? "{}",
+        body.compliance_standards ?? "[]",
+        body.client_industry ?? null,
+        body.project_scale ?? null,
+        body.meta_title ?? null,
+        body.meta_description ?? null,
+        body.completion_year ?? null,
+        body.related_solutions ?? "[]",
+        body.related_products ?? "[]",
+        body.challenges ?? null,
+        body.outcomes ?? null,
+        body.testimonial_name ?? null,
+        body.testimonial_content ?? null,
+        body.video_url ?? null,
+      )
+      .run();
 
-  return ok({ id: result.meta.last_row_id });
+    const newId = result.meta.last_row_id;
+
+    // Sync gallery images if provided
+    const galleryUrls = (body as Record<string, unknown>).gallery_urls as string[] | undefined;
+    if (galleryUrls && Array.isArray(galleryUrls) && galleryUrls.length > 0) {
+      for (let i = 0; i < galleryUrls.length; i++) {
+        await c.env.DB.prepare(
+          "INSERT INTO entity_images (entity_type, entity_id, image_url, sort_order) VALUES ('project', ?, ?, ?)",
+        ).bind(newId, galleryUrls[i], i).run();
+      }
+    }
+
+    logAudit(c.env.DB, 'project', newId as number, 'create', { name: body.title, slug: body.slug });
+    return ok({ id: newId });
+  } catch (e) {
+    console.error("Project CREATE error:", e);
+    return err(`Lỗi tạo dự án: ${e instanceof Error ? e.message : "Unknown error"}`, 500);
+  }
 });
 
 /** PUT /api/admin/projects/:id */
 projects.put("/:id", requireAuth, async (c) => {
-  const id = Number(c.req.param("id"));
-  const body = await c.req.json<Partial<ProjectRow>>();
+  try {
+    const id = Number(c.req.param("id"));
+    if (!id || isNaN(id)) return err("ID dự án không hợp lệ", 400);
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
+    const body = await c.req.json<Partial<ProjectRow>>();
 
-  if (body.title !== undefined) {
-    sets.push("title = ?");
-    values.push(body.title);
-  }
-  if (body.slug !== undefined) {
-    sets.push("slug = ?");
-    values.push(body.slug);
-  }
-  if (body.description !== undefined) {
-    sets.push("description = ?");
-    values.push(body.description);
-  }
-  if (body.location !== undefined) {
-    sets.push("location = ?");
-    values.push(body.location);
-  }
-  if (body.client_name !== undefined) {
-    sets.push("client_name = ?");
-    values.push(body.client_name);
-  }
-  if (body.thumbnail_url !== undefined) {
-    sets.push("thumbnail_url = ?");
-    values.push(body.thumbnail_url);
-  }
-  if (body.category !== undefined) {
-    sets.push("category = ?");
-    values.push(body.category);
-  }
-  if (body.year !== undefined) {
-    sets.push("year = ?");
-    values.push(body.year);
-  }
-  if (body.sort_order !== undefined) {
-    sets.push("sort_order = ?");
-    values.push(body.sort_order);
-  }
-  if (body.is_featured !== undefined) {
-    sets.push("is_featured = ?");
-    values.push(body.is_featured);
-  }
-  if (body.is_active !== undefined) {
-    sets.push("is_active = ?");
-    values.push(body.is_active);
-  }
-  // Case study metadata fields
-  if (body.system_types !== undefined) {
-    sets.push("system_types = ?");
-    values.push(body.system_types);
-  }
-  if (body.brands_used !== undefined) {
-    sets.push("brands_used = ?");
-    values.push(body.brands_used);
-  }
-  if (body.area_sqm !== undefined) {
-    sets.push("area_sqm = ?");
-    values.push(body.area_sqm);
-  }
-  if (body.duration_months !== undefined) {
-    sets.push("duration_months = ?");
-    values.push(body.duration_months);
-  }
-  if (body.key_metrics !== undefined) {
-    sets.push("key_metrics = ?");
-    values.push(body.key_metrics);
-  }
-  if (body.compliance_standards !== undefined) {
-    sets.push("compliance_standards = ?");
-    values.push(body.compliance_standards);
-  }
-  if (body.client_industry !== undefined) {
-    sets.push("client_industry = ?");
-    values.push(body.client_industry);
-  }
-  if (body.project_scale !== undefined) {
-    sets.push("project_scale = ?");
-    values.push(body.project_scale);
-  }
+    // Check project exists
+    const existing = await c.env.DB.prepare("SELECT id FROM projects WHERE id = ?")
+      .bind(id)
+      .first();
+    if (!existing) return err("Dự án không tồn tại", 404);
 
-  if (sets.length === 0) return err("No fields to update");
-  values.push(id);
+    // Check duplicate slug if slug is being changed
+    if (body.slug) {
+      const slugCheck = await c.env.DB.prepare("SELECT id FROM projects WHERE slug = ? AND id != ?")
+        .bind(body.slug, id)
+        .first();
+      if (slugCheck) return err(`Slug "${body.slug}" đã được sử dụng.`, 409);
+    }
 
-  await c.env.DB.prepare(`UPDATE projects SET ${sets.join(", ")} WHERE id = ?`)
-    .bind(...values)
-    .run();
+    const sets: string[] = [];
+    const values: unknown[] = [];
 
-  return ok({ id });
+    const fields: Array<[keyof ProjectRow, string]> = [
+      ["title", "title"],
+      ["slug", "slug"],
+      ["description", "description"],
+      ["location", "location"],
+      ["client_name", "client_name"],
+      ["thumbnail_url", "thumbnail_url"],
+      ["content_md", "content_md"],
+      ["category", "category"],
+      ["year", "year"],
+      ["sort_order", "sort_order"],
+      ["is_featured", "is_featured"],
+      ["is_active", "is_active"],
+      ["system_types", "system_types"],
+      ["brands_used", "brands_used"],
+      ["area_sqm", "area_sqm"],
+      ["duration_months", "duration_months"],
+      ["key_metrics", "key_metrics"],
+      ["compliance_standards", "compliance_standards"],
+      ["client_industry", "client_industry"],
+      ["project_scale", "project_scale"],
+      ["meta_title", "meta_title"],
+      ["meta_description", "meta_description"],
+      ["completion_year", "completion_year"],
+      ["related_solutions", "related_solutions"],
+      ["related_products", "related_products"],
+      ["challenges", "challenges"],
+      ["outcomes", "outcomes"],
+      ["testimonial_name", "testimonial_name"],
+      ["testimonial_content", "testimonial_content"],
+      ["video_url", "video_url"],
+    ];
+
+    for (const [key, col] of fields) {
+      if ((body as Record<string, unknown>)[key] !== undefined) {
+        sets.push(`${col} = ?`);
+        values.push((body as Record<string, unknown>)[key]);
+      }
+    }
+
+    if (sets.length === 0 && !(body as Record<string, unknown>).gallery_urls) {
+      return err("Không có trường nào để cập nhật", 400);
+    }
+
+    if (sets.length > 0) {
+      values.push(id);
+      await c.env.DB.prepare(`UPDATE projects SET ${sets.join(", ")} WHERE id = ?`)
+        .bind(...values)
+        .run();
+    }
+
+    // Sync gallery images if provided
+    const galleryUrls = (body as Record<string, unknown>).gallery_urls as string[] | undefined;
+    if (galleryUrls !== undefined) {
+      // Delete existing gallery images
+      await c.env.DB.prepare(
+        "DELETE FROM entity_images WHERE entity_type = 'project' AND entity_id = ?",
+      ).bind(id).run();
+      // Insert new ones
+      if (Array.isArray(galleryUrls)) {
+        for (let i = 0; i < galleryUrls.length; i++) {
+          await c.env.DB.prepare(
+            "INSERT INTO entity_images (entity_type, entity_id, image_url, sort_order) VALUES ('project', ?, ?, ?)",
+          ).bind(id, galleryUrls[i], i).run();
+        }
+      }
+    }
+
+    // Sync project_products junction table if related_products changed
+    if (body.related_products !== undefined) {
+      try {
+        const productIds: number[] = JSON.parse(body.related_products || "[]");
+        await c.env.DB.prepare("DELETE FROM project_products WHERE project_id = ?").bind(id).run();
+        for (const pid of productIds) {
+          await c.env.DB.prepare(
+            "INSERT OR IGNORE INTO project_products (project_id, product_id) VALUES (?, ?)",
+          ).bind(id, pid).run();
+        }
+      } catch { /* ignore parse errors */ }
+    }
+
+    logAudit(c.env.DB, 'project', id, 'update', body as Record<string, unknown>);
+    return ok({ id });
+  } catch (e) {
+    console.error("Project UPDATE error:", e);
+    return err(`Lỗi cập nhật dự án: ${e instanceof Error ? e.message : "Unknown error"}`, 500);
+  }
 });
 
-/** DELETE /api/admin/projects/:id */
+/** DELETE /api/admin/projects/:id — Soft delete */
 projects.delete("/:id", requireAuth, async (c) => {
+  try {
+    const id = Number(c.req.param("id"));
+    if (!id || isNaN(id)) return err("ID dự án không hợp lệ", 400);
+
+    const existing = await c.env.DB.prepare("SELECT id, title FROM projects WHERE id = ?")
+      .bind(id)
+      .first<{ id: number; title: string }>();
+    if (!existing) return err("Dự án không tồn tại", 404);
+
+    // Soft delete
+    await c.env.DB.prepare("UPDATE projects SET deleted_at = datetime('now') WHERE id = ?")
+      .bind(id)
+      .run();
+    logAudit(c.env.DB, 'project', id, 'delete', { name: existing.title });
+    return ok({ deleted: true, name: existing.title });
+  } catch (e) {
+    console.error("Project DELETE error:", e);
+    return err(`Lỗi xóa dự án: ${e instanceof Error ? e.message : "Unknown error"}`, 500);
+  }
+});
+
+/** POST /api/admin/projects/:id/restore — Restore soft-deleted project */
+projects.post("/:id/restore", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
-  await c.env.DB.prepare("DELETE FROM projects WHERE id = ?").bind(id).run();
-  return ok({ deleted: true });
+  if (!id || isNaN(id)) return err("ID không hợp lệ", 400);
+
+  const existing = await c.env.DB.prepare("SELECT id, title, deleted_at FROM projects WHERE id = ?")
+    .bind(id)
+    .first<{ id: number; title: string; deleted_at: string | null }>();
+  if (!existing) return err("Dự án không tồn tại", 404);
+  if (!existing.deleted_at) return err("Dự án chưa bị xóa", 400);
+
+  await c.env.DB.prepare("UPDATE projects SET deleted_at = NULL WHERE id = ?")
+    .bind(id)
+    .run();
+  logAudit(c.env.DB, 'project', id, 'restore', { name: existing.title });
+  return ok({ restored: true, name: existing.title });
 });
 
 export default projects;

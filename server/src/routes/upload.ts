@@ -44,15 +44,22 @@ upload.post("/", requireAuth, async (c) => {
     },
   });
 
-  // Return the public URL (assumes R2 custom domain or public bucket)
-  const url = `/images/${key}`;
+  // Return the URL via our image-serving route (works on any environment)
+  const origin = new URL(c.req.url).origin;
+  const url = `${origin}/api/images/${key}`;
 
   return ok({ key, url, size: file.size, type: file.type });
 });
 
 /** DELETE /api/admin/upload/:key — delete image from R2 */
 upload.delete("/*", requireAuth, async (c) => {
-  const key = c.req.path.replace("/", ""); // everything after /api/admin/upload/
+  let key = c.req.param("*");
+  if (!key) {
+    const url = new URL(c.req.url);
+    const match = url.pathname.match(/\/api\/admin\/upload\/(.+)/);
+    key = match?.[1] ?? "";
+  }
+  if (!key) return err("No file key provided");
   await c.env.IMAGES.delete(key);
   return ok({ deleted: true });
 });

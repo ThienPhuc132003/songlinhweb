@@ -18,6 +18,7 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const QuoteCart = lazy(() => import("./pages/QuoteCart"));
 
 // Admin pages
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -31,6 +32,8 @@ const AdminGallery = lazy(() => import("./pages/admin/AdminGallery"));
 const AdminPartners = lazy(() => import("./pages/admin/AdminPartners"));
 const AdminContacts = lazy(() => import("./pages/admin/AdminContacts"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminFeatures = lazy(() => import("./pages/admin/AdminFeatures"));
+const AdminQuotations = lazy(() => import("./pages/admin/AdminQuotations"));
 
 // Admin layout wrapper
 import AdminLayout from "./components/admin/AdminLayout";
@@ -133,6 +136,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <Gallery />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: "gio-hang-bao-gia",
+        element: (
+          <SuspenseWrapper>
+            <QuoteCart />
           </SuspenseWrapper>
         ),
       },
@@ -251,6 +262,22 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <AdminSettings />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: "features",
+        element: (
+          <SuspenseWrapper>
+            <AdminFeatures />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: "quotations",
+        element: (
+          <SuspenseWrapper>
+            <AdminQuotations />
           </SuspenseWrapper>
         ),
       },

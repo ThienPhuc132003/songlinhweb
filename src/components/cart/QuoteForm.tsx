@@ -14,11 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { api } from "@/lib/api";
-import {
-  sendQuoteEmail,
-  isHoneypotTriggered,
-  EmailRateLimitError,
-} from "@/lib/email";
+import { isHoneypotTriggered } from "@/lib/email";
 import type { QuoteFormData } from "@/types";
 
 interface QuoteFormProps {
@@ -31,6 +27,7 @@ const initialForm: QuoteFormData = {
   customer_name: "",
   phone: "",
   email: "",
+  project_name: "",
   notes: "",
 };
 
@@ -73,28 +70,12 @@ export function QuoteForm({ open, onOpenChange }: QuoteFormProps) {
         items: items.map((item) => ({
           product_id: item.productId,
           product_name: item.name,
+          product_image: item.imageUrl ?? null,
+          category_name: item.categoryName ?? null,
           quantity: item.quantity,
+          notes: item.notes ?? null,
         })),
       });
-
-      // 2. Send email notification via EmailJS (best-effort)
-      const itemsSummary = items
-        .map((item) => `• ${item.name} — SL: ${item.quantity}`)
-        .join("\n");
-      try {
-        await sendQuoteEmail({
-          company_name: form.company_name,
-          contact_person: form.customer_name,
-          email: form.email,
-          phone: form.phone,
-          note: form.notes,
-          items_summary: itemsSummary,
-          item_count: items.length,
-        });
-      } catch {
-        // Email failed but quote is saved — not critical
-        console.warn("EmailJS notification failed, quote is saved in DB.");
-      }
 
       toast.success("Yêu cầu báo giá đã được gửi thành công!", {
         description: "Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.",
@@ -104,15 +85,9 @@ export function QuoteForm({ open, onOpenChange }: QuoteFormProps) {
       onOpenChange(false);
     } catch (err) {
       console.error("Quote submit error:", err);
-      if (err instanceof EmailRateLimitError) {
-        toast.error("Gửi quá nhiều yêu cầu", {
-          description: err.message,
-        });
-      } else {
-        toast.error("Gửi yêu cầu thất bại", {
-          description: "Vui lòng thử lại hoặc liên hệ trực tiếp qua hotline.",
-        });
-      }
+      toast.error("Gửi yêu cầu thất bại", {
+        description: "Vui lòng thử lại hoặc liên hệ trực tiếp qua hotline.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -157,6 +132,19 @@ export function QuoteForm({ open, onOpenChange }: QuoteFormProps) {
               {errors.company_name && (
                 <p className="text-destructive text-xs">{errors.company_name}</p>
               )}
+            </div>
+
+            {/* Project Name */}
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="project_name">
+                Tên dự án
+              </Label>
+              <Input
+                id="project_name"
+                placeholder="VD: Tòa nhà XYZ - Phase 2"
+                value={form.project_name}
+                onChange={(e) => update("project_name", e.target.value)}
+              />
             </div>
 
             {/* Contact person */}

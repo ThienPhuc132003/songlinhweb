@@ -1,12 +1,14 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useWebPConverter } from "@/hooks/useWebPConverter";
 import { adminApi } from "@/lib/admin-api";
 import { cn } from "@/lib/utils";
-import { ImagePlus, X, Loader2 } from "lucide-react";
+import { ImagePlus, X, Loader2, Upload } from "lucide-react";
 
 interface UploadedImage {
   /** URL from R2 or local preview */
   url: string;
+  /** R2 key for cleanup */
+  key?: string;
   /** Whether this image is already uploaded to R2 */
   isUploaded: boolean;
   /** Original size before conversion */
@@ -33,7 +35,7 @@ interface ImageUploadFieldProps {
 
 /**
  * Multi-image upload component with automatic WebP conversion.
- * Shows preview, size reduction badge, and upload progress.
+ * Shows preview, size reduction badge, upload progress, and drag-and-drop.
  */
 export function ImageUploadField({
   value,
@@ -50,13 +52,29 @@ export function ImageUploadField({
   const [images, setImages] = useState<UploadedImage[]>(() =>
     value.map((url) => ({ url, isUploaded: true })),
   );
+  const [isDragging, setIsDragging] = useState(false);
+
+  // ─── Fix: Sync images state when parent value changes (e.g., opening edit dialog) ───
+  useEffect(() => {
+    const valueKey = value.join(",");
+    const imagesKey = images
+      .filter((img) => img.isUploaded)
+      .map((img) => img.url)
+      .join(",");
+
+    // Only resync if the uploaded URLs don't match the incoming value
+    if (valueKey !== imagesKey) {
+      setImages(value.map((url) => ({ url, isUploaded: true })));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value.join(",")]);
 
   const effectiveMax = single ? 1 : maxImages;
   const canAdd = images.length < effectiveMax && !isConverting && uploadingCount === 0;
 
-  const handleFileSelect = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files || []);
+  // ─── Process files (shared between click upload and drag-and-drop) ───
+  const processFiles = useCallback(
+    async (files: File[]) => {
       if (files.length === 0) return;
 
       const filesToProcess = files.slice(0, effectiveMax - images.length);
@@ -92,7 +110,7 @@ export function ImageUploadField({
             setImages((prev) =>
               prev.map((img) =>
                 img.url === previewUrl
-                  ? { ...img, url: result.url, isUploaded: true }
+                  ? { ...img, url: result.url, key: result.key, isUploaded: true }
                   : img,
               ),
             );
@@ -110,18 +128,60 @@ export function ImageUploadField({
           console.error("Image upload failed:", err);
         }
       }
-
-      // Reset input
-      if (inputRef.current) inputRef.current.value = "";
     },
     [convert, effectiveMax, folder, images.length, onChange, single, value],
   );
 
+  const handleFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      await processFiles(files);
+      // Reset input
+      if (inputRef.current) inputRef.current.value = "";
+    },
+    [processFiles],
+  );
+
+  // ─── Drag and Drop handlers ───
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+
+      const files = Array.from(e.dataTransfer.files).filter((f) =>
+        f.type.startsWith("image/"),
+      );
+      await processFiles(files);
+    },
+    [processFiles],
+  );
+
   const removeImage = useCallback(
     (index: number) => {
+      const removed = images[index];
       const newImages = images.filter((_, i) => i !== index);
       setImages(newImages);
       onChange(newImages.filter((img) => img.isUploaded).map((img) => img.url));
+
+      // Cleanup: delete from R2 if we have the key
+      if (removed?.key && removed.isUploaded) {
+        adminApi.deleteUpload(removed.key).catch((err) => {
+          console.warn("R2 cleanup failed (non-blocking):", err);
+        });
+      }
     },
     [images, onChange],
   );
@@ -133,7 +193,12 @@ export function ImageUploadField({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div
+      className={cn("space-y-2", className)}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <label className="text-sm font-medium">{label}</label>
 
       <div className="flex flex-wrap gap-3">
@@ -146,6 +211,18 @@ export function ImageUploadField({
               src={img.url}
               alt=""
               className="h-full w-full object-cover"
+              onError={(e) => {
+                // Show broken image placeholder
+                (e.target as HTMLImageElement).style.display = "none";
+                const parent = (e.target as HTMLImageElement).parentElement;
+                if (parent && !parent.querySelector(".img-error")) {
+                  const placeholder = document.createElement("div");
+                  placeholder.className =
+                    "img-error absolute inset-0 flex items-center justify-center text-xs text-muted-foreground";
+                  placeholder.textContent = "⚠️";
+                  parent.appendChild(placeholder);
+                }
+              }}
             />
 
             {/* Size reduction badge */}
@@ -176,18 +253,42 @@ export function ImageUploadField({
           </div>
         ))}
 
-        {/* Add button */}
+        {/* Add button / Drop zone */}
         {canAdd && (
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-muted-foreground/25 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className={cn(
+              "flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground transition-colors",
+              isDragging
+                ? "border-primary bg-primary/5 text-primary"
+                : "border-muted-foreground/25 hover:border-primary hover:text-primary",
+            )}
           >
-            <ImagePlus className="h-5 w-5" />
-            <span className="text-[10px]">Thêm ảnh</span>
+            {isDragging ? (
+              <>
+                <Upload className="h-5 w-5" />
+                <span className="text-[10px]">Thả ảnh</span>
+              </>
+            ) : (
+              <>
+                <ImagePlus className="h-5 w-5" />
+                <span className="text-[10px]">Thêm ảnh</span>
+              </>
+            )}
           </button>
         )}
       </div>
+
+      {/* Drag overlay for empty state */}
+      {isDragging && images.length === 0 && (
+        <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-primary/5 p-6">
+          <div className="text-center">
+            <Upload className="mx-auto h-8 w-8 text-primary" />
+            <p className="mt-1 text-sm font-medium text-primary">Thả ảnh vào đây</p>
+          </div>
+        </div>
+      )}
 
       {/* Converting indicator */}
       {isConverting && (

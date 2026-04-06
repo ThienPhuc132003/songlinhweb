@@ -1,11 +1,12 @@
 import { Link } from "react-router";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, ArrowRight, Building2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { FEATURED_PROJECTS, SITE } from "@/lib/constants";
 import { useProjects } from "@/hooks/useApi";
 import { Button } from "@/components/ui/button";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { cn } from "@/lib/utils";
 
 function ProjectCard({
@@ -24,38 +25,40 @@ function ProjectCard({
   return (
     <Link
       to={`/du-an/${slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
     >
-      {/* Fixed aspect ratio image area */}
-      <div className="bg-muted relative aspect-4/3 shrink-0 overflow-hidden">
+      {/* Image — consistent aspect-video */}
+      <div className="relative shrink-0 overflow-hidden">
         {imgError ? (
-          <div className="flex h-full w-full flex-col items-end justify-end bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary)]/80 to-slate-800 p-5">
-            <span className="mb-1 inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white/80 backdrop-blur-sm">
-              {category}
-            </span>
-            <span className="line-clamp-2 text-right text-sm font-semibold leading-snug text-white drop-shadow-md">
-              {title}
-            </span>
-          </div>
+          <ImagePlaceholder
+            className="aspect-video"
+            variant="project"
+            title={title}
+          />
         ) : (
           <img
             src={image}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
             onError={() => setImgError(true)}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </div>
-      {/* Fixed height content area */}
-      <div className="flex flex-1 flex-col justify-center p-4">
+      {/* Info */}
+      <div className="flex flex-1 flex-col p-5">
         <span className="text-primary mb-1 block text-xs font-medium">
           {category}
         </span>
-        <h3 className="group-hover:text-primary line-clamp-2 text-sm font-semibold leading-snug transition-colors duration-150">
+        <h3 className="group-hover:text-primary line-clamp-2 text-sm font-semibold leading-snug transition-colors">
           {title}
         </h3>
+        {/* CTA — pinned to bottom */}
+        <span className="mt-auto inline-flex items-center pt-3 text-xs font-medium text-primary transition-colors group-hover:text-primary/80">
+          Xem chi tiết
+          <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+        </span>
       </div>
     </Link>
   );

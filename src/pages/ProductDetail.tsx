@@ -4,20 +4,26 @@ import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { useProduct } from "@/hooks/useApi";
-import { SAMPLE_PRODUCTS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   ArrowRight,
+  CheckCircle2,
+  Clock,
   Download,
   FileText,
+  GitCompareArrows,
   Mail,
+  MapPin,
   Package,
   Phone,
-  Tag,
+  Shield,
 } from "lucide-react";
+import { FeatureBadge } from "@/components/ui/FeatureBadge";
+import { useCompare } from "@/contexts/CompareContext";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 
 /** Safely parse JSON string or return array directly */
 function safeJson<T>(value: string | T | null | undefined, fallback: T): T {
@@ -32,83 +38,72 @@ function safeJson<T>(value: string | T | null | undefined, fallback: T): T {
   return value as T;
 }
 
-/** Sample specifications for demo */
-const SAMPLE_SPECS: Record<string, Record<string, string>> = {
-  "hikvision-ds-2cd2143g2-i": {
-    "Độ phân giải": "4MP (2688 × 1520)",
-    "Cảm biến": "1/3\" Progressive Scan CMOS",
-    "Ống kính": "2.8mm / 4mm / 6mm",
-    "Tầm xa hồng ngoại": "30m (EXIR 2.0)",
-    "Chuẩn nén": "H.265+ / H.265 / H.264+ / H.264",
-    "WDR": "120dB True WDR",
-    "Công nghệ AI": "AcuSense (Phân biệt người/xe)",
-    "Cấp bảo vệ": "IP67 / IK10",
-    "Nguồn": "PoE (802.3af) / 12V DC",
-    "Nhiệt độ hoạt động": "-30°C ~ 60°C",
+/** Inventory status display config */
+const INVENTORY_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; className: string }> = {
+  "in-stock": {
+    label: "Còn hàng",
+    icon: CheckCircle2,
+    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   },
-  "honeywell-tc810m1109": {
-    "Loại": "Đầu báo khói quang",
-    "Giao thức": "Addressable CLIP",
-    "Điện áp": "15-32V DC",
-    "Dòng hoạt động": "300μA",
-    "Nhiệt độ": "0°C ~ 49°C",
-    "Chứng nhận": "EN 54-7, UL Listed",
-    "LED": "360° hiển thị",
-    "Kích thước": "Ø102mm × 48mm",
+  "pre-order": {
+    label: "Đặt trước",
+    icon: Clock,
+    className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   },
-  "zkteco-inbio-260": {
-    "Số cửa": "2 cửa",
-    "Dung lượng vân tay": "20,000",
-    "Dung lượng thẻ": "60,000",
-    "Sự kiện": "100,000 bản ghi",
-    "Kết nối": "TCP/IP, RS485",
-    "Đầu đọc": "Wiegand 26/34 bit",
-    "Tính năng": "Anti-Passback, Inter-lock, Multi-card",
-    "Nguồn": "12V DC",
+  "contact": {
+    label: "Liên hệ",
+    icon: Phone,
+    className: "bg-slate-500/10 text-slate-600 border-slate-500/20",
   },
 };
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: apiProduct, isLoading } = useProduct(slug ?? "");
+  const { data: product, isLoading } = useProduct(slug ?? "");
   const [imgError, setImgError] = useState(false);
   const [mainImage, setMainImage] = useState<string | null>(null);
 
-  // Fallback to SAMPLE_PRODUCTS when API returns null
-  const sampleProduct = !apiProduct && slug
-    ? SAMPLE_PRODUCTS.find((p) => p.slug === slug)
-    : null;
-  const product = apiProduct ?? (sampleProduct ? {
-    ...sampleProduct,
-    id: 0,
-    category_id: 0,
-    image_url: null as string | null,
-    spec_sheet_url: null as string | null,
-    specifications: JSON.stringify(SAMPLE_SPECS[sampleProduct.slug] ?? {}),
-    features: JSON.stringify(sampleProduct.features),
-    is_active: 1,
-    sort_order: 0,
-    meta_title: null as string | null,
-    meta_description: null as string | null,
-    created_at: "",
-    updated_at: "",
-    category: { id: 0, slug: sampleProduct.category_slug, name: sampleProduct.category_name, description: "", image_url: null, sort_order: 0, is_active: 1 },
-  } : null);
-
   const specs = safeJson<Record<string, string>>(product?.specifications, {});
-  const features = safeJson<string[]>(product?.features, []);
+  const galleryUrls = safeJson<string[]>(product?.gallery_urls, []);
   const brand = product?.brand || "";
   const modelNumber = product?.model_number || "";
   const metaTitle = product?.meta_title || "";
   const metaDesc = product?.meta_description || "";
   const brandName = product?.brand_name;
   const brandLogo = product?.brand_logo;
-  const relatedProducts = (product?.related ?? []) as Array<{ slug: string; name: string; image_url: string | null; brand: string; model_number: string; category_name: string }>;
+  const warranty = product?.warranty || "";
+  const inventoryStatus = product?.inventory_status || "contact";
+  const inventoryInfo = INVENTORY_CONFIG[inventoryStatus] || INVENTORY_CONFIG["contact"];
+  const InventoryIcon = inventoryInfo.icon;
 
-  // Related from sample data
-  const sampleRelated = sampleProduct && !relatedProducts.length
-    ? SAMPLE_PRODUCTS.filter((p) => p.category_slug === sampleProduct.category_slug && p.slug !== sampleProduct.slug).slice(0, 4)
-    : [];
+  const relatedProducts = ((product as unknown as Record<string, unknown>)?.related ?? []) as Array<{
+    slug: string;
+    name: string;
+    image_url: string | null;
+    brand: string;
+    model_number: string;
+    category_name: string;
+  }>;
+
+  const linkedProjects = ((product as unknown as Record<string, unknown>)?.linked_projects ?? []) as Array<{
+    slug: string;
+    title: string;
+    thumbnail_url: string | null;
+    client_name: string | null;
+    location: string;
+  }>;
+
+  const { add, remove, isInCompare, isFull } = useCompare();
+  const inCompare = product ? isInCompare(product.id) : false;
+
+  // Combine entity_images and gallery_urls for the thumbnail gallery
+  const entityImages = (product as unknown as Record<string, unknown>)?.images as
+    | Array<{ id: number; image_url: string; caption: string | null }>
+    | undefined;
+  const allGalleryImages = [
+    ...galleryUrls.map((url, i) => ({ id: `g-${i}`, url })),
+    ...(entityImages || []).map((img) => ({ id: `e-${img.id}`, url: img.image_url })),
+  ];
 
   const specEntries = Object.entries(specs);
   const displayImage = mainImage || product?.image_url;
@@ -188,7 +183,14 @@ export default function ProductDetail() {
                   href: `/san-pham?category=${product.category.slug}`,
                 },
               ]
-            : []),
+            : product.category_name
+              ? [
+                  {
+                    label: product.category_name,
+                    href: `/san-pham?category=${product.category_slug}`,
+                  },
+                ]
+              : []),
           { label: product.name },
         ]}
         compact
@@ -223,7 +225,7 @@ export default function ProductDetail() {
                 )}
               </div>
               {/* Thumbnail gallery */}
-              {product.images && product.images.length > 0 && (
+              {(allGalleryImages.length > 0 || product.image_url) && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {product.image_url && (
                     <button
@@ -242,20 +244,20 @@ export default function ProductDetail() {
                       />
                     </button>
                   )}
-                  {product.images.map((img) => (
+                  {allGalleryImages.map((img) => (
                     <button
                       key={img.id}
                       type="button"
-                      onClick={() => setMainImage(img.image_url)}
+                      onClick={() => setMainImage(img.url)}
                       className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                        displayImage === img.image_url
+                        displayImage === img.url
                           ? "border-primary"
                           : "border-transparent hover:border-primary/50"
                       }`}
                     >
                       <img
-                        src={img.image_url}
-                        alt={img.caption ?? product.name}
+                        src={img.url}
+                        alt={product.name}
                         className="h-full w-full object-cover"
                       />
                     </button>
@@ -266,10 +268,12 @@ export default function ProductDetail() {
 
             {/* Product info */}
             <div className="space-y-5">
-              {/* Brand + Category badges */}
+              {/* Brand + Category + Inventory badges */}
               <div className="flex flex-wrap items-center gap-2">
-                {product.category && (
-                  <Badge variant="secondary">{product.category.name}</Badge>
+                {(product.category || product.category_name) && (
+                  <Badge variant="secondary">
+                    {product.category?.name || product.category_name}
+                  </Badge>
                 )}
                 {(brandName || brand) && (
                   <Badge
@@ -286,6 +290,13 @@ export default function ProductDetail() {
                     {brandName || brand}
                   </Badge>
                 )}
+                {/* Inventory Status Badge */}
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${inventoryInfo.className}`}
+                >
+                  <InventoryIcon className="h-3 w-3" />
+                  {inventoryInfo.label}
+                </span>
               </div>
 
               <h1 className="text-2xl font-bold md:text-3xl">{product.name}</h1>
@@ -303,18 +314,29 @@ export default function ProductDetail() {
                 {product.description}
               </p>
 
-              {/* Features badges */}
-              {features.length > 0 && (
+              {/* Features badges — from product_features relation */}
+              {product.product_features && product.product_features.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {features.map((f, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-                    >
-                      <Tag className="h-3 w-3" />
-                      {f}
-                    </span>
-                  ))}
+                  {product.product_features
+                    .sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0))
+                    .map((f) => (
+                      <FeatureBadge
+                        key={f.id}
+                        name={f.name}
+                        color={f.color}
+                        icon={f.icon}
+                        size="md"
+                      />
+                    ))}
+                </div>
+              )}
+
+              {/* Warranty */}
+              {warranty && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Shield className="h-4 w-4 text-emerald-500" />
+                  <span className="text-muted-foreground">Bảo hành:</span>
+                  <span className="font-semibold">{warranty}</span>
                 </div>
               )}
 
@@ -324,19 +346,42 @@ export default function ProductDetail() {
                   Liên hệ để nhận báo giá tốt nhất
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <Button size="lg" asChild>
-                    <Link
-                      to={`/lien-he?product=${encodeURIComponent(product.name)}${modelNumber ? `&model=${encodeURIComponent(modelNumber)}` : ""}`}
-                    >
-                      <Mail className="mr-2 h-4 w-4" />
-                      Yêu cầu báo giá
-                    </Link>
-                  </Button>
+                  <AddToCartButton
+                    product={{
+                      id: product.id,
+                      slug: product.slug,
+                      name: product.name,
+                      image_url: product.image_url,
+                      category: product.category ?? (product.category_name ? { name: product.category_name } : null),
+                    }}
+                    size="lg"
+                  />
                   <Button variant="outline" size="lg" asChild>
                     <a href="tel:+84899194868">
                       <Phone className="mr-2 h-4 w-4" />
                       Hotline
                     </a>
+                  </Button>
+                  <Button
+                    variant={inCompare ? "default" : "outline"}
+                    size="lg"
+                    onClick={() => {
+                      if (inCompare) {
+                        remove(product.id);
+                      } else if (!isFull) {
+                        add({
+                          id: product.id,
+                          slug: product.slug,
+                          name: product.name,
+                          image_url: product.image_url,
+                          brand_name: brandName || null,
+                        });
+                      }
+                    }}
+                    disabled={!inCompare && isFull}
+                  >
+                    <GitCompareArrows className="mr-2 h-4 w-4" />
+                    {inCompare ? "Đã thêm so sánh" : "So sánh"}
                   </Button>
                 </div>
               </div>
@@ -391,8 +436,60 @@ export default function ProductDetail() {
             </motion.div>
           )}
 
+          {/* ─── Social Proof — Used in Projects ─── */}
+          {linkedProjects.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-12"
+            >
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold">Được sử dụng trong dự án</h2>
+                <p className="text-sm text-muted-foreground">
+                  Sản phẩm này đã được triển khai thành công tại các dự án sau:
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {linkedProjects.map((proj) => (
+                  <Link
+                    key={proj.slug}
+                    to={`/du-an/${proj.slug}`}
+                    className="group flex items-center gap-3 rounded-xl border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
+                  >
+                    {proj.thumbnail_url ? (
+                      <img
+                        src={proj.thumbnail_url}
+                        alt={proj.title}
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/5">
+                        <MapPin className="h-6 w-6 text-primary/40" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold group-hover:text-primary truncate">
+                        {proj.title}
+                      </p>
+                      {proj.client_name && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {proj.client_name}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {proj.location}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {/* ─── Related Products ─── */}
-          {(relatedProducts.length > 0 || sampleRelated.length > 0) && (
+          {relatedProducts.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -410,16 +507,16 @@ export default function ProductDetail() {
                 </Link>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {(relatedProducts.length > 0 ? relatedProducts : sampleRelated).map((rp) => (
+                {relatedProducts.map((rp) => (
                   <Link
                     key={rp.slug}
                     to={`/san-pham/${rp.slug}`}
                     className="group overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/30 hover:shadow-lg"
                   >
                     <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-muted to-muted/50 p-4">
-                      {(rp as Record<string, unknown>).image_url ? (
+                      {rp.image_url ? (
                         <img
-                          src={(rp as Record<string, unknown>).image_url as string}
+                          src={rp.image_url}
                           alt={rp.name}
                           className="h-full w-full object-contain"
                         />

@@ -8,6 +8,7 @@ import { SAMPLE_PRODUCTS } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import {
   ArrowRight,
   ChevronLeft,
@@ -17,21 +18,21 @@ import {
   SlidersHorizontal,
   Tag,
   X,
+  GitCompareArrows,
+  ShoppingCart,
+  Check,
 } from "lucide-react";
+import { FeatureBadge } from "@/components/ui/FeatureBadge";
+import { useCompare } from "@/contexts/CompareContext";
+import { useCart } from "@/contexts/CartContext";
 import { CategorySidebar } from "@/components/products/CategorySidebar";
 import { BrandFilter } from "@/components/products/BrandFilter";
 import { ProductSearchBar } from "@/components/products/ProductSearchBar";
+import { GroupedFeatureFilter } from "@/components/products/GroupedFeatureFilter";
 
 const ITEMS_PER_PAGE = 8;
 
-/** All unique feature tags from sample products for filter UI */
-const ALL_FEATURE_TAGS = Array.from(
-  new Set(
-    SAMPLE_PRODUCTS.flatMap((p) =>
-      Array.isArray(p.features) ? (p.features as string[]) : [],
-    ),
-  ),
-).sort();
+
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,31 +49,32 @@ export default function Products() {
     brand,
     search,
     page,
+    tags: selectedTags.length > 0 ? selectedTags : undefined,
   });
 
   // Determine if we're using API data or sample fallback
   const isApiData = !!productsData?.items?.length;
   const rawProducts = isApiData ? productsData.items : SAMPLE_PRODUCTS;
 
-  // Client-side filtering (for sample data)
+  // Client-side filtering (only for sample data fallback)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filteredProducts = useMemo((): any[] => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any[] = [...rawProducts];
 
-    // Category filter (client-side for sample data)
+    // Category filter (client-side for sample data only)
     if (!isApiData && category) {
       result = result.filter((p) => p.category_slug === category);
     }
 
-    // Brand filter (client-side for sample data)
+    // Brand filter (client-side for sample data only)
     if (!isApiData && brand) {
       result = result.filter(
         (p) => (p.brand as string)?.toLowerCase() === brand.toLowerCase(),
       );
     }
 
-    // Search filter (client-side for sample data)
+    // Search filter (client-side for sample data only)
     if (!isApiData && search) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -84,9 +86,10 @@ export default function Products() {
       );
     }
 
-    // Feature tag filter (client-side for both)
-    if (selectedTags.length > 0) {
+    // Feature tag filter — server-side for API data, client-side for sample
+    if (!isApiData && selectedTags.length > 0) {
       result = result.filter((p) => {
+        // Sample data uses legacy JSON features field
         let productFeatures: string[] = [];
         if (typeof p.features === "string") {
           try {
@@ -195,28 +198,8 @@ export default function Products() {
                 <BrandFilter />
               </div>
 
-              {/* ─── Feature Tag Filter ─── */}
-              <div className="border-t pt-4">
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Tính năng
-                </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {ALL_FEATURE_TAGS.slice(0, 20).map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                        selectedTags.includes(tag)
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                      }`}
-                    >
-                      <Tag className="h-2.5 w-2.5" />
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* ─── Feature Tag Filter (Grouped) ─── */}
+              <GroupedFeatureFilter className="border-t pt-4" />
             </aside>
 
             {/* ─── Products Grid ─── */}
@@ -338,8 +321,6 @@ export default function Products() {
   );
 }
 
-/* ─── B2B Product Card ─── */
-
 function ProductCard({
   product,
   index,
@@ -349,6 +330,9 @@ function ProductCard({
   index: number;
 }) {
   const [imgError, setImgError] = useState(false);
+  const { add, remove, isInCompare, isFull } = useCompare();
+  const { addItem, items: cartItems } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
   const brandName = (product.brand as string) || (product.brand_name as string) || "";
   const modelNum = (product.model_number as string) || "";
   const catName = (product.category_name as string) || "";
@@ -367,6 +351,7 @@ function ProductCard({
 
   return (
     <motion.div
+      className="relative"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -378,7 +363,7 @@ function ProductCard({
       >
         <div className="flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5">
           {/* Image */}
-          <div className="relative overflow-hidden">
+          <div className="relative shrink-0 overflow-hidden">
             {imageUrl && !imgError ? (
               <>
                 <img
@@ -391,9 +376,11 @@ function ProductCard({
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               </>
             ) : (
-              <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-muted to-muted/50 p-6">
-                <Package className="h-16 w-16 text-muted-foreground/20" />
-              </div>
+              <ImagePlaceholder
+                className="aspect-square"
+                variant="product"
+                title={product.name as string}
+              />
             )}
             {brandName && (
               <span className="absolute right-3 top-3 rounded-md bg-background/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-foreground/70 shadow-sm backdrop-blur-sm">
@@ -402,14 +389,14 @@ function ProductCard({
             )}
           </div>
 
-          {/* Info */}
-          <div className="flex flex-1 flex-col p-4">
+          {/* Info — flex-1 pushes CTA to bottom */}
+          <div className="flex flex-1 flex-col p-5">
             {catName && (
               <span className="mb-1 text-[11px] font-medium uppercase tracking-wide text-primary">
                 {catName}
               </span>
             )}
-            <h3 className="mb-1 line-clamp-2 text-sm font-semibold transition-colors group-hover:text-primary">
+            <h3 className="mb-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
               {product.name as string}
             </h3>
             {modelNum && (
@@ -417,33 +404,52 @@ function ProductCard({
                 {modelNum}
               </p>
             )}
-            <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-              {product.description as string}
+            <p className="mb-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-muted-foreground">
+              {(product.description as string) || "\u00A0"}
             </p>
 
-            {/* Feature tags */}
-            {features.length > 0 && (
-              <div className="mt-auto flex flex-wrap gap-1">
-                {(features as string[]).slice(0, 3).map((f: string) => (
-                  <span
-                    key={f}
-                    className="inline-flex items-center gap-0.5 rounded bg-primary/5 px-1.5 py-0.5 text-[10px] font-medium text-primary"
-                  >
-                    <Tag className="h-2.5 w-2.5" />
-                    {f}
-                  </span>
-                ))}
-                {features.length > 3 && (
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                    +{features.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
+            {/* Feature tags — use product_features if available */}
+            {(() => {
+              const pf = product.product_features as Array<{ id: number; name: string; color?: string | null; icon?: string | null; is_priority?: number }> | undefined;
+              if (pf && pf.length > 0) {
+                const sorted = [...pf].sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0));
+                return (
+                  <div className="flex flex-wrap gap-1">
+                    {sorted.slice(0, 3).map((f) => (
+                      <FeatureBadge key={f.id} name={f.name} color={f.color} icon={f.icon} size="sm" />
+                    ))}
+                    {sorted.length > 3 && (
+                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        +{sorted.length - 3}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+              // Fallback to JSON features string
+              if (features.length > 0) {
+                return (
+                  <div className="flex flex-wrap gap-1">
+                    {(features as string[]).slice(0, 3).map((f: string) => (
+                      <span key={f} className="inline-flex items-center gap-0.5 rounded bg-primary/5 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                        <Tag className="h-2.5 w-2.5" />
+                        {f}
+                      </span>
+                    ))}
+                    {features.length > 3 && (
+                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        +{features.length - 3}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
-            {/* CTA */}
-            <div className="mt-3 pt-2 border-t">
-              <span className="inline-flex items-center text-xs font-medium text-primary">
+            {/* CTA — pinned to bottom */}
+            <div className="mt-auto pt-3 border-t flex items-center justify-between">
+              <span className="inline-flex items-center text-xs font-medium text-primary transition-colors group-hover:text-primary/80">
                 Xem chi tiết
                 <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
               </span>
@@ -451,6 +457,63 @@ function ProductCard({
           </div>
         </div>
       </Link>
+      {/* Action buttons — outside the Link */}
+      <div className="absolute bottom-[52px] right-4 z-10 flex items-center gap-1.5">
+        {/* Add to quote cart */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addItem({
+              productId: product.id as number,
+              slug: product.slug as string,
+              name: product.name as string,
+              imageUrl: product.image_url as string | null,
+              categoryName: catName || null,
+            });
+            setJustAdded(true);
+            setTimeout(() => setJustAdded(false), 2000);
+          }}
+          className={`rounded-full p-1.5 shadow-sm border transition-all ${
+            justAdded
+              ? "bg-emerald-500 text-white border-emerald-500"
+              : cartItems.some((i) => i.productId === (product.id as number))
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background/90 text-muted-foreground border-border hover:border-primary hover:text-primary"
+          }`}
+          title={justAdded ? "Đã thêm" : "Thêm vào báo giá"}
+        >
+          {justAdded ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+        </button>
+        {/* Compare button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isInCompare(product.id as number)) {
+              remove(product.id as number);
+            } else {
+              add({
+                id: product.id as number,
+                slug: product.slug as string,
+                name: product.name as string,
+                image_url: product.image_url as string | null,
+                brand_name: brandName || null,
+              });
+            }
+          }}
+          disabled={!isInCompare(product.id as number) && isFull}
+          className={`rounded-full p-1.5 shadow-sm border transition-all ${
+            isInCompare(product.id as number)
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background/90 text-muted-foreground border-border hover:border-primary hover:text-primary"
+          } ${!isInCompare(product.id as number) && isFull ? "opacity-30 cursor-not-allowed" : ""}`}
+          title={isInCompare(product.id as number) ? "Bỏ so sánh" : "Thêm so sánh"}
+        >
+          <GitCompareArrows className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </motion.div>
   );
 }
+

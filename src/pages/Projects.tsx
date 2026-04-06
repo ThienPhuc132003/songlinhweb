@@ -7,10 +7,11 @@ import { useProjects } from "@/hooks/useApi";
 import { FEATURED_PROJECTS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Building2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 
-const CATEGORIES = ["Tất cả", "Thương mại", "Văn phòng", "Khách sạn", "Y tế", "Dân cư", "Công nghiệp"];
+const CATEGORIES = ["Tất cả", "Thương mại", "Văn phòng", "Khách sạn", "Y tế", "Dân cư", "Công nghiệp", "Giáo dục", "Công trình"];
 
 export default function Projects() {
   const [category, setCategory] = useState<string>();
@@ -23,7 +24,7 @@ export default function Projects() {
         title: p.title,
         category: p.category,
         image: p.thumbnail_url ?? `/images/projects/${p.slug}.jpg`,
-        description: p.description,
+        description: p.description || "",
       }))
     : FEATURED_PROJECTS.map((p) => ({ ...p, description: "" }));
 
@@ -52,6 +53,7 @@ export default function Projects() {
                   key={cat}
                   variant={isActive ? "default" : "outline"}
                   size="sm"
+                  className="transition-all duration-200"
                   onClick={() => {
                     setCategory(cat === "Tất cả" ? undefined : cat);
                     setPage(1);
@@ -69,14 +71,16 @@ export default function Projects() {
             initial="hidden"
             animate="visible"
             className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            key={category ?? "all"}
           >
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="overflow-hidden rounded-xl border">
-                    <Skeleton className="aspect-4/3 w-full" />
-                    <div className="space-y-2 p-4">
+                    <Skeleton className="aspect-video w-full" />
+                    <div className="space-y-2 p-5">
                       <Skeleton className="h-3 w-16" />
                       <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
                     </div>
                   </div>
                 ))
@@ -113,6 +117,7 @@ function ProjectCard({
   title,
   category,
   image,
+  description,
 }: {
   slug: string;
   title: string;
@@ -126,36 +131,49 @@ function ProjectCard({
     <motion.div variants={fadeInUp}>
       <Link
         to={`/du-an/${slug}`}
-        className="group block overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
+        className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
       >
-        <div className="bg-muted relative aspect-4/3 overflow-hidden">
+        {/* Image — shrunk from aspect-4/3 → aspect-video */}
+        <div className="relative shrink-0 overflow-hidden">
           {imgError ? (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
-              <Building2 className="text-muted-foreground/40 h-12 w-12" />
-              <span className="text-muted-foreground text-center text-sm font-medium">
-                {title}
-              </span>
-            </div>
+            <ImagePlaceholder
+              className="aspect-video"
+              variant="project"
+              title={title}
+            />
           ) : (
             <img
               src={image}
               alt={title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               onError={() => setImgError(true)}
             />
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
-        <div className="p-4">
+
+        {/* Info */}
+        <div className="flex flex-1 flex-col p-5">
           <span className="text-primary mb-1 block text-xs font-medium">
             {category}
           </span>
-          <h3 className="group-hover:text-primary font-semibold transition-colors">
+          <h3 className="group-hover:text-primary line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug transition-colors">
             {title}
           </h3>
+          {description && (
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+          )}
+          {/* CTA — pinned to bottom */}
+          <span className="mt-auto inline-flex items-center pt-3 text-xs font-medium text-primary transition-colors group-hover:text-primary/80">
+            Xem chi tiết
+            <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+          </span>
         </div>
       </Link>
     </motion.div>
   );
 }
+

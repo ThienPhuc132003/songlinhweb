@@ -2,7 +2,9 @@
  * Admin API client — wraps fetchApi with X-API-Key header
  */
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "";
+import type { ProductCategory, QuotationRequest } from "@/types";
+export type { ProductCategory };
 
 function getApiKey(): string {
   return localStorage.getItem("sltech_admin_key") || "";
@@ -49,6 +51,48 @@ async function adminFetch<T>(
   return json.data;
 }
 
+/** Paginated admin fetch — returns { items, total, page, totalPages } */
+interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+async function adminFetchPaginated<T>(
+  endpoint: string,
+  options?: RequestInit,
+): Promise<PaginatedResult<T>> {
+  const apiKey = getApiKey();
+  const res = await fetch(`${API_URL}/admin${endpoint}`, {
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": apiKey,
+      ...(options?.headers || {}),
+    },
+    ...options,
+  });
+
+  if (res.status === 401) {
+    clearApiKey();
+    window.location.href = "/admin/login";
+    throw new Error("Unauthorized");
+  }
+
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(errorBody.error || `API Error ${res.status}`);
+  }
+
+  const json = await res.json();
+  return {
+    items: json.data ?? [],
+    total: json.meta?.total ?? 0,
+    page: json.meta?.page ?? 1,
+    totalPages: json.meta?.totalPages ?? 1,
+  };
+}
+
 async function adminUpload(file: File, folder?: string) {
   const apiKey = getApiKey();
   const formData = new FormData();
@@ -75,6 +119,11 @@ async function adminUpload(file: File, folder?: string) {
 export const adminApi = {
   // Auth verify - use a protected route to validate key
   verify: () => adminFetch<Product[]>("/products/items/all?limit=1"),
+
+  // Upload
+  upload: adminUpload,
+  deleteUpload: (key: string) =>
+    adminFetch<{ deleted: boolean }>(`/upload/${key}`, { method: "DELETE" }),
 
   // Solutions
   solutions: {
@@ -131,6 +180,11 @@ export const adminApi = {
       adminFetch<{ deleted: boolean }>(`/posts/${id}`, {
         method: "DELETE",
       }),
+    bulk: (action: string, postIds: number[], value?: unknown) =>
+      adminFetch<{ affected: number }>("/posts/bulk", {
+        method: "POST",
+        body: JSON.stringify({ action, post_ids: postIds, value }),
+      }),
   },
 
   // Product Categories
@@ -169,6 +223,35 @@ export const adminApi = {
       adminFetch<{ deleted: boolean }>(`/products/${id}`, {
         method: "DELETE",
       }),
+    restore: (id: number) =>
+      adminFetch<{ restored: boolean }>(`/products/${id}/restore`, {
+        method: "POST",
+      }),
+    bulk: (action: string, productIds: number[], value?: unknown) =>
+      adminFetch<{ affected: number }>("/products/bulk", {
+        method: "POST",
+        body: JSON.stringify({ action, product_ids: productIds, value }),
+      }),
+  },
+
+  // Dashboard
+  dashboard: {
+    stats: () => adminFetch<DashboardStats>("/dashboard/stats"),
+  },
+
+  // Audit Logs
+  auditLogs: {
+    list: (opts?: { entity_type?: string; entity_id?: number; page?: number; limit?: number }) => {
+      const params = new URLSearchParams();
+      if (opts?.entity_type) params.set("entity_type", opts.entity_type);
+      if (opts?.entity_id) params.set("entity_id", String(opts.entity_id));
+      if (opts?.page) params.set("page", String(opts.page));
+      if (opts?.limit) params.set("limit", String(opts.limit));
+      const qs = params.toString();
+      return adminFetch<{ items: AuditLog[]; total: number; page: number; totalPages: number }>(
+        `/audit-logs${qs ? `?${qs}` : ""}`,
+      );
+    },
   },
 
   // Brands
@@ -252,8 +335,80 @@ export const adminApi = {
       }),
   },
 
-  // Upload
-  upload: adminUpload,
+
+  // Product Features
+  features: {
+    list: () => adminFetch<ProductFeature[]>("/product-features/all"),
+    create: (data: Partial<ProductFeature>) =>
+      adminFetch<{ id: number }>("/product-features", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<ProductFeature>) =>
+      adminFetch<{ id: number }>(`/product-features/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) =>
+      adminFetch<{ deleted: boolean }>(`/product-features/${id}`, {
+        method: "DELETE",
+      }),
+    assignToProduct: (productId: number, featureIds: number[]) =>
+      adminFetch<{ product_id: number; feature_count: number }>(
+        `/product-features/assign/${productId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ feature_ids: featureIds }),
+        },
+      ),
+  },
+
+  // Quotation Requests (RFQ management)
+  quotations: {
+    list: (opts?: { status?: string; page?: number; limit?: number }) => {
+      const params = new URLSearchParams();
+      if (opts?.status) params.set("status", opts.status);
+      if (opts?.page) params.set("page", String(opts.page));
+      if (opts?.limit) params.set("limit", String(opts.limit));
+      const qs = params.toString();
+      return adminFetchPaginated<QuotationRequest>(
+        `/quotations${qs ? `?${qs}` : ""}`,
+      );
+    },
+    detail: (id: number) =>
+      adminFetch<QuotationRequest>(`/quotations/${id}`),
+    updateStatus: (id: number, status: string) =>
+      adminFetch<{ id: number; status: string }>(`/quotations/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      }),
+    delete: (id: number) =>
+      adminFetch<{ deleted: boolean }>(`/quotations/${id}`, {
+        method: "DELETE",
+      }),
+    downloadExcel: async (id: number): Promise<void> => {
+      const apiKey = getApiKey();
+      const res = await fetch(`${API_URL}/admin/quotations/${id}/excel`, {
+        headers: { "X-API-Key": apiKey },
+      });
+      if (!res.ok) {
+        throw new Error(`Download failed: ${res.status}`);
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const match = disposition.match(/filename="?(.+?)"?$/);
+      const filename = match?.[1] || `SLTECH_RFQ_${id}.xlsx`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+  },
 };
 
 // ─── Types (re-export for admin) ─────────────────────────────────────────────
@@ -300,6 +455,16 @@ export interface Project {
   project_scale: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  // B2B Portfolio fields
+  completion_year: string | null;
+  related_solutions: string;
+  related_products: string;
+  // Case Study fields (migration 0017)
+  challenges: string | null;
+  outcomes: string | null;
+  testimonial_name: string | null;
+  testimonial_content: string | null;
+  video_url: string | null;
 }
 
 export interface Post {
@@ -315,8 +480,18 @@ export interface Post {
   published_at: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  // New fields (migration 0018)
+  status: string;          // 'draft' | 'published' | 'archived'
+  category: string;        // 'general' | 'technology' | 'project-update' | 'industry-news'
+  view_count: number;
+  is_featured: number;
+  reading_time_min: number;
   created_at: string;
   updated_at: string;
+  // Authority fields (migration 0019)
+  last_updated_at: string | null;
+  reviewed_by: string | null;
+  references: string;              // JSON array string
 }
 
 export interface Product {
@@ -325,12 +500,16 @@ export interface Product {
   name: string;
   description: string;
   category_id: number | null;
+  brand_id: number | null;
   brand: string;
   model_number: string;
   image_url: string | null;
+  gallery_urls: string;       // JSON array
   spec_sheet_url: string | null;
   specifications: string; // JSON
   features: string;       // JSON
+  inventory_status: string; // 'in-stock' | 'pre-order' | 'contact'
+  warranty: string;
   sort_order: number;
   is_active: number;
   meta_title: string | null;
@@ -340,18 +519,12 @@ export interface Product {
   // Joined fields
   category_name?: string;
   category_slug?: string;
+  brand_name?: string | null;
+  brand_slug?: string | null;
+  brand_logo?: string | null;
 }
 
-export interface ProductCategory {
-  id: number;
-  slug: string;
-  name: string;
-  description: string;
-  image_url: string | null;
-  parent_id: number | null;
-  sort_order: number;
-  is_active: number;
-}
+// ProductCategory re-exported from @/types (imported at top)
 
 export interface Brand {
   id: number;
@@ -398,3 +571,44 @@ export interface SiteConfig {
   key: string;
   value: string;
 }
+
+export interface ProductFeature {
+  id: number;
+  name: string;
+  slug: string;
+  group_name: string;
+  sort_order: number;
+  is_active: number;
+  color?: string | null;
+  icon?: string | null;
+  is_priority?: number;
+  created_at?: string;
+  updated_at?: string;
+  product_count?: number;
+}
+
+export interface DashboardStats {
+  totalProducts: number;
+  totalBrands: number;
+  totalCategories: number;
+  totalProjects: number;
+  recentProducts: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    image_url: string | null;
+    brand_name: string | null;
+    created_at: string;
+  }>;
+}
+
+export interface AuditLog {
+  id: number;
+  entity_type: string;
+  entity_id: number;
+  action: string;
+  changes: string;
+  performed_by: string;
+  created_at: string;
+}
+

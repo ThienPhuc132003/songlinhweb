@@ -48,9 +48,12 @@ export interface Product {
   brand: string;
   model_number: string;
   image_url: string | null;
+  gallery_urls?: string;   // JSON array of gallery image URLs
   spec_sheet_url: string | null;
   specifications: string; // JSON object
   features: string;       // JSON array
+  inventory_status?: string; // 'in-stock' | 'pre-order' | 'contact'
+  warranty?: string;         // e.g. '24 Months'
   is_active: number;
   sort_order: number;
   meta_title: string | null;
@@ -65,6 +68,19 @@ export interface Product {
   brand_slug?: string | null;
   brand_logo?: string | null;
   brand_website?: string | null;
+  product_features?: ProductFeature[];
+}
+
+export interface ProductFeature {
+  id: number;
+  name: string;
+  slug: string;
+  group_name: string;
+  sort_order?: number;
+  is_active?: number;
+  color?: string | null;
+  icon?: string | null;
+  is_priority?: number;
 }
 
 export interface Project {
@@ -94,6 +110,19 @@ export interface Project {
   project_scale?: string | null;
   meta_title?: string | null;
   meta_description?: string | null;
+  // B2B Portfolio fields
+  completion_year?: string | null;
+  related_solutions?: string;
+  related_products?: string;
+  // Case Study fields (migration 0017)
+  challenges?: string | null;
+  outcomes?: string | null;
+  testimonial_name?: string | null;
+  testimonial_content?: string | null;
+  video_url?: string | null;
+  // Populated by API join (detail page)
+  linked_solutions?: Array<{ id: number; title: string; slug: string; icon: string }>;
+  linked_products?: Array<{ id: number; name: string; slug: string; image_url: string | null; category_name?: string }>;
 }
 
 export interface Post {
@@ -109,8 +138,20 @@ export interface Post {
   published_at: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  // New fields (migration 0018)
+  status: string;          // 'draft' | 'published' | 'archived'
+  category: string;        // 'general' | 'technology' | 'project-update' | 'industry-news'
+  view_count: number;
+  is_featured: number;
+  reading_time_min: number;
   created_at: string;
   updated_at: string;
+  // Authority fields (migration 0019)
+  last_updated_at?: string | null;
+  reviewed_by?: string | null;
+  references?: string | unknown[];  // JSON string or parsed array
+  // Populated on detail page
+  related?: Post[];
 }
 
 export interface GalleryAlbum {
@@ -208,6 +249,7 @@ export interface CartItem {
   imageUrl: string | null;
   categoryName: string | null;
   quantity: number;
+  notes?: string;
 }
 
 export interface QuoteFormData {
@@ -215,6 +257,7 @@ export interface QuoteFormData {
   customer_name: string;
   phone: string;
   email: string;
+  project_name: string;
   notes: string;
 }
 
@@ -223,10 +266,46 @@ export interface QuoteRequestPayload {
   customer_name: string;
   phone: string;
   email: string;
+  project_name: string;
   notes: string;
   items: Array<{
     product_id: number;
     product_name: string;
+    product_image: string | null;
+    category_name: string | null;
     quantity: number;
+    notes: string | null;
   }>;
 }
+
+// ===== Quotation Management Types (Admin) =====
+
+export type QuoteStatus = 'new' | 'processing' | 'sent' | 'completed';
+
+export interface QuotationRequest {
+  id: number;
+  customer_name: string;
+  company_name: string | null;
+  email: string | null;
+  phone: string;
+  project_name: string | null;
+  status: QuoteStatus;
+  excel_url: string | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+  items?: QuotationItem[];
+  item_count?: number;
+}
+
+export interface QuotationItem {
+  id: number;
+  quote_id: number;
+  product_id: number | null;
+  product_name: string;
+  product_image: string | null;
+  category_name: string | null;
+  quantity: number;
+  notes: string | null;
+}
+

@@ -7,6 +7,12 @@ import type { Env } from "../types";
  */
 export function rateLimit(maxRequests: number, windowSeconds: number) {
   return createMiddleware<{ Bindings: Env }>(async (c, next) => {
+    // Skip rate limiting if KV (CACHE) is not configured
+    if (!c.env.CACHE) {
+      await next();
+      return;
+    }
+
     const ip = c.req.header("CF-Connecting-IP") ?? "unknown";
     const key = `rate:${ip}:${c.req.path}`;
 

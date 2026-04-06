@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env, BrandRow } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
+import { logAudit } from "../lib/audit";
 
 const brands = new Hono<{ Bindings: Env }>();
 
@@ -11,6 +12,14 @@ const brands = new Hono<{ Bindings: Env }>();
 brands.get("/", async (c) => {
   const rows = await c.env.DB.prepare(
     `SELECT * FROM brands WHERE is_active = 1 ORDER BY sort_order ASC`,
+  ).all<BrandRow>();
+  return ok(rows.results);
+});
+
+/** GET /api/admin/brands/all — list ALL brands including inactive (MUST be before /:slug) */
+brands.get("/all", requireAuth, async (c) => {
+  const rows = await c.env.DB.prepare(
+    `SELECT * FROM brands ORDER BY sort_order ASC`,
   ).all<BrandRow>();
   return ok(rows.results);
 });
@@ -29,14 +38,6 @@ brands.get("/:slug", async (c) => {
 });
 
 /* ───────── Admin CRUD ───────── */
-
-/** GET /api/admin/brands/all — list ALL brands including inactive */
-brands.get("/all", requireAuth, async (c) => {
-  const rows = await c.env.DB.prepare(
-    `SELECT * FROM brands ORDER BY sort_order ASC`,
-  ).all<BrandRow>();
-  return ok(rows.results);
-});
 
 /** POST /api/admin/brands */
 brands.post("/", requireAuth, async (c) => {
@@ -57,7 +58,9 @@ brands.post("/", requireAuth, async (c) => {
     )
     .run();
 
-  return ok({ id: result.meta.last_row_id });
+  const newId = result.meta.last_row_id;
+  logAudit(c.env.DB, 'brand', newId as number, 'create', { name: body.name, slug: body.slug });
+  return ok({ id: newId });
 });
 
 /** PUT /api/admin/brands/:id */
@@ -92,13 +95,24 @@ brands.put("/:id", requireAuth, async (c) => {
     .bind(...values)
     .run();
 
+  logAudit(c.env.DB, 'brand', id, 'update', body as Record<string, unknown>);
   return ok({ id });
 });
 
 /** DELETE /api/admin/brands/:id */
 brands.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
+
+  // Deletion constraint: check for linked products
+  const count = await c.env.DB.prepare(
+    "SELECT COUNT(*) as cnt FROM products WHERE brand_id = ? AND deleted_at IS NULL",
+  ).bind(id).first<{ cnt: number }>();
+  if (count && count.cnt > 0) {
+    return err(`Không thể xóa thương hiệu đang có ${count.cnt} sản phẩm. Vui lòng đổi thương hiệu cho sản phẩm trước.`, 409);
+  }
+
   await c.env.DB.prepare("DELETE FROM brands WHERE id = ?").bind(id).run();
+  logAudit(c.env.DB, 'brand', id, 'delete');
   return ok({ deleted: true });
 });
 

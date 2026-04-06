@@ -6,6 +6,8 @@ export interface Env {
   CORS_ORIGIN: string;
   ADMIN_API_KEY: string;
   RESEND_API_KEY?: string;
+  ADMIN_NOTIFICATION_EMAIL?: string;
+  SITE_URL?: string;
 }
 
 /** Standard API response */
@@ -78,12 +80,16 @@ export interface ProductRow {
   spec_sheet_url: string | null;
   specifications: string; // JSON object
   features: string;       // JSON array
+  gallery_urls: string;   // JSON array of image URLs
+  inventory_status: string; // 'in-stock' | 'pre-order' | 'contact'
+  warranty: string;       // e.g. '24 Months'
   sort_order: number;
   is_active: number;
   meta_title: string | null;
   meta_description: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface ProjectRow {
@@ -112,6 +118,16 @@ export interface ProjectRow {
   project_scale: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  // B2B Portfolio fields (migration 0016)
+  completion_year: string | null;
+  related_solutions: string;         // JSON array: '[1, 3, 5]'
+  related_products: string;          // JSON array: '[12, 45, 67]'
+  // Case Study fields (migration 0017)
+  challenges: string | null;
+  outcomes: string | null;
+  testimonial_name: string | null;
+  testimonial_content: string | null;
+  video_url: string | null;
 }
 
 export interface PostRow {
@@ -127,8 +143,18 @@ export interface PostRow {
   published_at: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  // New fields (migration 0018)
+  status: string;          // 'draft' | 'published' | 'archived'
+  category: string;        // 'general' | 'technology' | 'project-update' | 'industry-news'
+  view_count: number;
+  is_featured: number;
+  reading_time_min: number;
   created_at: string;
   updated_at: string;
+  // Authority fields (migration 0019)
+  last_updated_at: string | null;
+  reviewed_by: string | null;
+  references: string;              // JSON array: '[{title, url, type}]'
 }
 
 export interface GalleryAlbumRow {
@@ -194,4 +220,57 @@ export interface QuoteRequestRow {
   note: string | null;
   status: string;
   created_at: string;
+}
+
+export interface ProductFeatureRow {
+  id: number;
+  name: string;
+  slug: string;
+  group_name: string;
+  sort_order: number;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductToFeatureRow {
+  product_id: number;
+  feature_id: number;
+}
+
+export interface AuditLogRow {
+  id: number;
+  entity_type: string;
+  entity_id: number;
+  action: string;
+  changes: string;
+  performed_by: string;
+  created_at: string;
+}
+
+/** Normalized quotation request (from 0014_rfq_professional.sql) */
+export interface QuotationRequestRow {
+  id: number;
+  customer_name: string;
+  company_name: string | null;
+  email: string | null;
+  phone: string;
+  project_name: string | null;
+  status: string; // 'new' | 'processing' | 'sent' | 'completed'
+  excel_url: string | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Normalized quotation item linked to a quote request */
+export interface QuotationItemRow {
+  id: number;
+  quote_id: number;
+  product_id: number | null;
+  product_name: string;
+  product_image: string | null;
+  category_name: string | null;
+  quantity: number;
+  notes: string | null;
 }

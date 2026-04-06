@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import type { Env } from "./types";
 import { errorHandler } from "./middleware/error-handler";
 import products from "./routes/products";
+import images from "./routes/images";
 import brands from "./routes/brands";
 import projects from "./routes/projects";
 import posts from "./routes/posts";
@@ -12,6 +13,11 @@ import siteConfig from "./routes/site-config";
 import contact from "./routes/contact";
 import upload from "./routes/upload";
 import quotes from "./routes/quotes";
+import quotations from "./routes/quotations";
+import features from "./routes/features";
+import admin from "./routes/admin";
+import seo from "./routes/seo";
+import { cleanupOldXlsxFiles } from "./services/r2-cleanup";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -36,6 +42,21 @@ app.use("*", async (c, next) => {
 // Error handler
 app.use("*", errorHandler);
 
+// Cache-Control for public API endpoints
+app.use("/api/products*", async (c, next) => {
+  await next();
+  // Only set cache headers on GET, non-admin requests
+  if (c.req.method === "GET" && !c.req.url.includes("/admin/")) {
+    c.header("Cache-Control", "public, s-maxage=300, max-age=60");
+  }
+});
+app.use("/api/product-features*", async (c, next) => {
+  await next();
+  if (c.req.method === "GET" && !c.req.url.includes("/admin/")) {
+    c.header("Cache-Control", "public, s-maxage=3600, max-age=300");
+  }
+});
+
 /* ───────── Health Check ───────── */
 
 app.get("/", (c) => {
@@ -50,7 +71,7 @@ app.get("/", (c) => {
 /* ───────── Public API Routes ───────── */
 
 app.route("/api/products", products);
-app.route("/api/product-categories", products); // alias for /api/products/categories
+app.route("/api/images", images);
 app.route("/api/brands", brands);
 app.route("/api/projects", projects);
 app.route("/api/posts", posts);
@@ -59,6 +80,8 @@ app.route("/api/partners", partners);
 app.route("/api/site-config", siteConfig);
 app.route("/api/contact", contact);
 app.route("/api/quotes", quotes);
+app.route("/api/quotations", quotations);
+app.route("/api/product-features", features);
 
 /* ───────── Admin Routes ───────── */
 
@@ -72,6 +95,12 @@ app.route("/api/admin/site-config", siteConfig);
 app.route("/api/admin/contacts", contact);
 app.route("/api/admin/upload", upload);
 app.route("/api/admin/quotes", quotes);
+app.route("/api/admin/quotations", quotations);
+app.route("/api/admin/product-features", features);
+app.route("/api/admin", admin);
+
+/* ───────── SEO Routes ───────── */
+app.route("", seo);
 
 /* ───────── 404 Fallback ───────── */
 
@@ -79,4 +108,15 @@ app.notFound((c) => {
   return c.json({ success: false, error: "Not found" }, 404);
 });
 
-export default app;
+/* ───────── Worker Export ───────── */
+
+export default {
+  fetch: app.fetch,
+  async scheduled(
+    _event: ScheduledEvent,
+    env: Env,
+    ctx: ExecutionContext,
+  ) {
+    ctx.waitUntil(cleanupOldXlsxFiles(env));
+  },
+};

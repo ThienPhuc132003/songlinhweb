@@ -9,11 +9,19 @@ export function useProductCategories() {
   });
 }
 
+export function useProductFeatures() {
+  return useQuery({
+    queryKey: ["product-features"],
+    queryFn: api.productFeatures.list,
+  });
+}
+
 export function useProducts(opts?: {
   category?: string;
   brand?: string;
   search?: string;
   page?: number;
+  tags?: string[];
 }) {
   return useQuery({
     queryKey: ["products", opts],

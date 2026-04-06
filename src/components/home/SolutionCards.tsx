@@ -3,6 +3,8 @@ import { SOLUTIONS } from "@/data/solutions";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { cn } from "@/lib/utils";
 import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
+import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 interface SolutionCardsProps {
@@ -30,7 +32,7 @@ export function SolutionCards({ limit, className }: SolutionCardsProps) {
 
         <div
           ref={gridRef}
-          className="reveal-stagger grid gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4"
+          className="reveal-stagger grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4"
         >
           {solutions.map((solution) => (
             <SolutionCard
@@ -77,34 +79,35 @@ function SolutionCard({
   return (
     <Link
       to={`/giai-phap/${slug}`}
-      className="reveal-item bg-card group flex flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
+      className="reveal-item bg-card group flex h-full flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
     >
-      {/* Image — zero-gap, full bleed */}
-      <div className="relative overflow-hidden">
+      {/* Image — fixed aspect, zero-gap */}
+      <div className="relative shrink-0 overflow-hidden">
         {image && !imgError ? (
           <>
             <img
               src={image}
               alt={title}
-              className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               onError={() => setImgError(true)}
             />
-            {/* Hover overlay — darken + gradient */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </>
         ) : (
-          <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-            <SolutionIconBadge name={icon} size="lg" className="opacity-40" />
-          </div>
+          <ImagePlaceholder
+            className="aspect-video"
+            variant="solution"
+            title={title}
+          />
         )}
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center gap-2">
           <SolutionIconBadge name={icon} size="sm" />
-          <h3 className="line-clamp-2 text-sm font-semibold transition-colors group-hover:text-primary">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
             {title}
           </h3>
         </div>
@@ -113,10 +116,13 @@ function SolutionCard({
             {description}
           </p>
         )}
-        <span className="mt-auto pt-2 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          Xem chi tiết →
+        {/* CTA — always visible, pinned to bottom */}
+        <span className="mt-auto inline-flex items-center pt-3 text-xs font-medium text-primary transition-colors group-hover:text-primary/80">
+          Xem chi tiết
+          <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
         </span>
       </div>
     </Link>
   );
 }
+

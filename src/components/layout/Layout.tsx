@@ -9,6 +9,7 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { Toaster } from "@/components/ui/sonner";
 import { ZaloWidget } from "@/components/widgets/ZaloWidget";
 import { useGA4 } from "@/components/widgets/GA4";
+import { CompareDrawer } from "@/components/compare/CompareDrawer";
 
 export default function Layout() {
   const { pathname } = useLocation();
@@ -34,6 +35,7 @@ export default function Layout() {
       </main>
       <Footer />
       <FloatingBar />
+      <CompareDrawer />
       <Toaster richColors position="top-right" />
       <ZaloWidget />
     </div>

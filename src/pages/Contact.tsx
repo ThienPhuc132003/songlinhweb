@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { SEO } from "@/components/ui/seo";
@@ -9,6 +9,7 @@ import {
   isHoneypotTriggered,
   EmailRateLimitError,
 } from "@/lib/email";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +38,7 @@ const initialForm: ContactFormData = {
 export default function Contact() {
   const [form, setForm] = useState<ContactFormData>(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [honeypot, setHoneypot] = useState("");
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<
     Partial<Record<keyof ContactFormData, string>>
   >({});
@@ -65,10 +66,18 @@ export default function Contact() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    if (isHoneypotTriggered(honeypot)) return; // silent fail for bots
+    if (isHoneypotTriggered(honeypotRef.current?.value ?? "")) {
+      console.warn("[Contact] Honeypot triggered — submission blocked.");
+      return;
+    }
     setSubmitting(true);
     try {
-      await sendContactEmail(form);
+      // Primary: save to database via backend API (also sends Resend email)
+      await api.contact(form);
+
+      // Secondary: fire-and-forget EmailJS notification (non-blocking)
+      sendContactEmail(form).catch(() => {});
+
       toast.success("Gửi yêu cầu thành công!", {
         description: "Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.",
       });
@@ -141,15 +150,14 @@ export default function Contact() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Honeypot — hidden from real users */}
-                    <div className="absolute -left-[9999px] opacity-0" aria-hidden>
+                    {/* Honeypot — hidden from real users, obscure name to avoid autofill */}
+                    <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden" aria-hidden>
                       <input
                         type="text"
-                        name="website"
+                        name="url_field_hp"
                         tabIndex={-1}
-                        autoComplete="off"
-                        value={honeypot}
-                        onChange={(e) => setHoneypot(e.target.value)}
+                        autoComplete="new-password"
+                        ref={honeypotRef}
                       />
                     </div>
 

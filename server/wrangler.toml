@@ -27,6 +27,11 @@ CORS_ORIGIN = "https://sltech.vn,https://songlinhweb.vercel.app,http://localhost
 #   wrangler secret put ADMIN_API_KEY
 #   wrangler secret put RESEND_API_KEY
 
+# ─── Cron Triggers ───
+# R2 cleanup: delete XLSX files older than 6 months
+[triggers]
+crons = ["0 3 * * *"]  # Daily at 3:00 AM UTC (10:00 AM VN)
+
 # ─── Dev server ───
 [dev]
 port = 8787

@@ -1,13 +1,16 @@
 /**
- * EmailJS service for sending emails from the frontend.
- * Free tier: 200 emails/month — sufficient for B2B contact/quote volume.
+ * EmailJS service for sending contact form emails from the frontend.
+ * Free tier: 200 emails/month — sufficient for B2B contact volume.
+ *
+ * NOTE: Quote/RFQ emails are handled by the backend (Resend API).
+ * This module is only used for the Contact page form.
  *
  * Setup instructions:
  * 1. Create account at https://www.emailjs.com/
  * 2. Add email service (Gmail/Outlook/etc)
- * 3. Create templates for "contact" and "quote"
+ * 3. Create template for "contact"
  * 4. Set env vars: VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_PUBLIC_KEY,
- *    VITE_EMAILJS_CONTACT_TEMPLATE_ID, VITE_EMAILJS_QUOTE_TEMPLATE_ID
+ *    VITE_EMAILJS_CONTACT_TEMPLATE_ID
  */
 import emailjs from "@emailjs/browser";
 
@@ -16,8 +19,6 @@ const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID ?? "";
 const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY ?? "";
 const CONTACT_TEMPLATE_ID =
   import.meta.env.VITE_EMAILJS_CONTACT_TEMPLATE_ID ?? "";
-const QUOTE_TEMPLATE_ID =
-  import.meta.env.VITE_EMAILJS_QUOTE_TEMPLATE_ID ?? "";
 
 // ─── Anti-spam: Rate Limiter ─────────────────────────────
 const RATE_LIMIT_KEY = "sltech-email-rate";
@@ -80,16 +81,6 @@ export interface SendContactEmailParams {
   message: string;
 }
 
-export interface SendQuoteEmailParams {
-  company_name: string;
-  contact_person: string;
-  email: string;
-  phone: string;
-  note: string;
-  items_summary: string; // formatted text listing all products
-  item_count: number;
-}
-
 export class EmailRateLimitError extends Error {
   constructor() {
     super("Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 1 giờ.");
@@ -132,37 +123,6 @@ export async function sendContactEmail(
       phone: params.phone,
       address: params.address ?? "",
       message: params.message,
-    },
-    PUBLIC_KEY,
-  );
-
-  recordSubmission();
-}
-
-/**
- * Send a quote request email via EmailJS.
- * Note: The quote should ALSO be saved to the backend DB via api.quotes.submit().
- */
-export async function sendQuoteEmail(
-  params: SendQuoteEmailParams,
-): Promise<void> {
-  ensureConfigured();
-
-  if (isRateLimited()) {
-    throw new EmailRateLimitError();
-  }
-
-  await emailjs.send(
-    SERVICE_ID,
-    QUOTE_TEMPLATE_ID,
-    {
-      company_name: params.company_name,
-      contact_person: params.contact_person,
-      from_email: params.email,
-      phone: params.phone,
-      note: params.note,
-      items_summary: params.items_summary,
-      item_count: String(params.item_count),
     },
     PUBLIC_KEY,
   );

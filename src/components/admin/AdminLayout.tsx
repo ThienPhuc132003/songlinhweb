@@ -1,10 +1,11 @@
-import { Outlet, NavLink, Navigate, useNavigate } from "react-router";
+import { Outlet, NavLink, Navigate, useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 import {
   LayoutDashboard,
-  Lightbulb,
   Package,
   FolderKanban,
+  Layers,
   FileText,
   Image,
   Handshake,
@@ -14,27 +15,124 @@ import {
   Menu,
   X,
   Tags,
+  ChevronDown,
+  ChevronRight,
+  List,
+  Sparkles,
+  ClipboardList,
+  Inbox,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { adminApi } from "@/lib/admin-api";
 
+/** Product sub-module routes (Catalog Management) */
+const productSubItems = [
+  { to: "/admin/products", icon: List, label: "Danh sách sản phẩm" },
+  { to: "/admin/brands", icon: Tags, label: "Thương hiệu" },
+  { to: "/admin/categories", icon: Layers, label: "Danh mục" },
+  { to: "/admin/features", icon: Sparkles, label: "Tính năng" },
+];
+
+/** Inbox sub-module routes (Lead Management) */
+const inboxSubItems = [
+  { to: "/admin/quotations", icon: ClipboardList, label: "Yêu cầu báo giá" },
+  { to: "/admin/contacts", icon: Mail, label: "Liên hệ" },
+];
+
+/** Top-level nav items (excluding product sub-items) */
 const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/projects", icon: FolderKanban, label: "Dự án" },
-  { to: "/admin/products", icon: Package, label: "Sản phẩm" },
-  { to: "/admin/brands", icon: Tags, label: "Thương hiệu" },
-  { to: "/admin/categories", icon: FolderKanban, label: "Danh mục" },
-  { to: "/admin/posts", icon: FileText, label: "Bài viết" },
+];
+
+const bottomNavItems = [
+  { to: "/admin/posts", icon: FileText, label: "Tin tức & Kiến thức" },
   { to: "/admin/gallery", icon: Image, label: "Thư viện" },
   { to: "/admin/partners", icon: Handshake, label: "Đối tác" },
-  { to: "/admin/contacts", icon: Mail, label: "Liên hệ" },
   { to: "/admin/settings", icon: Settings, label: "Cài đặt" },
 ];
+
+/** Check if current path is a product sub-route (Catalog) */
+function isProductRoute(pathname: string): boolean {
+  return ["/admin/products", "/admin/brands", "/admin/categories", "/admin/features"]
+    .some(p => pathname === p || pathname.startsWith(p + "/"));
+}
+
+/** Check if current path is an inbox sub-route (Leads) */
+function isInboxRoute(pathname: string): boolean {
+  return ["/admin/quotations", "/admin/contacts"]
+    .some(p => pathname === p || pathname.startsWith(p + "/"));
+}
+
+function NavItem({
+  to,
+  icon: Icon,
+  label,
+  end,
+  onClick,
+}: {
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  end?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      onClick={onClick}
+      className={({ isActive }) =>
+        `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+          isActive
+            ? "bg-primary/10 text-primary"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        }`
+      }
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      {label}
+    </NavLink>
+  );
+}
 
 export default function AdminLayout() {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // Auto-expand product menu when on a product sub-route
+  const [productMenuOpen, setProductMenuOpen] = useState(() =>
+    isProductRoute(location.pathname),
+  );
+
+  // Auto-expand inbox menu when on an inbox sub-route
+  const [inboxMenuOpen, setInboxMenuOpen] = useState(() =>
+    isInboxRoute(location.pathname),
+  );
+
+  // Badge count for new quotation requests
+  const [newQuoteCount, setNewQuoteCount] = useState(0);
+
+  // Keep product menu open when navigating between sub-routes
+  useEffect(() => {
+    if (isProductRoute(location.pathname)) {
+      setProductMenuOpen(true);
+    }
+    if (isInboxRoute(location.pathname)) {
+      setInboxMenuOpen(true);
+    }
+  }, [location.pathname]);
+
+  // Fetch count of "new" quotation requests for badge
+  useEffect(() => {
+    adminApi.quotations
+      .list({ status: "new", limit: 1 })
+      .then((r) => setNewQuoteCount(r.total))
+      .catch(() => {});
+  }, []);
 
   if (isLoading) {
     return (
@@ -53,13 +151,15 @@ export default function AdminLayout() {
     navigate("/admin/login");
   };
 
+  const closeMobileSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeMobileSidebar}
         />
       )}
 
@@ -73,30 +173,138 @@ export default function AdminLayout() {
           <span className="text-primary text-lg font-bold">Song Linh Admin</span>
           <button
             className="rounded p-1 hover:bg-slate-100 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
+            onClick={closeMobileSidebar}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {navItems.map(({ to, icon: Icon, label, end }) => (
-            <NavLink
+          {/* Top nav items */}
+          {navItems.map(({ to, icon, label, end }) => (
+            <NavItem
               key={to}
               to={to}
+              icon={icon}
+              label={label}
               end={end}
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`
-              }
+              onClick={closeMobileSidebar}
+            />
+          ))}
+
+          {/* ═══ Product Group (collapsible) ═══ */}
+          <div>
+            <button
+              onClick={() => setProductMenuOpen(!productMenuOpen)}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isProductRoute(location.pathname)
+                  ? "bg-primary/5 text-primary"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
-            </NavLink>
+              <Package className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">Sản phẩm</span>
+              {productMenuOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+              )}
+            </button>
+
+            {/* Sub-items with slide animation */}
+            <div
+              className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                productMenuOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="ml-2 mt-0.5 space-y-0.5 border-l border-slate-200 pl-3">
+                {productSubItems.map(({ to, icon: Icon, label }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={closeMobileSidebar}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      }`
+                    }
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    {label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ Inbox Group (collapsible) ═══ */}
+          <div>
+            <button
+              onClick={() => setInboxMenuOpen(!inboxMenuOpen)}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isInboxRoute(location.pathname)
+                  ? "bg-primary/5 text-primary"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              <Inbox className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">Hộp thư</span>
+              {newQuoteCount > 0 && (
+                <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                  {newQuoteCount > 99 ? "99+" : newQuoteCount}
+                </span>
+              )}
+              {inboxMenuOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+              )}
+            </button>
+
+            {/* Sub-items with slide animation */}
+            <div
+              className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                inboxMenuOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="ml-2 mt-0.5 space-y-0.5 border-l border-slate-200 pl-3">
+                {inboxSubItems.map(({ to, icon: Icon, label }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={closeMobileSidebar}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      }`
+                    }
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    {label}
+                    {to === "/admin/quotations" && newQuoteCount > 0 && (
+                      <span className="ml-auto inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                        {newQuoteCount > 99 ? "99+" : newQuoteCount}
+                      </span>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom nav items */}
+          {bottomNavItems.map(({ to, icon, label }) => (
+            <NavItem
+              key={to}
+              to={to}
+              icon={icon}
+              label={label}
+              onClick={closeMobileSidebar}
+            />
           ))}
         </nav>
 
@@ -139,6 +347,7 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }

@@ -1,129 +1,57 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi, type Project } from "@/lib/admin-api";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Star, StarOff } from "lucide-react";
+import {
+  ProjectFormSheet,
+  type ProjectFormData,
+  defaultProjectForm,
+} from "@/components/admin/ProjectFormSheet";
 import {
   DataTable,
   PageHeader,
   ConfirmDelete,
-  FormDialog,
-  Field,
+  BulkActionBar,
   StatusBadge,
   type Column,
 } from "@/components/admin/CrudHelpers";
-
-const SYSTEM_OPTIONS = [
-  "CCTV",
-  "Access Control",
-  "PA System",
-  "PCCC",
-  "LAN/WAN",
-  "BMS",
-  "Điện nhẹ",
-  "Intercom",
-  "Báo trộm",
-  "Server/Storage",
-  "Tổng đài",
-  "Parking",
-];
-
-const BRAND_OPTIONS = [
-  "Hikvision",
-  "Dahua",
-  "Hanwha Techwin",
-  "Axis",
-  "Honeywell",
-  "Bosch",
-  "TOA",
-  "ZKTeco",
-  "LS Cable",
-  "Legrand",
-  "Cisco",
-  "HPE",
-];
-
-const INDUSTRY_OPTIONS = [
-  { value: "banking", label: "Ngân hàng / Tài chính" },
-  { value: "hospitality", label: "Khách sạn / Du lịch" },
-  { value: "government", label: "Chính phủ / Công" },
-  { value: "industrial", label: "Khu công nghiệp" },
-  { value: "education", label: "Giáo dục" },
-  { value: "healthcare", label: "Y tế" },
-  { value: "retail", label: "Bán lẻ / TTTM" },
-  { value: "office", label: "Văn phòng / Cao ốc" },
-  { value: "residential", label: "Chung cư / Dân cư" },
-];
-
-const defaultForm: Partial<Project> = {
-  slug: "",
-  title: "",
-  description: "",
-  location: "",
-  client_name: "",
-  thumbnail_url: "",
-  content_md: "",
-  category: "Công trình",
-  year: null,
-  sort_order: 0,
-  is_featured: 0,
-  is_active: 1,
-  system_types: "[]",
-  brands_used: "[]",
-  area_sqm: null,
-  duration_months: null,
-  key_metrics: "{}",
-  compliance_standards: "[]",
-  client_industry: null,
-  project_scale: null,
-  meta_title: null,
-  meta_description: null,
-};
-
-/** Toggle an item in a JSON array string */
-function toggleJsonArray(jsonStr: string, item: string): string {
-  try {
-    const arr: string[] = JSON.parse(jsonStr || "[]");
-    const idx = arr.indexOf(item);
-    if (idx >= 0) arr.splice(idx, 1);
-    else arr.push(item);
-    return JSON.stringify(arr);
-  } catch {
-    return JSON.stringify([item]);
-  }
-}
-
-/** Parse JSON array string safely */
-function parseArr(jsonStr: string | undefined): string[] {
-  try {
-    return JSON.parse(jsonStr || "[]");
-  } catch {
-    return [];
-  }
-}
 
 export default function AdminProjects() {
   const qc = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
-  const [form, setForm] = useState<Partial<Project>>(defaultForm);
+  const [form, setForm] = useState<ProjectFormData>(defaultProjectForm);
   const [editId, setEditId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin", "projects"],
     queryFn: adminApi.projects.list,
   });
 
+  // Client-side filtering
+  const filteredData = data.filter((row) => {
+    if (categoryFilter !== "all" && row.category !== categoryFilter) return false;
+    if (statusFilter === "active" && !row.is_active) return false;
+    if (statusFilter === "hidden" && row.is_active) return false;
+    return true;
+  });
+
+  // Extract unique categories from data
+  const categories = [...new Set(data.map((p) => p.category).filter(Boolean))];
+
   const saveMutation = useMutation({
-    mutationFn: (data: Partial<Project>) =>
+    mutationFn: (data: ProjectFormData) =>
       editId
-        ? adminApi.projects.update(editId, data)
-        : adminApi.projects.create(data),
+        ? adminApi.projects.update(editId, data as Record<string, unknown>)
+        : adminApi.projects.create(data as Record<string, unknown>),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "projects"] });
       setFormOpen(false);
-      toast.success(editId ? "Đã cập nhật" : "Đã tạo mới");
+      toast.success(editId ? "Đã cập nhật dự án" : "Đã tạo dự án mới");
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -133,20 +61,95 @@ export default function AdminProjects() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "projects"] });
       setDeleteTarget(null);
-      toast.success("Đã xóa");
+      toast.success("Đã xóa dự án");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const quickUpdateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Project> }) =>
+      adminApi.projects.update(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "projects"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const bulkMutation = useMutation({
+    mutationFn: async ({ action }: { action: string }) => {
+      const ids = Array.from(selectedIds);
+      const updates: Record<string, unknown> =
+        action === "activate" ? { is_active: 1 }
+        : action === "deactivate" ? { is_active: 0 }
+        : action === "feature" ? { is_featured: 1 }
+        : action === "unfeature" ? { is_featured: 0 }
+        : {};
+
+      if (action === "delete") {
+        await Promise.all(ids.map((id) => adminApi.projects.delete(id)));
+      } else {
+        await Promise.all(ids.map((id) => adminApi.projects.update(id, updates)));
+      }
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin", "projects"] });
+      const count = selectedIds.size;
+      setSelectedIds(new Set());
+      const label =
+        vars.action === "delete" ? "xóa"
+        : vars.action === "activate" ? "kích hoạt"
+        : vars.action === "deactivate" ? "ẩn"
+        : vars.action === "feature" ? "đánh dấu nổi bật"
+        : "cập nhật";
+      toast.success(`Đã ${label} ${count} dự án`);
     },
     onError: (err: Error) => toast.error(err.message),
   });
 
   const openCreate = () => {
     setEditId(null);
-    setForm(defaultForm);
+    setForm(defaultProjectForm);
     setFormOpen(true);
   };
 
   const openEdit = (row: Project) => {
     setEditId(row.id);
-    setForm({ ...row });
+    const images = (row as unknown as Record<string, unknown>).images as
+      | Array<{ image_url: string }>
+      | undefined;
+    setForm({
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      location: row.location,
+      client_name: row.client_name,
+      thumbnail_url: row.thumbnail_url,
+      content_md: row.content_md,
+      category: row.category,
+      year: row.year,
+      completion_year: row.completion_year,
+      sort_order: row.sort_order,
+      is_featured: row.is_featured,
+      is_active: row.is_active,
+      system_types: row.system_types,
+      brands_used: row.brands_used,
+      area_sqm: row.area_sqm,
+      duration_months: row.duration_months,
+      key_metrics: row.key_metrics,
+      compliance_standards: row.compliance_standards,
+      client_industry: row.client_industry,
+      project_scale: row.project_scale,
+      meta_title: row.meta_title,
+      meta_description: row.meta_description,
+      related_solutions: row.related_solutions,
+      related_products: row.related_products,
+      challenges: row.challenges,
+      outcomes: row.outcomes,
+      testimonial_name: row.testimonial_name,
+      testimonial_content: row.testimonial_content,
+      video_url: row.video_url,
+      gallery_urls: images?.map((img) => img.image_url) ?? [],
+    });
     setFormOpen(true);
   };
 
@@ -156,7 +159,6 @@ export default function AdminProjects() {
   };
 
   const columns: Column<Project>[] = [
-    { key: "id", header: "ID", className: "w-16" },
     {
       key: "title",
       header: "Dự án",
@@ -164,52 +166,102 @@ export default function AdminProjects() {
         <div className="flex items-center gap-3">
           {r.thumbnail_url && (
             <img
-              src={r.thumbnail_url}
-              alt={r.title}
-              className="h-10 w-14 rounded object-cover"
+              src={r.thumbnail_url} alt={r.title}
+              className="h-10 w-14 rounded border object-cover flex-shrink-0"
             />
           )}
-          <div>
-            <p className="font-medium">{r.title}</p>
-            <p className="text-muted-foreground text-xs">{r.location}</p>
+          <div className="min-w-0">
+            <p className="font-medium truncate">{r.title}</p>
+            <p className="text-muted-foreground text-xs truncate">{r.location}</p>
           </div>
         </div>
       ),
     },
-    { key: "category", header: "Danh mục", className: "w-28" },
     {
-      key: "client_industry",
-      header: "Ngành",
-      className: "w-28",
+      key: "category", header: "Danh mục", className: "w-28",
       render: (r) => (
-        <span className="text-xs capitalize">
-          {r.client_industry || "—"}
+        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium">
+          {r.category || "—"}
         </span>
       ),
     },
     {
-      key: "is_featured",
-      header: "Nổi bật",
-      className: "w-24",
+      key: "client_name", header: "Khách hàng", className: "w-32",
+      render: (r) => <span className="text-xs">{r.client_name || "—"}</span>,
+    },
+    {
+      key: "completion_year", header: "Năm", className: "w-20",
       render: (r) => (
-        <span
-          className={`text-xs ${r.is_featured ? "text-yellow-600" : "text-slate-400"}`}
+        <span className="text-xs font-mono">
+          {r.completion_year || (r.year ? String(r.year) : "—")}
+        </span>
+      ),
+    },
+    {
+      key: "is_featured", header: "Nổi bật", className: "w-20",
+      render: (r) => (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            quickUpdateMutation.mutate({
+              id: r.id, data: { is_featured: r.is_featured ? 0 : 1 },
+            });
+          }}
+          className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors ${
+            r.is_featured
+              ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+              : "text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+          }`}
         >
-          {r.is_featured ? "★ Có" : "—"}
-        </span>
+          {r.is_featured ? <Star className="h-5 w-5 fill-current" /> : <StarOff className="h-4 w-4" />}
+        </button>
       ),
     },
-    { key: "sort_order", header: "Thứ tự", className: "w-20" },
     {
-      key: "is_active",
-      header: "Trạng thái",
-      className: "w-28",
-      render: (r) => <StatusBadge active={r.is_active} />,
+      key: "is_active", header: "Trạng thái", className: "w-28",
+      render: (r) => (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            quickUpdateMutation.mutate({
+              id: r.id, data: { is_active: r.is_active ? 0 : 1 },
+            });
+          }}
+          className="cursor-pointer"
+        >
+          <StatusBadge active={r.is_active} />
+        </button>
+      ),
     },
   ];
 
-  const selectedSystems = parseArr(form.system_types);
-  const selectedBrands = parseArr(form.brands_used);
+  const filterBar = (
+    <div className="flex items-center gap-2">
+      <select
+        className="border-input bg-background rounded-md border px-2 py-1.5 text-xs"
+        value={statusFilter}
+        onChange={(e) => setStatusFilter(e.target.value)}
+      >
+        <option value="all">Tất cả trạng thái</option>
+        <option value="active">Hoạt động</option>
+        <option value="hidden">Đã ẩn</option>
+      </select>
+      {categories.length > 0 && (
+        <select
+          className="border-input bg-background rounded-md border px-2 py-1.5 text-xs"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          <option value="all">Tất cả danh mục</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -219,306 +271,62 @@ export default function AdminProjects() {
         onAdd={openCreate}
       />
 
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+      >
+        <button
+          onClick={() => bulkMutation.mutate({ action: "activate" })}
+          className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+        >
+          Kích hoạt
+        </button>
+        <button
+          onClick={() => bulkMutation.mutate({ action: "deactivate" })}
+          className="rounded-md bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+        >
+          Ẩn
+        </button>
+        <button
+          onClick={() => bulkMutation.mutate({ action: "feature" })}
+          className="rounded-md bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-200"
+        >
+          ⭐ Featured
+        </button>
+        <button
+          onClick={() => {
+            if (confirm(`Xóa ${selectedIds.size} dự án đã chọn?`)) {
+              bulkMutation.mutate({ action: "delete" });
+            }
+          }}
+          className="rounded-md bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
+        >
+          Xóa
+        </button>
+      </BulkActionBar>
+
       <DataTable
-        data={data}
+        data={filteredData}
         columns={columns}
         isLoading={isLoading}
         searchField="title"
+        searchPlaceholder="Tìm theo tên dự án..."
+        filterBar={filterBar}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         onEdit={openEdit}
         onDelete={setDeleteTarget}
       />
 
-      <FormDialog
+      <ProjectFormSheet
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editId ? "Sửa dự án" : "Thêm dự án"}
+        editId={editId}
+        form={form}
+        setForm={setForm}
         onSubmit={handleSubmit}
         loading={saveMutation.isPending}
-      >
-        {/* Basic Info */}
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Tiêu đề" required>
-            <Input
-              value={form.title || ""}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              required
-            />
-          </Field>
-          <Field label="Slug" required>
-            <Input
-              value={form.slug || ""}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
-              required
-            />
-          </Field>
-        </div>
-        <Field label="Mô tả">
-          <Textarea
-            value={form.description || ""}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            rows={3}
-          />
-        </Field>
-
-        {/* Location & Client */}
-        <div className="grid grid-cols-3 gap-4">
-          <Field label="Địa điểm">
-            <Input
-              value={form.location || ""}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-            />
-          </Field>
-          <Field label="Khách hàng">
-            <Input
-              value={form.client_name || ""}
-              onChange={(e) =>
-                setForm({ ...form, client_name: e.target.value })
-              }
-            />
-          </Field>
-          <Field label="Năm">
-            <Input
-              type="number"
-              value={form.year ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  year: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-            />
-          </Field>
-        </div>
-
-        <Field label="URL Thumbnail">
-          <Input
-            value={form.thumbnail_url || ""}
-            onChange={(e) =>
-              setForm({ ...form, thumbnail_url: e.target.value })
-            }
-          />
-        </Field>
-
-        <Field label="Nội dung (Markdown)">
-          <Textarea
-            value={form.content_md || ""}
-            onChange={(e) => setForm({ ...form, content_md: e.target.value })}
-            rows={8}
-            className="font-mono text-sm"
-          />
-        </Field>
-
-        {/* Category & Meta */}
-        <div className="grid grid-cols-3 gap-4">
-          <Field label="Danh mục">
-            <Input
-              value={form.category || ""}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            />
-          </Field>
-          <Field label="Ngành khách hàng">
-            <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-              value={form.client_industry ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  client_industry: e.target.value || null,
-                })
-              }
-            >
-              <option value="">— Chọn ngành —</option>
-              {INDUSTRY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Quy mô">
-            <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-              value={form.project_scale ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  project_scale: e.target.value || null,
-                })
-              }
-            >
-              <option value="">— Chọn —</option>
-              <option value="small">Nhỏ (&lt;500m²)</option>
-              <option value="medium">Vừa (500–5000m²)</option>
-              <option value="large">Lớn (&gt;5000m²)</option>
-            </select>
-          </Field>
-        </div>
-
-        {/* Metrics */}
-        <div className="grid grid-cols-4 gap-4">
-          <Field label="Diện tích (m²)">
-            <Input
-              type="number"
-              value={form.area_sqm ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  area_sqm: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-            />
-          </Field>
-          <Field label="Thời gian (tháng)">
-            <Input
-              type="number"
-              value={form.duration_months ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  duration_months: e.target.value
-                    ? Number(e.target.value)
-                    : null,
-                })
-              }
-            />
-          </Field>
-          <Field label="Thứ tự">
-            <Input
-              type="number"
-              value={form.sort_order ?? 0}
-              onChange={(e) =>
-                setForm({ ...form, sort_order: Number(e.target.value) })
-              }
-            />
-          </Field>
-          <Field label="Nổi bật">
-            <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-              value={form.is_featured ?? 0}
-              onChange={(e) =>
-                setForm({ ...form, is_featured: Number(e.target.value) })
-              }
-            >
-              <option value={0}>Không</option>
-              <option value={1}>Có</option>
-            </select>
-          </Field>
-        </div>
-
-        {/* System Types — checkbox grid */}
-        <Field label="Hệ thống triển khai">
-          <div className="flex flex-wrap gap-2">
-            {SYSTEM_OPTIONS.map((sys) => (
-              <label
-                key={sys}
-                className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                  selectedSystems.includes(sys)
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-input text-muted-foreground hover:border-primary/50"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={selectedSystems.includes(sys)}
-                  onChange={() =>
-                    setForm({
-                      ...form,
-                      system_types: toggleJsonArray(
-                        form.system_types || "[]",
-                        sys,
-                      ),
-                    })
-                  }
-                />
-                {sys}
-              </label>
-            ))}
-          </div>
-        </Field>
-
-        {/* Brands Used — checkbox grid */}
-        <Field label="Thương hiệu sử dụng">
-          <div className="flex flex-wrap gap-2">
-            {BRAND_OPTIONS.map((brand) => (
-              <label
-                key={brand}
-                className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                  selectedBrands.includes(brand)
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-input text-muted-foreground hover:border-primary/50"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() =>
-                    setForm({
-                      ...form,
-                      brands_used: toggleJsonArray(
-                        form.brands_used || "[]",
-                        brand,
-                      ),
-                    })
-                  }
-                />
-                {brand}
-              </label>
-            ))}
-          </div>
-        </Field>
-
-        {/* Key Metrics — JSON editor */}
-        <Field label="Key Metrics (JSON)">
-          <Textarea
-            value={form.key_metrics || "{}"}
-            onChange={(e) => setForm({ ...form, key_metrics: e.target.value })}
-            rows={3}
-            className="font-mono text-sm"
-            placeholder='{"cameras": 120, "access_points": 50, "floors": 12}'
-          />
-        </Field>
-
-        {/* Compliance Standards — comma separated input */}
-        <Field label="Tiêu chuẩn tuân thủ (phân cách bởi dấu phẩy)">
-          <Input
-            value={parseArr(form.compliance_standards).join(", ")}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                compliance_standards: JSON.stringify(
-                  e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                ),
-              })
-            }
-            placeholder="TCVN 7336:2003, ONVIF Profile S, ISO 14001"
-          />
-        </Field>
-
-        {/* SEO Meta */}
-        <div className="rounded-lg border p-4 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SEO Metadata</p>
-          <Field label="Meta Title">
-            <Input
-              value={form.meta_title || ""}
-              onChange={(e) => setForm({ ...form, meta_title: e.target.value || null })}
-              placeholder={form.title || "Sử dụng tiêu đề"}
-            />
-          </Field>
-          <Field label="Meta Description">
-            <Textarea
-              value={form.meta_description || ""}
-              onChange={(e) => setForm({ ...form, meta_description: e.target.value || null })}
-              rows={2}
-              placeholder={form.description || "Sử dụng mô tả"}
-            />
-          </Field>
-        </div>
-      </FormDialog>
+      />
 
       <ConfirmDelete
         open={!!deleteTarget}

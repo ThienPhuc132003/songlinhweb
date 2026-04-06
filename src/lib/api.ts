@@ -2,6 +2,7 @@ import type {
   Solution,
   Product,
   ProductCategory,
+  ProductFeature,
   Project,
   Post,
   GalleryAlbum,
@@ -70,18 +71,22 @@ export const api = {
     get: (slug: string) => fetchApi<Solution>(`/solutions/${slug}`),
   },
   products: {
-    list: (opts?: { category?: string; brand?: string; search?: string; page?: number; limit?: number }) => {
+    list: (opts?: { category?: string; brand?: string; search?: string; page?: number; limit?: number; tags?: string[] }) => {
       const params = new URLSearchParams();
       if (opts?.category) params.set("category", opts.category);
       if (opts?.brand) params.set("brand", opts.brand);
       if (opts?.search) params.set("search", opts.search);
       if (opts?.page) params.set("page", String(opts.page));
       if (opts?.limit) params.set("limit", String(opts.limit));
+      if (opts?.tags) opts.tags.forEach((t) => params.append("tag", t));
       const qs = params.toString();
       return fetchPaginated<Product>(`/products${qs ? `?${qs}` : ""}`);
     },
     get: (slug: string) => fetchApi<Product & { images?: EntityImage[]; related?: Product[] }>(`/products/${slug}`),
-    categories: () => fetchApi<ProductCategory[]>(`/product-categories`),
+    categories: () => fetchApi<ProductCategory[]>(`/products/categories`),
+  },
+  productFeatures: {
+    list: () => fetchApi<ProductFeature[]>(`/product-features`),
   },
   brands: {
     list: () => fetchApi<Array<{ id: number; slug: string; name: string; logo_url: string | null; description: string }>>(`/brands`),
@@ -116,9 +121,17 @@ export const api = {
     }),
   quotes: {
     submit: (data: QuoteRequestPayload) =>
-      fetchApi<{ message: string }>("/quotes", {
+      fetchApi<{ id: number; message: string }>("/quotations", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          customer_name: data.customer_name,
+          company_name: data.company_name,
+          email: data.email,
+          phone: data.phone,
+          project_name: data.project_name,
+          note: data.notes,
+          items: data.items,
+        }),
       }),
   },
 };

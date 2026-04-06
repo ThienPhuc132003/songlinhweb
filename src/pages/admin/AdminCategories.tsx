@@ -125,7 +125,7 @@ export default function AdminCategories() {
       ),
     },
     {
-      key: "sort_order",
+      key: "id" as keyof ProductCategory,
       header: "SP",
       className: "w-16",
       render: (r) => (
