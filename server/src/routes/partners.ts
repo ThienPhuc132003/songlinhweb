@@ -8,7 +8,7 @@ const partners = new Hono<{ Bindings: Env }>();
 /** GET /api/partners — list active partners */
 partners.get("/", async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT * FROM partners WHERE is_active = 1 ORDER BY sort_order ASC",
+    "SELECT * FROM partners WHERE is_active = 1 AND deleted_at IS NULL ORDER BY sort_order ASC",
   ).all<PartnerRow>();
 
   return ok(rows.results);
@@ -81,10 +81,10 @@ partners.put("/:id", requireAuth, async (c) => {
   return ok({ id });
 });
 
-/** DELETE /api/admin/partners/:id */
+/** DELETE /api/admin/partners/:id — soft delete */
 partners.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
-  await c.env.DB.prepare("DELETE FROM partners WHERE id = ?").bind(id).run();
+  await c.env.DB.prepare("UPDATE partners SET deleted_at = datetime('now') WHERE id = ?").bind(id).run();
   return ok({ deleted: true });
 });
 

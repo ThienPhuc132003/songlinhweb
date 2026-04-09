@@ -1,131 +1,86 @@
-import { useEffect, useRef, useState } from "react";
-import { COMPANY_STATS, COMPANY_ACTIVITIES, SITE } from "@/lib/constants";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router";
+import { COMPANY_ACTIVITIES, SITE } from "@/lib/constants";
+import { useSiteConfig } from "@/hooks/useApi";
+import { StatsGrid } from "@/components/common/StatsGrid";
 import { cn } from "@/lib/utils";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { fadeUp } from "@/lib/animations";
 
-/** Animated counter hook */
-function useCounter(target: number, duration = 2000, start = false) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!start) return;
-    let startTime: number | null = null;
-    let raf: number;
-
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4);
-      setCount(Math.floor(eased * target));
-      if (progress < 1) {
-        raf = requestAnimationFrame(step);
-      }
-    };
-
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration, start]);
-
-  return count;
-}
-
-function StatItem({
-  value,
-  suffix,
-  label,
-  started,
-}: {
-  value: number;
-  suffix: string;
-  label: string;
-  started: boolean;
-}) {
-  const count = useCounter(value, 2000, started);
-
-  return (
-    <div className="text-center">
-      <div className="text-primary text-3xl font-bold md:text-4xl">
-        {count}
-        {suffix}
-      </div>
-      <div className="text-muted-foreground mt-1 text-sm">{label}</div>
-    </div>
-  );
-}
 
 export function CompanyIntro({ className }: { className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [started, setStarted] = useState(false);
-  const leftRef = useScrollReveal();
-  const rightRef = useScrollReveal();
+  const { data: config } = useSiteConfig();
 
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStarted(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
+  const description = useMemo(() => {
+    if (config?.about_description) {
+      return config.about_description
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .split("\n\n")[0];
+    }
+    return `${SITE.name} chuyên cung cấp giải pháp và dịch vụ trọn gói trong lĩnh vực Công nghệ thông tin, Hệ thống M&E và Cơ điện. Với đội ngũ kỹ sư giàu kinh nghiệm, chúng tôi cam kết mang đến chất lượng dịch vụ tốt nhất cho khách hàng.`;
+  }, [config]);
 
   return (
-    <section className={cn("section-padding bg-muted/30", className)}>
+    <section
+      className={cn(
+        "border-y border-slate-200 bg-[#F8FAFC] py-24 dark:border-border dark:bg-muted/10 md:py-32",
+        className,
+      )}
+    >
       <div className="container-custom">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* Left — text content */}
-          <div ref={leftRef} className="reveal">
-            <h2 className="text-primary mb-4 text-2xl font-bold md:text-3xl">
-              Về {SITE.displayName}
+        <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
+          {/* Left — editorial text */}
+          <motion.div {...fadeUp()}>
+            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
+              Về chúng tôi
+            </p>
+            <h2 className="mb-6 text-3xl font-extralight leading-[1.15] tracking-tight md:text-4xl">
+              Về{" "}
+              <span className="font-semibold">{SITE.displayName}</span>
             </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              {SITE.name} chuyên cung cấp giải pháp và dịch vụ trọn gói trong
-              lĩnh vực Công nghệ thông tin, Hệ thống M&E và Cơ điện. Với đội ngũ
-              kỹ sư giàu kinh nghiệm, chúng tôi cam kết mang đến chất lượng dịch
-              vụ tốt nhất cho khách hàng.
+            {/* Brand accent bar */}
+            <div className="mb-8 h-0.5 w-12 bg-[#3C5DAA]" />
+
+            <p className="mb-8 text-[15px] leading-[1.85] text-slate-600 dark:text-muted-foreground">
+              {description}
             </p>
 
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold tracking-wider uppercase">
+            <div className="space-y-4">
+              <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400">
                 Lĩnh vực hoạt động
-              </h3>
+              </p>
               {COMPANY_ACTIVITIES.map((activity, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="bg-primary mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />
-                  <span className="text-sm">{activity}</span>
-                </div>
+                <motion.div
+                  key={i}
+                  {...fadeUp(0.05 * i)}
+                  className="flex items-center gap-3"
+                >
+                  <div className="h-2 w-2 shrink-0 border border-[#3C5DAA]/40 bg-[#3C5DAA]/10" />
+                  <span className="text-sm text-slate-700 dark:text-foreground">
+                    {activity}
+                  </span>
+                </motion.div>
               ))}
             </div>
-          </div>
+
+            <Button
+              asChild
+              variant="outline"
+              className="mt-8 rounded-none border-slate-300 px-8 text-sm font-medium tracking-wide dark:border-border"
+            >
+              <Link to="/gioi-thieu">
+                Tìm hiểu thêm
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
 
           {/* Right — stats grid */}
-          <div
-            ref={(el) => {
-              // Merge refs
-              (rightRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-              (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
-            }}
-            className="reveal grid grid-cols-2 gap-6 md:gap-8"
-          >
-            {COMPANY_STATS.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-background rounded-xl border p-6 shadow-sm"
-              >
-                <StatItem
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  label={stat.label}
-                  started={started}
-                />
-              </div>
-            ))}
-          </div>
+          <motion.div {...fadeUp(0.15)}>
+            <StatsGrid variant="card" />
+          </motion.div>
         </div>
       </div>
     </section>

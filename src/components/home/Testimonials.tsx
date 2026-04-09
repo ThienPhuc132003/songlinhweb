@@ -1,5 +1,6 @@
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { fadeUp } from "@/lib/animations";
 
 const TESTIMONIALS = [
   {
@@ -25,44 +26,52 @@ const TESTIMONIALS = [
   },
 ];
 
+
 export function Testimonials({ className }: { className?: string }) {
-  const headingRef = useScrollReveal();
-  const gridRef = useScrollReveal();
-
   return (
-    <section className={cn("section-padding", className)}>
+    <section className={cn("py-24 md:py-32", className)}>
       <div className="container-custom">
-        <div ref={headingRef} className="reveal mb-10 text-center md:mb-14">
-          <h2 className="text-primary mb-3 text-2xl font-bold md:text-3xl">
-            Khách hàng nói gì về chúng tôi
-          </h2>
-          <p className="text-muted-foreground mx-auto max-w-lg">
-            Sự tin tưởng của khách hàng là động lực phát triển của Song Linh
-            Technologies
+        {/* Editorial heading */}
+        <motion.div {...fadeUp()} className="mb-16 text-center">
+          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
+            Phản hồi
           </p>
-        </div>
+          <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
+            Khách hàng{" "}
+            <span className="font-semibold">nói gì về chúng tôi</span>
+          </h2>
+        </motion.div>
 
-        <div
-          ref={gridRef}
-          className="reveal-stagger grid gap-6 md:grid-cols-3"
-        >
+        <div className="grid gap-6 md:grid-cols-3">
           {TESTIMONIALS.map((t, i) => (
-            <blockquote
+            <motion.blockquote
               key={i}
-              className="reveal-item bg-card flex flex-col rounded-xl border p-6 shadow-sm"
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.12,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              className="flex flex-col border border-slate-200 bg-white p-7 transition-all duration-300 hover:border-[#3C5DAA]/30 dark:border-border dark:bg-card"
             >
-              {/* Quote mark */}
-              <span className="text-primary/20 mb-3 text-4xl font-serif leading-none">"</span>
-              <p className="text-foreground/80 mb-6 flex-1 text-sm leading-relaxed">
+              {/* Quote mark — brand blue */}
+              <span className="mb-4 text-4xl font-serif leading-none text-[#3C5DAA]/15">
+                "
+              </span>
+              <p className="mb-6 flex-1 text-sm leading-[1.85] text-slate-600 dark:text-muted-foreground">
                 {t.quote}
               </p>
-              <footer className="border-t pt-4">
-                <p className="text-sm font-semibold">{t.author}</p>
-                <p className="text-muted-foreground text-xs">
+              <footer className="border-t border-slate-200 pt-4 dark:border-border">
+                <p className="text-sm font-semibold tracking-tight text-slate-900 dark:text-foreground">
+                  {t.author}
+                </p>
+                <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-slate-400">
                   {t.role} — {t.company}
                 </p>
               </footer>
-            </blockquote>
+            </motion.blockquote>
           ))}
         </div>
       </div>

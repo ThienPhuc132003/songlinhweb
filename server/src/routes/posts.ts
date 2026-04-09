@@ -22,7 +22,7 @@ posts.get("/", async (c) => {
   const search = url.searchParams.get("search");
   const offset = (page - 1) * limit;
 
-  let where = "WHERE (status = 'published' OR is_published = 1)";
+  let where = "WHERE (status = 'published' OR is_published = 1) AND deleted_at IS NULL";
   const params: unknown[] = [];
 
   if (tag) {
@@ -86,7 +86,7 @@ posts.get("/all", requireAuth, async (c) => {
 posts.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
   const row = await c.env.DB.prepare(
-    "SELECT * FROM posts WHERE slug = ? AND (status = 'published' OR is_published = 1)",
+    "SELECT * FROM posts WHERE slug = ? AND (status = 'published' OR is_published = 1) AND deleted_at IS NULL",
   )
     .bind(slug)
     .first<PostRow>();
@@ -106,6 +106,7 @@ posts.get("/:slug", async (c) => {
             category, reading_time_min, published_at, created_at
      FROM posts 
      WHERE (status = 'published' OR is_published = 1) 
+       AND deleted_at IS NULL
        AND id != ? 
        AND category = ?
      ORDER BY published_at DESC
@@ -299,10 +300,10 @@ posts.put("/:id", requireAuth, async (c) => {
   }
 });
 
-/** DELETE /api/admin/posts/:id */
+/** DELETE /api/admin/posts/:id — soft delete */
 posts.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
-  await c.env.DB.prepare("DELETE FROM posts WHERE id = ?").bind(id).run();
+  await c.env.DB.prepare("UPDATE posts SET deleted_at = datetime('now') WHERE id = ?").bind(id).run();
   return ok({ deleted: true });
 });
 
@@ -340,7 +341,7 @@ posts.post("/bulk", requireAuth, async (c) => {
     }
     case "delete": {
       await c.env.DB.prepare(
-        `DELETE FROM posts WHERE id IN (${placeholders})`,
+        `UPDATE posts SET deleted_at = datetime('now') WHERE id IN (${placeholders})`,
       )
         .bind(...post_ids)
         .run();

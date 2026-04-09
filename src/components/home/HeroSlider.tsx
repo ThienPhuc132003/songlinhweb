@@ -76,10 +76,22 @@ export function HeroSlider() {
                 {/* ── Content ── */}
                 <div className="container-custom relative z-10 flex min-h-[28rem] flex-col justify-center py-16 md:min-h-[32rem] md:py-24 lg:min-h-[36rem]">
                   <div className="max-w-2xl">
+                    {/* Monospace brand label */}
+                    <p
+                      className={cn(
+                        "mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-white/50 transition-all duration-700",
+                        selectedIndex === index
+                          ? "translate-y-0 opacity-100"
+                          : "-translate-y-4 opacity-0",
+                      )}
+                    >
+                      Song Linh Technologies
+                    </p>
+
                     {/* Thin accent line */}
                     <div
                       className={cn(
-                        "mb-5 h-1 w-16 rounded-full bg-white/80 transition-all duration-700",
+                        "mb-5 h-0.5 w-16 bg-[#3C5DAA] transition-all duration-700",
                         selectedIndex === index
                           ? "translate-x-0 opacity-100"
                           : "-translate-x-6 opacity-0",

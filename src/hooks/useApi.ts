@@ -111,3 +111,12 @@ export function useContactSubmit() {
     mutationFn: api.contact,
   });
 }
+
+// ===== Site Config =====
+export function useSiteConfig() {
+  return useQuery({
+    queryKey: ["site-config"],
+    queryFn: api.siteConfig.get,
+    staleTime: 5 * 60 * 1000, // 5 min — config rarely changes
+  });
+}

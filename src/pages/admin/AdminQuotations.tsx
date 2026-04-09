@@ -27,7 +27,7 @@ const STATUS_CONFIG: Record<
   QuoteStatus,
   { label: string; color: string; bg: string }
 > = {
-  new: { label: "Mới", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" },
+  new: { label: "Mới", color: "text-primary", bg: "bg-primary/10 border-primary/30" },
   processing: { label: "Đang xử lý", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
   sent: { label: "Đã gửi", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
   completed: { label: "Hoàn tất", color: "text-green-700", bg: "bg-green-50 border-green-200" },
@@ -188,7 +188,7 @@ export default function AdminQuotations() {
               setFilterStatus(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="">Tất cả trạng thái</option>
             {ALL_STATUSES.map((s) => (
@@ -204,7 +204,7 @@ export default function AdminQuotations() {
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
@@ -293,7 +293,7 @@ function QuoteRow({
   return (
     <>
       <tr
-        className={`cursor-pointer transition-colors hover:bg-slate-50 ${isExpanded ? "bg-blue-50/50" : ""}`}
+        className={`cursor-pointer transition-colors hover:bg-slate-50 ${isExpanded ? "bg-primary/5" : ""}`}
         onClick={onToggle}
       >
         <td className="px-4 py-3">
@@ -303,7 +303,7 @@ function QuoteRow({
             ) : (
               <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
             )}
-            <span className="font-mono text-xs font-bold text-blue-600">#{quote.id}</span>
+            <span className="font-mono text-xs font-bold text-primary">#{quote.id}</span>
           </div>
         </td>
         <td className="px-4 py-3">
@@ -334,7 +334,7 @@ function QuoteRow({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-blue-600"
+              className="h-8 w-8 text-slate-400 hover:text-primary"
               onClick={onToggle}
               title="Xem chi tiết"
             >
@@ -356,10 +356,10 @@ function QuoteRow({
       {/* Expanded Detail */}
       {isExpanded && (
         <tr>
-          <td colSpan={8} className="border-b-2 border-blue-200 bg-blue-50/30 px-6 py-5">
+          <td colSpan={8} className="border-b-2 border-primary/20 bg-primary/5 px-6 py-5">
             {!detail ? (
               <div className="flex items-center justify-center py-4">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 <span className="ml-2 text-sm text-slate-500">Đang tải...</span>
               </div>
             ) : (
@@ -367,7 +367,7 @@ function QuoteRow({
                 {/* Customer Info */}
                 <div className="space-y-3">
                   <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <Building2 className="h-4 w-4 text-blue-500" />
+                    <Building2 className="h-4 w-4 text-primary" />
                     Thông tin khách hàng
                   </h4>
                   <div className="space-y-1.5 text-sm">
@@ -378,7 +378,7 @@ function QuoteRow({
                     <p className="flex items-center gap-1">
                       <Phone className="h-3.5 w-3.5 text-slate-400" />
                       <a href={`https://zalo.me/${detail.phone}`} target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                         className="inline-flex items-center gap-1.5 text-primary hover:underline">
                         {detail.phone}
                         <svg className="h-4 w-4" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="24" cy="24" r="24" fill="#0068FF"/>
@@ -390,7 +390,7 @@ function QuoteRow({
                     {detail.email && (
                       <p className="flex items-center gap-1">
                         <Mail className="h-3.5 w-3.5 text-slate-400" />
-                        <a href={`mailto:${detail.email}`} className="text-blue-600 hover:underline">{detail.email}</a>
+                        <a href={`mailto:${detail.email}`} className="text-primary hover:underline">{detail.email}</a>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -407,7 +407,7 @@ function QuoteRow({
                     {detail.project_name && (
                       <p className="flex items-center gap-1">
                         <FolderKanban className="h-3.5 w-3.5 text-slate-400" />
-                        <strong className="text-blue-700">{detail.project_name}</strong>
+                        <strong className="text-primary">{detail.project_name}</strong>
                       </p>
                     )}
                     <p className="flex items-center gap-1">
@@ -426,7 +426,7 @@ function QuoteRow({
                 {/* Items Table */}
                 <div className="lg:col-span-2">
                   <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <Package className="h-4 w-4 text-blue-500" />
+                    <Package className="h-4 w-4 text-primary" />
                     Sản phẩm ({detail.items?.length ?? 0})
                   </h4>
                   {detail.items && detail.items.length > 0 ? (
@@ -469,7 +469,7 @@ function QuoteRow({
 
                   {/* Actions: Excel Download + Status Change */}
                   <div className="mt-4 space-y-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Button
                         size="sm"
                         onClick={async (e) => {
@@ -482,11 +482,48 @@ function QuoteRow({
                             toast.error("Lỗi tải file Excel");
                           }
                         }}
-                        className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                        className="bg-primary text-white hover:bg-primary/90 shadow-sm"
                       >
                         <Download className="mr-1.5 h-4 w-4" />
                         Tải Excel
                       </Button>
+                      {detail.phone && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="border-[#0068FF]/30 text-[#0068FF] hover:bg-[#0068FF]/5"
+                        >
+                          <a
+                            href={`https://zalo.me/${detail.phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <svg className="mr-1.5 h-4 w-4" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="24" cy="24" r="24" fill="#0068FF"/>
+                              <path d="M12.5 34.5c.8-2.3 1.3-4.3 1.3-5.8 0-.4-.1-.7-.3-.9C11.2 25.1 10 22.2 10 19c0-7.2 6.3-13 14-13s14 5.8 14 13-6.3 13-14 13c-1.6 0-3.1-.2-4.5-.7-.4-.1-.8-.1-1.1 0l-3.9 1.3c-.6.2-1.2-.1-1.4-.7-.1-.2-.1-.4-.1-.5l.5-1.7z" fill="white"/>
+                            </svg>
+                            Chat trên Zalo
+                          </a>
+                        </Button>
+                      )}
+                      {detail.email && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                        >
+                          <a
+                            href={`mailto:${detail.email}?subject=${encodeURIComponent(`[SLTECH] Báo giá #${detail.id}${detail.project_name ? ` - ${detail.project_name}` : ""}`)}&body=${encodeURIComponent(`Kính gửi ${detail.customer_name},\n\nCảm ơn quý khách đã gửi yêu cầu báo giá. Song Linh Technologies xin phản hồi như sau:\n\n---\n\nTrân trọng,\nSong Linh Technologies`)}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Mail className="mr-1.5 h-4 w-4" />
+                            Gửi Email
+                          </a>
+                        </Button>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-medium text-slate-500">Đổi trạng thái:</span>

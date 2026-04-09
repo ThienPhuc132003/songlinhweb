@@ -16,7 +16,7 @@ gallery.get("/", async (c) => {
   let sql = `SELECT ga.*, COUNT(gi.id) as image_count
      FROM gallery_albums ga
      LEFT JOIN gallery_images gi ON gi.album_id = ga.id
-     WHERE ga.is_active = 1`;
+     WHERE ga.is_active = 1 AND ga.deleted_at IS NULL`;
   const binds: unknown[] = [];
 
   if (category && category !== "all") {
@@ -38,7 +38,7 @@ gallery.get("/", async (c) => {
 gallery.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
   const album = await c.env.DB.prepare(
-    "SELECT * FROM gallery_albums WHERE slug = ? AND is_active = 1",
+    "SELECT * FROM gallery_albums WHERE slug = ? AND is_active = 1 AND deleted_at IS NULL",
   )
     .bind(slug)
     .first<GalleryAlbumRow>();

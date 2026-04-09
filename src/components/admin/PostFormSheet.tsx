@@ -144,7 +144,7 @@ export const defaultPostForm: PostFormData = {
 
 const REFERENCE_TYPES = [
   { value: 'law' as const, label: 'Pháp lý', icon: Scale, color: 'text-amber-600' },
-  { value: 'standard' as const, label: 'Tiêu chuẩn', icon: Cog, color: 'text-blue-600' },
+  { value: 'standard' as const, label: 'Tiêu chuẩn', icon: Cog, color: 'text-primary' },
   { value: 'news' as const, label: 'Tin tức', icon: Globe, color: 'text-emerald-600' },
   { value: 'vendor' as const, label: 'Nhà cung cấp', icon: Building2, color: 'text-violet-600' },
 ] as const;

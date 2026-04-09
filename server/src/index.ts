@@ -12,11 +12,12 @@ import partners from "./routes/partners";
 import siteConfig from "./routes/site-config";
 import contact from "./routes/contact";
 import upload from "./routes/upload";
-import quotes from "./routes/quotes";
+// Legacy quotes route removed — use quotations instead
 import quotations from "./routes/quotations";
 import features from "./routes/features";
 import admin from "./routes/admin";
 import seo from "./routes/seo";
+import solutions from "./routes/solutions";
 import { cleanupOldXlsxFiles } from "./services/r2-cleanup";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -79,9 +80,10 @@ app.route("/api/gallery", gallery);
 app.route("/api/partners", partners);
 app.route("/api/site-config", siteConfig);
 app.route("/api/contact", contact);
-app.route("/api/quotes", quotes);
+// Legacy: app.route("/api/quotes") removed — use /api/quotations
 app.route("/api/quotations", quotations);
 app.route("/api/product-features", features);
+app.route("/api/solutions", solutions);
 
 /* ───────── Admin Routes ───────── */
 
@@ -94,9 +96,10 @@ app.route("/api/admin/partners", partners);
 app.route("/api/admin/site-config", siteConfig);
 app.route("/api/admin/contacts", contact);
 app.route("/api/admin/upload", upload);
-app.route("/api/admin/quotes", quotes);
+// Legacy: app.route("/api/admin/quotes") removed — use /api/admin/quotations
 app.route("/api/admin/quotations", quotations);
 app.route("/api/admin/product-features", features);
+app.route("/api/admin/solutions", solutions);
 app.route("/api/admin", admin);
 
 /* ───────── SEO Routes ───────── */

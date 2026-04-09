@@ -27,10 +27,11 @@ products.get("/categories/all", requireAuth, async (c) => {
     `SELECT pc.id, pc.slug, pc.name, pc.description, pc.image_url, 
             pc.parent_id, pc.sort_order, pc.is_active,
             (SELECT COUNT(*) FROM products WHERE category_id = pc.id) as product_count,
-            (SELECT name FROM product_categories WHERE id = pc.parent_id) as parent_name
+            (SELECT name FROM product_categories WHERE id = pc.parent_id) as parent_name,
+            (SELECT COUNT(*) FROM product_categories WHERE parent_id = pc.id) as children_count
      FROM product_categories pc
      ORDER BY pc.sort_order ASC`,
-  ).all<ProductCategoryRow & { product_count: number; parent_name: string | null }>();
+  ).all<ProductCategoryRow & { product_count: number; parent_name: string | null; children_count: number }>();
   return ok(rows.results);
 });
 
@@ -58,8 +59,8 @@ products.get("/", async (c) => {
     params.push(brand);
   }
   if (search) {
-    where += " AND (p.name LIKE ? OR p.description LIKE ? OR p.model_number LIKE ? OR p.brand LIKE ?)";
-    params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    where += " AND (p.name LIKE ? OR p.description LIKE ? OR p.model_number LIKE ? OR p.brand LIKE ? OR p.specifications LIKE ?)";
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
   }
   // Server-side tag filtering: product must have ALL specified feature slugs
   if (tags.length > 0) {
@@ -618,6 +619,42 @@ products.post("/bulk", requireAuth, async (c) => {
     console.error("Bulk action error:", e);
     return err(`Lỗi bulk action: ${e instanceof Error ? e.message : "Unknown error"}`, 500);
   }
+});
+
+/* ───────── Spec Templates (site_config) ───────── */
+
+/** GET /api/admin/products/spec-templates — fetch spec templates */
+products.get("/spec-templates", requireAuth, async (c) => {
+  const templates = await c.env.DB.prepare(
+    "SELECT value FROM site_config WHERE key = 'spec_templates'",
+  ).first<{ value: string }>();
+  const mapping = await c.env.DB.prepare(
+    "SELECT value FROM site_config WHERE key = 'spec_template_mapping'",
+  ).first<{ value: string }>();
+
+  return ok({
+    templates: templates ? JSON.parse(templates.value) : {},
+    mapping: mapping ? JSON.parse(mapping.value) : {},
+  });
+});
+
+/** PUT /api/admin/products/spec-templates — update spec templates */
+products.put("/spec-templates", requireAuth, async (c) => {
+  const body = await c.req.json<{ templates: Record<string, string[]>; mapping?: Record<string, string> }>();
+  if (!body.templates) return err("templates is required", 400);
+
+  await c.env.DB.prepare(
+    "UPDATE site_config SET value = ? WHERE key = 'spec_templates'",
+  ).bind(JSON.stringify(body.templates)).run();
+
+  if (body.mapping) {
+    await c.env.DB.prepare(
+      "UPDATE site_config SET value = ? WHERE key = 'spec_template_mapping'",
+    ).bind(JSON.stringify(body.mapping)).run();
+  }
+
+  logAudit(c.env.DB, 'config', 0, 'update', { key: 'spec_templates' });
+  return ok({ updated: true });
 });
 
 export default products;

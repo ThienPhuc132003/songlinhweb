@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
@@ -20,12 +20,14 @@ import {
   Package,
   Phone,
   Shield,
+  Cpu,
+  Send,
 } from "lucide-react";
 import { FeatureBadge } from "@/components/ui/FeatureBadge";
 import { useCompare } from "@/contexts/CompareContext";
-import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { useCart } from "@/contexts/CartContext";
 
-/** Safely parse JSON string or return array directly */
+/** Safely parse JSON string or return typed value */
 function safeJson<T>(value: string | T | null | undefined, fallback: T): T {
   if (!value) return fallback;
   if (typeof value === "string") {
@@ -94,7 +96,9 @@ export default function ProductDetail() {
   }>;
 
   const { add, remove, isInCompare, isFull } = useCompare();
+  const { addItem, items: cartItems } = useCart();
   const inCompare = product ? isInCompare(product.id) : false;
+  const inCart = product ? cartItems.some((i) => i.productId === product.id) : false;
 
   // Combine entity_images and gallery_urls for the thumbnail gallery
   const entityImages = (product as unknown as Record<string, unknown>)?.images as
@@ -105,9 +109,10 @@ export default function ProductDetail() {
     ...(entityImages || []).map((img) => ({ id: `e-${img.id}`, url: img.image_url })),
   ];
 
-  const specEntries = Object.entries(specs);
+  const specEntries = useMemo(() => Object.entries(specs), [specs]);
   const displayImage = mainImage || product?.image_url;
 
+  // ─── Loading State ─────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <>
@@ -120,15 +125,21 @@ export default function ProductDetail() {
           compact
         />
         <section className="section-padding">
-          <div className="container-custom max-w-6xl">
-            <div className="grid gap-8 md:grid-cols-2">
-              <Skeleton className="aspect-square w-full rounded-xl" />
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-2/3" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-10 w-40" />
+          <div className="container-custom max-w-7xl">
+            <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+              <div className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Skeleton className="aspect-square w-full rounded-xl" />
+                  <div className="space-y-4">
+                    <Skeleton className="h-6 w-1/3" />
+                    <Skeleton className="h-8 w-2/3" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-10 w-40" />
+                  </div>
+                </div>
               </div>
+              <Skeleton className="h-80 rounded-xl" />
             </div>
           </div>
         </section>
@@ -136,6 +147,7 @@ export default function ProductDetail() {
     );
   }
 
+  // ─── 404 State ──────────────────────────────────────────────────────────────
   if (!product) {
     return (
       <>
@@ -163,6 +175,7 @@ export default function ProductDetail() {
     );
   }
 
+  // ─── Main Render ────────────────────────────────────────────────────────────
   return (
     <>
       <SEO
@@ -197,174 +210,434 @@ export default function ProductDetail() {
       />
 
       <section className="section-padding">
-        <div className="container-custom max-w-6xl">
-          {/* ─── Product Info Grid ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="grid gap-10 md:grid-cols-2"
-          >
-            {/* Image + Gallery */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br from-muted to-muted/30">
-                {imgError || !displayImage ? (
-                  <div className="flex flex-col items-center justify-center gap-2 p-12">
-                    <Package className="h-24 w-24 text-muted-foreground/20" />
-                    <span className="text-sm text-muted-foreground">
-                      Hình ảnh sản phẩm
-                    </span>
-                  </div>
-                ) : (
-                  <img
-                    src={displayImage}
-                    alt={product.name}
-                    className="aspect-square w-full object-contain p-6"
-                    onError={() => setImgError(true)}
-                  />
-                )}
-              </div>
-              {/* Thumbnail gallery */}
-              {(allGalleryImages.length > 0 || product.image_url) && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {product.image_url && (
-                    <button
-                      type="button"
-                      onClick={() => setMainImage(product.image_url)}
-                      className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                        displayImage === product.image_url
-                          ? "border-primary"
-                          : "border-transparent hover:border-primary/50"
-                      }`}
-                    >
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  )}
-                  {allGalleryImages.map((img) => (
-                    <button
-                      key={img.id}
-                      type="button"
-                      onClick={() => setMainImage(img.url)}
-                      className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                        displayImage === img.url
-                          ? "border-primary"
-                          : "border-transparent hover:border-primary/50"
-                      }`}
-                    >
-                      <img
-                        src={img.url}
-                        alt={product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+        <div className="container-custom max-w-7xl">
+          {/* ═══ Technical Datasheet Layout ═══ */}
+          <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
 
-            {/* Product info */}
-            <div className="space-y-5">
-              {/* Brand + Category + Inventory badges */}
-              <div className="flex flex-wrap items-center gap-2">
-                {(product.category || product.category_name) && (
-                  <Badge variant="secondary">
-                    {product.category?.name || product.category_name}
-                  </Badge>
-                )}
-                {(brandName || brand) && (
-                  <Badge
-                    variant="outline"
-                    className="font-semibold gap-1.5"
-                  >
-                    {brandLogo && (
+            {/* ─── MAIN CONTENT (Left) ─── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-10"
+            >
+              {/* Image Gallery + Basic Info */}
+              <div className="grid gap-8 md:grid-cols-2">
+                {/* Image + Gallery */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br from-muted to-muted/30">
+                    {imgError || !displayImage ? (
+                      <div className="flex flex-col items-center justify-center gap-2 p-12">
+                        <Package className="h-24 w-24 text-muted-foreground/20" />
+                        <span className="text-sm text-muted-foreground">
+                          Hình ảnh sản phẩm
+                        </span>
+                      </div>
+                    ) : (
                       <img
-                        src={brandLogo}
-                        alt={brandName || brand}
-                        className="h-4 w-4 rounded object-contain"
+                        src={displayImage}
+                        alt={product.name}
+                        className="aspect-square w-full object-contain p-6"
+                        onError={() => setImgError(true)}
                       />
                     )}
-                    {brandName || brand}
-                  </Badge>
-                )}
-                {/* Inventory Status Badge */}
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${inventoryInfo.className}`}
-                >
-                  <InventoryIcon className="h-3 w-3" />
-                  {inventoryInfo.label}
-                </span>
+                  </div>
+                  {/* Thumbnail gallery */}
+                  {(allGalleryImages.length > 0 || product.image_url) && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {product.image_url && (
+                        <button
+                          type="button"
+                          onClick={() => setMainImage(product.image_url)}
+                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                            displayImage === product.image_url
+                              ? "border-primary"
+                              : "border-transparent hover:border-primary/50"
+                          }`}
+                        >
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      )}
+                      {allGalleryImages.map((img) => (
+                        <button
+                          key={img.id}
+                          type="button"
+                          onClick={() => setMainImage(img.url)}
+                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                            displayImage === img.url
+                              ? "border-primary"
+                              : "border-transparent hover:border-primary/50"
+                          }`}
+                        >
+                          <img
+                            src={img.url}
+                            alt={product.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Product info */}
+                <div className="space-y-5">
+                  {/* Brand + Category badges */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(product.category || product.category_name) && (
+                      <Badge variant="secondary">
+                        {product.category?.name || product.category_name}
+                      </Badge>
+                    )}
+                    {(brandName || brand) && (
+                      <Badge
+                        variant="outline"
+                        className="font-semibold gap-1.5"
+                      >
+                        {brandLogo && (
+                          <img
+                            src={brandLogo}
+                            alt={brandName || brand}
+                            className="h-4 w-4 rounded object-contain"
+                          />
+                        )}
+                        {brandName || brand}
+                      </Badge>
+                    )}
+                    {/* Inventory Status Badge */}
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${inventoryInfo.className}`}
+                    >
+                      <InventoryIcon className="h-3 w-3" />
+                      {inventoryInfo.label}
+                    </span>
+                  </div>
+
+                  <h1 className="text-2xl font-bold md:text-3xl">{product.name}</h1>
+
+                  {modelNumber && (
+                    <p className="text-muted-foreground text-sm">
+                      Model:{" "}
+                      <span className="font-mono font-semibold text-foreground">
+                        {modelNumber}
+                      </span>
+                    </p>
+                  )}
+
+                  <p className="leading-relaxed text-muted-foreground">
+                    {product.description}
+                  </p>
+
+                  {/* Features badges */}
+                  {product.product_features && product.product_features.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {product.product_features
+                        .sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0))
+                        .map((f) => (
+                          <FeatureBadge
+                            key={f.id}
+                            name={f.name}
+                            color={f.color}
+                            icon={f.icon}
+                            size="md"
+                          />
+                        ))}
+                    </div>
+                  )}
+
+                  {/* Warranty */}
+                  {warranty && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Shield className="h-4 w-4 text-emerald-500" />
+                      <span className="text-muted-foreground">Bảo hành:</span>
+                      <span className="font-semibold">{warranty}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <h1 className="text-2xl font-bold md:text-3xl">{product.name}</h1>
-
-              {modelNumber && (
-                <p className="text-muted-foreground text-sm">
-                  Model:{" "}
-                  <span className="font-mono font-semibold text-foreground">
-                    {modelNumber}
-                  </span>
-                </p>
+              {/* ─── Technical Specifications Table ─── */}
+              {specEntries.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.15 }}
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <Cpu className="h-5 w-5 text-primary" />
+                    <h2 className="text-xl font-semibold">Thông số kỹ thuật</h2>
+                  </div>
+                  <div className="overflow-hidden rounded-xl border">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-muted/70">
+                          <th className="w-2/5 px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Thông số
+                          </th>
+                          <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Giá trị
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {specEntries.map(([key, value], i) => (
+                          <tr
+                            key={key}
+                            className={`border-t transition-colors hover:bg-muted/30 ${i % 2 === 0 ? "bg-muted/20" : "bg-background"}`}
+                          >
+                            <td className="px-5 py-3 text-sm font-medium text-foreground">
+                              {key}
+                            </td>
+                            <td className="px-5 py-3 text-sm text-muted-foreground">
+                              {value}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
               )}
 
-              <p className="leading-relaxed text-muted-foreground">
-                {product.description}
-              </p>
-
-              {/* Features badges — from product_features relation */}
-              {product.product_features && product.product_features.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {product.product_features
-                    .sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0))
-                    .map((f) => (
-                      <FeatureBadge
-                        key={f.id}
-                        name={f.name}
-                        color={f.color}
-                        icon={f.icon}
-                        size="md"
-                      />
+              {/* ─── Social Proof — Used in Projects ─── */}
+              {linkedProjects.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <div className="mb-4">
+                    <h2 className="text-xl font-semibold">Được sử dụng trong dự án</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Sản phẩm này đã được triển khai thành công tại các dự án sau:
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {linkedProjects.map((proj) => (
+                      <Link
+                        key={proj.slug}
+                        to={`/du-an/${proj.slug}`}
+                        className="group flex items-center gap-3 rounded-xl border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
+                      >
+                        {proj.thumbnail_url ? (
+                          <img
+                            src={proj.thumbnail_url}
+                            alt={proj.title}
+                            className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/5">
+                            <MapPin className="h-6 w-6 text-primary/40" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold group-hover:text-primary truncate">
+                            {proj.title}
+                          </p>
+                          {proj.client_name && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {proj.client_name}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {proj.location}
+                          </p>
+                        </div>
+                      </Link>
                     ))}
-                </div>
+                  </div>
+                </motion.div>
               )}
 
-              {/* Warranty */}
-              {warranty && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Shield className="h-4 w-4 text-emerald-500" />
-                  <span className="text-muted-foreground">Bảo hành:</span>
-                  <span className="font-semibold">{warranty}</span>
-                </div>
+              {/* ─── Related Products ─── */}
+              {relatedProducts.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.25 }}
+                >
+                  <div className="mb-4 flex items-end justify-between">
+                    <h2 className="text-xl font-semibold">Sản phẩm liên quan</h2>
+                    <Link
+                      to="/san-pham"
+                      className="inline-flex items-center text-sm text-primary hover:underline"
+                    >
+                      Xem tất cả
+                      <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {relatedProducts.map((rp) => (
+                      <Link
+                        key={rp.slug}
+                        to={`/san-pham/${rp.slug}`}
+                        className="group overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/30 hover:shadow-lg"
+                      >
+                        <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-muted to-muted/50 p-4">
+                          {rp.image_url ? (
+                            <img
+                              src={rp.image_url}
+                              alt={rp.name}
+                              className="h-full w-full object-contain"
+                            />
+                          ) : (
+                            <Package className="h-12 w-12 text-muted-foreground/20" />
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-primary">
+                            {rp.category_name}
+                          </p>
+                          <h4 className="line-clamp-2 text-sm font-semibold group-hover:text-primary">
+                            {rp.name}
+                          </h4>
+                          {rp.model_number && (
+                            <p className="font-mono text-[10px] text-muted-foreground">
+                              {rp.model_number}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
               )}
+            </motion.div>
+
+            {/* ─── STICKY SIDEBAR (Right) — Technical Summary ─── */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="lg:sticky lg:top-24 lg:self-start space-y-4"
+            >
+              {/* Quick Specs Card */}
+              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-5 py-3 border-b">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                    <Cpu className="h-4 w-4" />
+                    Tóm tắt kỹ thuật
+                  </h3>
+                </div>
+                <div className="p-5 space-y-3">
+                  {/* SKU / Model */}
+                  {modelNumber && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">SKU / Model</span>
+                      <span className="font-mono font-semibold">{modelNumber}</span>
+                    </div>
+                  )}
+                  {/* Brand */}
+                  {(brandName || brand) && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Thương hiệu</span>
+                      <span className="font-semibold flex items-center gap-1.5">
+                        {brandLogo && (
+                          <img src={brandLogo} alt="" className="h-4 w-4 rounded object-contain" />
+                        )}
+                        {brandName || brand}
+                      </span>
+                    </div>
+                  )}
+                  {/* Category */}
+                  {(product.category_name || product.category?.name) && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Danh mục</span>
+                      <span className="font-semibold">{product.category?.name || product.category_name}</span>
+                    </div>
+                  )}
+                  {/* Warranty */}
+                  {warranty && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Bảo hành</span>
+                      <span className="font-semibold flex items-center gap-1">
+                        <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                        {warranty}
+                      </span>
+                    </div>
+                  )}
+                  {/* Inventory */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Tình trạng</span>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${inventoryInfo.className}`}
+                    >
+                      <InventoryIcon className="h-3 w-3" />
+                      {inventoryInfo.label}
+                    </span>
+                  </div>
+                  {/* Top specs preview (first 4) */}
+                  {specEntries.length > 0 && (
+                    <>
+                      <div className="border-t pt-3 mt-3">
+                        {specEntries.slice(0, 4).map(([key, value]) => (
+                          <div key={key} className="flex items-center justify-between text-xs py-1">
+                            <span className="text-muted-foreground truncate mr-2">{key}</span>
+                            <span className="font-medium text-right truncate max-w-[150px]">{value}</span>
+                          </div>
+                        ))}
+                        {specEntries.length > 4 && (
+                          <p className="text-[10px] text-primary mt-1">
+                            +{specEntries.length - 4} thông số khác ↓
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
 
               {/* ─── B2B CTA Section ─── */}
-              <div className="rounded-xl border bg-gradient-to-r from-primary/5 to-transparent p-5 space-y-3">
-                <p className="text-sm font-medium text-foreground">
-                  Liên hệ để nhận báo giá tốt nhất
+              <div className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
+                <p className="text-sm font-bold text-foreground">
+                  Liên hệ báo giá dự án
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  <AddToCartButton
-                    product={{
-                      id: product.id,
-                      slug: product.slug,
-                      name: product.name,
-                      image_url: product.image_url,
-                      category: product.category ?? (product.category_name ? { name: product.category_name } : null),
-                    }}
+                <p className="text-xs text-muted-foreground">
+                  Nhận báo giá tốt nhất cho dự án của bạn từ đội ngũ kỹ thuật SLTECH.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {/* Primary CTA — RFQ */}
+                  <Button
                     size="lg"
-                  />
-                  <Button variant="outline" size="lg" asChild>
-                    <a href="tel:+84899194868">
-                      <Phone className="mr-2 h-4 w-4" />
-                      Hotline
-                    </a>
+                    className="w-full font-semibold gap-2"
+                    onClick={() => {
+                      addItem({
+                        productId: product.id,
+                        slug: product.slug,
+                        name: product.name,
+                        imageUrl: product.image_url,
+                        categoryName: product.category?.name || product.category_name || null,
+                      });
+                    }}
+                  >
+                    <Send className="h-4 w-4" />
+                    {inCart ? "✓ Đã thêm — Yêu cầu báo giá" : "Yêu cầu báo giá dự án"}
                   </Button>
+
+                  {/* Secondary CTA — Download Datasheet */}
+                  {product.spec_sheet_url && (
+                    <Button variant="outline" size="lg" className="w-full gap-2" asChild>
+                      <a
+                        href={product.spec_sheet_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Download className="h-4 w-4 text-primary" />
+                        Tải tài liệu kỹ thuật (PDF)
+                      </a>
+                    </Button>
+                  )}
+
+                  {/* Compare */}
                   <Button
                     variant={inCompare ? "default" : "outline"}
-                    size="lg"
+                    size="default"
+                    className="w-full gap-2"
                     onClick={() => {
                       if (inCompare) {
                         remove(product.id);
@@ -380,168 +653,21 @@ export default function ProductDetail() {
                     }}
                     disabled={!inCompare && isFull}
                   >
-                    <GitCompareArrows className="mr-2 h-4 w-4" />
-                    {inCompare ? "Đã thêm so sánh" : "So sánh"}
+                    <GitCompareArrows className="h-4 w-4" />
+                    {inCompare ? "Đã thêm so sánh" : "So sánh sản phẩm"}
+                  </Button>
+
+                  {/* Hotline */}
+                  <Button variant="ghost" size="sm" className="w-full gap-2 text-muted-foreground" asChild>
+                    <a href="tel:+84899194868">
+                      <Phone className="h-3.5 w-3.5" />
+                      Hotline: 0899.194.868
+                    </a>
                   </Button>
                 </div>
               </div>
-
-              {/* Downloads */}
-              {product.spec_sheet_url && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    Tài liệu
-                  </h3>
-                  <a
-                    href={product.spec_sheet_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
-                  >
-                    <Download className="h-4 w-4 text-primary" />
-                    <span>Tải Datasheet (PDF)</span>
-                    <FileText className="ml-auto h-4 w-4 text-muted-foreground" />
-                  </a>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* ─── Specifications Table ─── */}
-          {specEntries.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="mt-12"
-            >
-              <h2 className="mb-4 text-xl font-semibold">Thông số kỹ thuật</h2>
-              <div className="overflow-hidden rounded-xl border">
-                <table className="w-full">
-                  <tbody>
-                    {specEntries.map(([key, value], i) => (
-                      <tr
-                        key={key}
-                        className={i % 2 === 0 ? "bg-muted/50" : "bg-background"}
-                      >
-                        <td className="w-1/3 px-5 py-3 text-sm font-medium text-muted-foreground">
-                          {key}
-                        </td>
-                        <td className="px-5 py-3 text-sm">{value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </motion.div>
-          )}
-
-          {/* ─── Social Proof — Used in Projects ─── */}
-          {linkedProjects.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-12"
-            >
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold">Được sử dụng trong dự án</h2>
-                <p className="text-sm text-muted-foreground">
-                  Sản phẩm này đã được triển khai thành công tại các dự án sau:
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {linkedProjects.map((proj) => (
-                  <Link
-                    key={proj.slug}
-                    to={`/du-an/${proj.slug}`}
-                    className="group flex items-center gap-3 rounded-xl border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
-                  >
-                    {proj.thumbnail_url ? (
-                      <img
-                        src={proj.thumbnail_url}
-                        alt={proj.title}
-                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/5">
-                        <MapPin className="h-6 w-6 text-primary/40" />
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold group-hover:text-primary truncate">
-                        {proj.title}
-                      </p>
-                      {proj.client_name && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {proj.client_name}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {proj.location}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* ─── Related Products ─── */}
-          {relatedProducts.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25 }}
-              className="mt-12"
-            >
-              <div className="mb-4 flex items-end justify-between">
-                <h2 className="text-xl font-semibold">Sản phẩm liên quan</h2>
-                <Link
-                  to="/san-pham"
-                  className="inline-flex items-center text-sm text-primary hover:underline"
-                >
-                  Xem tất cả
-                  <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                </Link>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {relatedProducts.map((rp) => (
-                  <Link
-                    key={rp.slug}
-                    to={`/san-pham/${rp.slug}`}
-                    className="group overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/30 hover:shadow-lg"
-                  >
-                    <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-muted to-muted/50 p-4">
-                      {rp.image_url ? (
-                        <img
-                          src={rp.image_url}
-                          alt={rp.name}
-                          className="h-full w-full object-contain"
-                        />
-                      ) : (
-                        <Package className="h-12 w-12 text-muted-foreground/20" />
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-primary">
-                        {rp.category_name}
-                      </p>
-                      <h4 className="line-clamp-2 text-sm font-semibold group-hover:text-primary">
-                        {rp.name}
-                      </h4>
-                      {rp.model_number && (
-                        <p className="font-mono text-[10px] text-muted-foreground">
-                          {rp.model_number}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </motion.div>
-          )}
+          </div>
         </div>
       </section>
     </>

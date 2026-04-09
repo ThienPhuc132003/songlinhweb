@@ -414,8 +414,8 @@ export function ProjectFormSheet({
                     <select className={selectClass} value={form.is_active ?? 1}
                       onChange={(e) => setForm((f) => ({ ...f, is_active: Number(e.target.value) }))}
                     >
-                      <option value={1}>Hoạt động</option>
-                      <option value={0}>Ẩn</option>
+                      <option value={1}>Công khai</option>
+                      <option value={0}>Chờ duyệt</option>
                     </select>
                   </F>
                 </div>

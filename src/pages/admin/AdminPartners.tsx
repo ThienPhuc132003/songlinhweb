@@ -179,8 +179,8 @@ export default function AdminPartners() {
                 setForm({ ...form, is_active: Number(e.target.value) })
               }
             >
-              <option value={1}>Hoạt động</option>
-              <option value={0}>Ẩn</option>
+              <option value={1}>Công khai</option>
+              <option value={0}>Chờ duyệt</option>
             </select>
           </Field>
         </div>

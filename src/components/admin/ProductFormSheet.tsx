@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { SearchableFeatureSelect } from "@/components/admin/SearchableFeatureSelect";
+import { SpecTemplatePresets } from "@/components/admin/SpecTemplatePresets";
+import { PdfUploader } from "@/components/admin/PdfUploader";
 import type { Product, ProductCategory, Brand, ProductFeature } from "@/lib/admin-api";
 import {
   PenLine,
@@ -22,8 +24,9 @@ import {
   Package,
   BarChart3,
   Globe,
+  Tags,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -108,6 +111,8 @@ interface ProductFormSheetProps {
   onSpecChange: (idx: number, key: string, val: string) => void;
   onSpecAdd: () => void;
   onSpecRemove: (idx: number) => void;
+  /** Directly replace all spec entries (used by template presets) */
+  onSpecReplace: (entries: [string, string][]) => void;
   /** Gallery URLs */
   galleryUrls: string[];
   onGalleryChange: (urls: string[]) => void;
@@ -135,6 +140,7 @@ export function ProductFormSheet({
   onSpecChange,
   onSpecAdd,
   onSpecRemove,
+  onSpecReplace,
   galleryUrls,
   onGalleryChange,
   selectedFeatureIds,
@@ -146,6 +152,26 @@ export function ProductFormSheet({
 }: ProductFormSheetProps) {
   const selectClass =
     "border-input bg-background flex h-8 w-full rounded-md border px-2 py-1 text-xs";
+
+  // Resolve current category slug for spec template auto-suggest
+  const currentCategorySlug = useMemo(() => {
+    if (!form.category_id) return undefined;
+    const cat = categories.find((c) => c.id === form.category_id);
+    return cat?.slug;
+  }, [form.category_id, categories]);
+
+  // Resolve selected brand logo for preview
+  const selectedBrand = useMemo(() => {
+    if (!form.brand_id) return null;
+    return brands.find((b) => b.id === form.brand_id) ?? null;
+  }, [form.brand_id, brands]);
+
+  // Spec entries count (non-empty)
+  const filledSpecCount = specEntries.filter(([k]) => k.trim()).length;
+  // Feature count
+  const featureCount = selectedFeatureIds.length;
+  // Gallery count
+  const galleryCount = galleryUrls.length + (form.image_url ? 1 : 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -202,18 +228,36 @@ export function ProductFormSheet({
                 <div className="border-b px-4 shrink-0">
                   <TabsList variant="line" className="justify-start -mb-px">
                     <TabsTrigger value="info" className="gap-1.5 text-xs">
-                      <PenLine className="h-3.5 w-3.5" /> Thông tin sản phẩm
-                    </TabsTrigger>
-                    <TabsTrigger value="gallery" className="gap-1.5 text-xs">
-                      <ImageIcon className="h-3.5 w-3.5" /> Hình ảnh
+                      <PenLine className="h-3.5 w-3.5" /> Thông tin
                     </TabsTrigger>
                     <TabsTrigger value="specs" className="gap-1.5 text-xs">
-                      <Wrench className="h-3.5 w-3.5" /> Thông số & Tính năng
+                      <Wrench className="h-3.5 w-3.5" /> Thông số kỹ thuật
+                      {filledSpecCount > 0 && (
+                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          {filledSpecCount}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="features" className="gap-1.5 text-xs">
+                      <Tags className="h-3.5 w-3.5" /> Tính năng
+                      {featureCount > 0 && (
+                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          {featureCount}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="assets" className="gap-1.5 text-xs">
+                      <ImageIcon className="h-3.5 w-3.5" /> SEO & Tài sản
+                      {galleryCount > 0 && (
+                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          {galleryCount}
+                        </span>
+                      )}
                     </TabsTrigger>
                   </TabsList>
                 </div>
 
-                {/* TAB: Info */}
+                {/* ─── TAB 1: Basics ─── */}
                 <TabsContent value="info" className="flex-1 overflow-y-auto p-5 mt-0 space-y-5">
                   {/* Name + Slug */}
                   <div className="grid grid-cols-2 gap-4">
@@ -242,26 +286,41 @@ export function ProductFormSheet({
                   {/* Brand + Model + Category */}
                   <div className="grid grid-cols-3 gap-4">
                     <F label="Thương hiệu">
-                      <select
-                        className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-                        value={form.brand_id ?? ""}
-                        onChange={(e) => {
-                          const brandId = Number(e.target.value) || null;
-                          const selected = brands.find((b) => b.id === brandId);
-                          setForm((f) => ({
-                            ...f,
-                            brand_id: brandId,
-                            brand: selected?.name || "",
-                          }));
-                        }}
-                      >
-                        <option value="">Chọn thương hiệu</option>
-                        {brands.map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="space-y-1.5">
+                        <select
+                          className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+                          value={form.brand_id ?? ""}
+                          onChange={(e) => {
+                            const brandId = Number(e.target.value) || null;
+                            const selected = brands.find((b) => b.id === brandId);
+                            setForm((f) => ({
+                              ...f,
+                              brand_id: brandId,
+                              brand: selected?.name || "",
+                            }));
+                          }}
+                        >
+                          <option value="">Chọn thương hiệu</option>
+                          {brands.map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
+                        {/* Brand logo preview */}
+                        {selectedBrand?.logo_url && (
+                          <div className="flex items-center gap-2 rounded border bg-muted/50 px-2 py-1">
+                            <img
+                              src={selectedBrand.logo_url}
+                              alt={selectedBrand.name}
+                              className="h-5 w-5 rounded object-contain"
+                            />
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              {selectedBrand.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </F>
                     <F label="Model">
                       <Input
@@ -319,54 +378,54 @@ export function ProductFormSheet({
                   </F>
                 </TabsContent>
 
-                {/* TAB: Gallery */}
-                <TabsContent value="gallery" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
-                  <ImageUploadField
-                    label="Hình chính (Cover)"
-                    value={form.image_url ? [form.image_url] : []}
-                    onChange={(urls) =>
-                      setForm((f) => ({ ...f, image_url: urls[0] || null }))
-                    }
-                    folder="products"
-                    single
-                  />
-                  <ImageUploadField
-                    label="Gallery sản phẩm (tối đa 6 ảnh)"
-                    value={galleryUrls}
-                    onChange={onGalleryChange}
-                    folder="products"
-                    maxImages={6}
-                  />
-                </TabsContent>
-
-                {/* TAB: Specs & Features */}
+                {/* ─── TAB 2: Technical Specs ─── */}
                 <TabsContent value="specs" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
-                  {/* Specifications — Key-Value Editor */}
                   <div className="rounded-lg border p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Thông số kỹ thuật
                       </p>
-                      <button
-                        type="button"
-                        onClick={onSpecAdd}
-                        className="text-xs text-primary hover:underline font-medium"
-                      >
-                        + Thêm thông số
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <SpecTemplatePresets
+                          categorySlug={currentCategorySlug}
+                          currentEntries={specEntries}
+                          onApply={onSpecReplace}
+                        />
+                        <button
+                          type="button"
+                          onClick={onSpecAdd}
+                          className="text-xs text-primary hover:underline font-medium"
+                        >
+                          + Thêm thông số
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Spec entry header */}
+                    {specEntries.length > 0 && (
+                      <div className="flex gap-2 px-1">
+                        <span className="flex-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Tên thông số
+                        </span>
+                        <span className="flex-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Giá trị
+                        </span>
+                        <span className="w-8" />
+                      </div>
+                    )}
+
                     {specEntries.map(([key, val], idx) => (
                       <div key={idx} className="flex gap-2">
                         <Input
                           value={key}
                           onChange={(e) => onSpecChange(idx, e.target.value, val)}
-                          placeholder="Tên (VD: Resolution)"
+                          placeholder="VD: Độ phân giải"
                           className="flex-1 h-9"
                         />
                         <Input
                           value={val}
                           onChange={(e) => onSpecChange(idx, key, e.target.value)}
-                          placeholder="Giá trị (VD: 4MP)"
+                          placeholder="VD: 4MP (2688×1520)"
                           className="flex-1 h-9"
                         />
                         <button
@@ -380,17 +439,117 @@ export function ProductFormSheet({
                     ))}
                     {specEntries.length === 0 && (
                       <p className="text-xs text-muted-foreground italic py-2">
-                        Chưa có thông số. Nhấn "+ Thêm thông số" để bắt đầu.
+                        Chưa có thông số. Sử dụng &quot;Mẫu thông số&quot; hoặc nhấn &quot;+ Thêm thông số&quot;.
                       </p>
                     )}
                   </div>
 
-                  {/* Features — Searchable Multi-select */}
+                  {/* Spec count summary */}
+                  <p className="text-[10px] text-muted-foreground">
+                    {filledSpecCount} thông số đã nhập
+                  </p>
+                </TabsContent>
+
+                {/* ─── TAB 3: Features & Tags ─── */}
+                <TabsContent value="features" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
                   <SearchableFeatureSelect
                     features={allFeatures}
                     selectedIds={selectedFeatureIds}
                     onChange={onFeatureIdsChange}
                   />
+                </TabsContent>
+
+                {/* ─── TAB 4: SEO & Assets ─── */}
+                <TabsContent value="assets" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
+                  {/* Primary Image */}
+                  <ImageUploadField
+                    label="Hình chính (Cover)"
+                    value={form.image_url ? [form.image_url] : []}
+                    onChange={(urls) =>
+                      setForm((f) => ({ ...f, image_url: urls[0] || null }))
+                    }
+                    folder="products"
+                    single
+                  />
+
+                  {/* Gallery */}
+                  <ImageUploadField
+                    label="Gallery sản phẩm (tối đa 6 ảnh)"
+                    value={galleryUrls}
+                    onChange={onGalleryChange}
+                    folder="products"
+                    maxImages={6}
+                  />
+
+                  {/* PDF Datasheet */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium flex items-center gap-1.5">
+                      Datasheet PDF
+                      <span className="text-[10px] text-muted-foreground font-normal">(Tối đa 10MB)</span>
+                    </Label>
+                    <PdfUploader
+                      value={form.spec_sheet_url ?? null}
+                      onChange={(url) =>
+                        setForm((f) => ({ ...f, spec_sheet_url: url }))
+                      }
+                    />
+                  </div>
+
+                  {/* SEO Section */}
+                  <div className="rounded-lg border p-4 space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
+                      SEO & Meta
+                    </p>
+                    <F label="Meta Title">
+                      <Input
+                        value={form.meta_title || ""}
+                        className="h-8 text-xs"
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            meta_title: e.target.value || null,
+                          }))
+                        }
+                        placeholder={form.name || "Sử dụng tên sản phẩm"}
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {(form.meta_title || form.name || "").length}/60
+                      </p>
+                    </F>
+                    <F label="Meta Description">
+                      <Textarea
+                        value={form.meta_description || ""}
+                        rows={2}
+                        className="text-xs"
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            meta_description: e.target.value || null,
+                          }))
+                        }
+                        placeholder={form.description || "Sử dụng mô tả"}
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {(form.meta_description || form.description || "").length}
+                        /160
+                      </p>
+                    </F>
+                    {/* Google Preview */}
+                    <div className="rounded-lg border p-3 bg-background">
+                      <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                        Google Preview
+                      </p>
+                      <p className="text-[#1a0dab] text-xs font-medium truncate">
+                        {form.meta_title || form.name || "Tiêu đề"} — SLTECH
+                      </p>
+                      <p className="text-[#006621] text-[10px]">
+                        sltech.vn/san-pham/{form.slug || "slug"}
+                      </p>
+                      <p className="text-[10px] text-[#545454] line-clamp-2">
+                        {form.meta_description || form.description || "Mô tả..."}
+                      </p>
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
@@ -399,19 +558,6 @@ export function ProductFormSheet({
             <div className="overflow-y-auto p-4 space-y-5 bg-muted/10">
               {/* B2B Data */}
               <SidebarSection title="Dữ liệu B2B" icon={Package}>
-                <F label="Datasheet PDF (URL)">
-                  <Input
-                    value={form.spec_sheet_url || ""}
-                    className="h-8 text-xs"
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        spec_sheet_url: e.target.value || null,
-                      }))
-                    }
-                    placeholder="https://... hoặc upload PDF"
-                  />
-                </F>
                 <div className="grid grid-cols-2 gap-2">
                   <F label="Tình trạng kho">
                     <div className="flex flex-col gap-1.5">
@@ -482,64 +628,46 @@ export function ProductFormSheet({
                         }))
                       }
                     >
-                      <option value={1}>Hoạt động</option>
-                      <option value={0}>Ẩn</option>
+                      <option value={1}>Công khai</option>
+                      <option value={0}>Chờ duyệt</option>
                     </select>
                   </F>
                 </div>
               </SidebarSection>
 
-              {/* SEO */}
-              <SidebarSection title="SEO & Meta" icon={Globe} collapsible defaultOpen={false}>
-                <div className="space-y-3">
-                  <F label="Meta Title">
-                    <Input
-                      value={form.meta_title || ""}
-                      className="h-8 text-xs"
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          meta_title: e.target.value || null,
-                        }))
-                      }
-                      placeholder={form.name || "Sử dụng tên sản phẩm"}
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {(form.meta_title || form.name || "").length}/60
-                    </p>
-                  </F>
-                  <F label="Meta Description">
-                    <Textarea
-                      value={form.meta_description || ""}
-                      rows={2}
-                      className="text-xs"
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          meta_description: e.target.value || null,
-                        }))
-                      }
-                      placeholder={form.description || "Sử dụng mô tả"}
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {(form.meta_description || form.description || "").length}
-                      /160
-                    </p>
-                  </F>
-                  {/* Google Preview */}
-                  <div className="rounded-lg border p-3 bg-background">
-                    <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Google Preview
-                    </p>
-                    <p className="text-[#1a0dab] text-xs font-medium truncate">
-                      {form.meta_title || form.name || "Tiêu đề"} — SLTECH
-                    </p>
-                    <p className="text-[#006621] text-[10px]">
-                      sltech.vn/san-pham/{form.slug || "slug"}
-                    </p>
-                    <p className="text-[10px] text-[#545454] line-clamp-2">
-                      {form.meta_description || form.description || "Mô tả..."}
-                    </p>
+              {/* Quick Summary */}
+              <SidebarSection title="Tổng quan" icon={Globe}>
+                <div className="rounded-lg border bg-background p-3 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Danh mục</span>
+                    <span className="font-medium">
+                      {categories.find((c) => c.id === form.category_id)?.name || "—"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Thương hiệu</span>
+                    <span className="font-medium flex items-center gap-1">
+                      {selectedBrand?.logo_url && (
+                        <img src={selectedBrand.logo_url} alt="" className="h-3.5 w-3.5 rounded object-contain" />
+                      )}
+                      {selectedBrand?.name || form.brand || "—"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Thông số</span>
+                    <span className="font-medium">{filledSpecCount} mục</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Tính năng</span>
+                    <span className="font-medium">{featureCount} tag</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Hình ảnh</span>
+                    <span className="font-medium">{galleryCount} ảnh</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Datasheet</span>
+                    <span className="font-medium">{form.spec_sheet_url ? "✅ Có" : "—"}</span>
                   </div>
                 </div>
               </SidebarSection>

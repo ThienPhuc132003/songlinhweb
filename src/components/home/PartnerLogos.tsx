@@ -1,4 +1,5 @@
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { motion } from "framer-motion";
+import { fadeUp } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 // Import partner logo images — Row 1
@@ -9,23 +10,22 @@ import logoHanwha from "@/assets/Image/LogoPartner/Logo_Hanwa.png";
 import logoSuprema from "@/assets/Image/LogoPartner/Logo_Suprema.png";
 import logoHikvision from "@/assets/Image/LogoPartner/Logo_Hikvision.png";
 import logoZKTeco from "@/assets/Image/LogoPartner/Logo_ZKTeco.webp";
-import logoFaceMe from "@/assets/Image/LogoPartner/Logo_FaceMe.png";
-import logoNetworkOptix from "@/assets/Image/LogoPartner/Logo_Network Optix.webp";
-import logoMilestone from "@/assets/Image/LogoPartner/Logo_milestone.png";
+import logoFaceMe from "@/assets/Image/LogoPartner/Logo_Faceme.webp";
+import logoMilestone from "@/assets/Image/LogoPartner/Logo_milestone.webp";
 
 // Import partner logo images — Row 2
 import logoAimetis from "@/assets/Image/LogoPartner/Logo_Aimetis.webp";
 import logoAxxonSoft from "@/assets/Image/LogoPartner/Logo_AxxonSoft.png";
-import logoAlcatelLucent from "@/assets/Image/LogoPartner/Logo_alcatel-lucent.png";
-import logoCisco from "@/assets/Image/LogoPartner/Logo_cisco.png";
+import logoAlcatelLucent from "@/assets/Image/LogoPartner/Logo_alcatel-lucent.webp";
+import logoCisco from "@/assets/Image/LogoPartner/Logo_cisco.webp";
 import logoHPE from "@/assets/Image/LogoPartner/Logo_HPE.png";
 
 // Import partner logo images — Row 3
-import logoRuckus from "@/assets/Image/LogoPartner/Logo_Ruckus.png.webp";
-import logoAlliedTelesis from "@/assets/Image/LogoPartner/Logo_AlliedTelesis.png";
+import logoRuckus from "@/assets/Image/LogoPartner/Logo_Ruckus.webp";
+import logoAlliedTelesis from "@/assets/Image/LogoPartner/Logo_AlliedTelesis.webp";
 import logoUbiquiti from "@/assets/Image/LogoPartner/Logo_ubiquiti.png";
 import logoRuijie from "@/assets/Image/LogoPartner/Logo_Ruijie.webp";
-import logoLegrand from "@/assets/Image/LogoPartner/Logo_Legrand.png";
+import logoLegrand from "@/assets/Image/LogoPartner/Logo_Legrand.webp";
 
 // Import partner logo images — Row 4
 import logoCommScope from "@/assets/Image/LogoPartner/Logo_CommScope.svg.png";
@@ -43,7 +43,6 @@ const PARTNER_LOGOS_ROW1 = [
   { name: "Hikvision", src: logoHikvision },
   { name: "ZKTeco", src: logoZKTeco },
   { name: "FaceMe", src: logoFaceMe },
-  { name: "Network Optix", src: logoNetworkOptix },
   { name: "Milestone", src: logoMilestone },
 ];
 
@@ -117,20 +116,21 @@ function MarqueeRow({
 }
 
 export function PartnerLogos({ className }: { className?: string }) {
-  const headingRef = useScrollReveal();
-
   return (
-    <section className={cn("section-padding bg-muted/30", className)}>
+    <section className={cn("py-24 md:py-32", className)}>
       <div className="container-custom">
-        <div ref={headingRef} className="reveal mb-10 text-center md:mb-14">
-          <h2 className="text-primary mb-3 text-2xl font-bold md:text-3xl">
-            Đối tác chiến lược
-          </h2>
-          <p className="text-muted-foreground mx-auto max-w-lg">
-            Hợp tác cùng các thương hiệu hàng đầu thế giới trong lĩnh vực công
-            nghệ và an ninh
+        <motion.div {...fadeUp()} className="mb-16 text-center">
+          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
+            Hệ sinh thái
           </p>
-        </div>
+          <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
+            Đối tác <span className="font-semibold">chiến lược</span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-500 dark:text-muted-foreground">
+            Hợp tác cùng các thương hiệu hàng đầu thế giới trong lĩnh vực
+            công nghệ và an ninh
+          </p>
+        </motion.div>
 
         {/* 3-row marquee layout */}
         <div className="flex flex-col gap-5">

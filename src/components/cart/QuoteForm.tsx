@@ -65,7 +65,7 @@ export function QuoteForm({ open, onOpenChange }: QuoteFormProps) {
     setSubmitting(true);
     try {
       // 1. Save to backend DB
-      await api.quotes.submit({
+      await api.quotations.submit({
         ...form,
         items: items.map((item) => ({
           product_id: item.productId,

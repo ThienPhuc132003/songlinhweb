@@ -12,7 +12,7 @@ import { ProjectMetricsBar } from "@/components/projects/ProjectMetricsBar";
 import { InfographicStats } from "@/components/projects/InfographicStats";
 import { TestimonialBlock } from "@/components/projects/TestimonialBlock";
 import { QualityAssuranceBadge } from "@/components/projects/QualityAssuranceBadge";
-import { ArrowLeft, ChevronRight, Home, MessageSquare } from "lucide-react";
+import { ArrowLeft, ChevronRight, Home } from "lucide-react";
 
 /** Safely parse JSON or return fallback */
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -42,7 +42,7 @@ export default function ProjectDetail() {
             <Skeleton className="mt-4 h-4 w-1/3 bg-white/10" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 py-14">
+        <div className="bg-slate-950 py-14">
           <div className="container-custom grid grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl bg-white/5" />)}
           </div>
@@ -254,20 +254,24 @@ export default function ProjectDetail() {
         </div>
       </section>
 
-      {/* ═══ 9. CTA — "DISCUSS A SIMILAR PROJECT" ═══ */}
-      <section className="border-t bg-gradient-to-br from-primary/5 via-background to-blue-50/30 dark:to-blue-950/10 py-16">
+      {/* ═══ 9. CTA — Editorial */}
+      <section className="border-t bg-slate-950 py-16 md:py-20">
         <div className="container-custom max-w-2xl text-center">
-          <MessageSquare className="mx-auto mb-4 h-10 w-10 text-primary/60" strokeWidth={1.5} />
-          <h2 className="text-2xl font-bold mb-2">Bạn có dự án tương tự?</h2>
-          <p className="text-muted-foreground mb-6">
+          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-white/40">
+            Tiếp theo
+          </p>
+          <h2 className="text-3xl font-extralight tracking-tight text-white md:text-4xl">
+            Bạn có dự án <span className="font-semibold">tương tự?</span>
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-white/50">
             Đội ngũ kỹ sư Song Linh Technologies sẵn sàng khảo sát, tư vấn và triển khai
             giải pháp kỹ thuật toàn diện cho dự án của bạn.
           </p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button asChild size="lg">
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Button asChild size="lg" className="rounded-none px-8">
               <Link to="/lien-he">Thảo luận dự án</Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="rounded-none border-white/20 px-8 text-white hover:bg-white/10 hover:text-white">
               <Link to="/lien-he">Nhận báo giá kỹ thuật</Link>
             </Button>
           </div>

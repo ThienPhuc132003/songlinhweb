@@ -24,3 +24,7 @@ Thumbs.db
 
 # Wrangler
 .wrangler/
+
+# Debug/review screenshots
+*.png
+docs/screenshots/*.png

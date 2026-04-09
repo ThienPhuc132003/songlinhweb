@@ -48,7 +48,7 @@ export default function AdminDashboard() {
       label: "Sản phẩm",
       value: dashStats.data?.totalProducts ?? "—",
       icon: Package,
-      color: "text-blue-600 bg-blue-50",
+      color: "text-primary bg-primary/10",
       href: "/admin/products",
     },
     {
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {stats.map((s) => (
           <Link key={s.label} to={s.href} className="group">
-            <Card className="transition-all hover:shadow-md hover:border-blue-200 group-hover:bg-slate-50/50">
+            <Card className="transition-all hover:shadow-md hover:border-primary/30 group-hover:bg-slate-50/50">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   {s.label}
@@ -145,12 +145,12 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-500" />
+              <Clock className="h-5 w-5 text-primary" />
               Sản phẩm mới thêm
             </CardTitle>
             <Link
               to="/admin/products"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-primary hover:underline"
             >
               Xem tất cả →
             </Link>

@@ -31,7 +31,7 @@ function parseStatValue(raw: string | number): { num: number; suffix: string } {
   return { num: 0, suffix: raw };
 }
 
-/** Animated count-up hook */
+/** Animated count-up hook with cubic ease-out */
 function useCountUp(target: number, duration = 1500, enabled = false) {
   const [count, setCount] = useState(0);
   const frameRef = useRef<number | undefined>(undefined);
@@ -42,7 +42,6 @@ function useCountUp(target: number, duration = 1500, enabled = false) {
     const animate = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.round(eased * target));
       if (progress < 1) frameRef.current = requestAnimationFrame(animate);
@@ -54,31 +53,33 @@ function useCountUp(target: number, duration = 1500, enabled = false) {
   return count;
 }
 
-function StatCard({ value, suffix, label, index, visible }: StatItem & { index: number; visible: boolean }) {
+function StatColumn({ value, suffix, label, index, visible }: StatItem & { index: number; visible: boolean }) {
   const count = useCountUp(value, 1500 + index * 200, visible);
 
   return (
-    <div className="relative flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-7 backdrop-blur-md transition-all duration-500"
-      style={{ transitionDelay: `${index * 100}ms`, opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)" }}
+    <div
+      className="text-center transition-all duration-600"
+      style={{
+        transitionDelay: `${index * 80}ms`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(12px)",
+      }}
     >
-      {/* Glow effect */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/5 to-cyan-500/5" />
-
-      <div className="relative">
-        <span className="block text-center font-mono text-4xl font-black tabular-nums tracking-tight text-white md:text-5xl">
-          {count.toLocaleString()}{suffix}
-        </span>
-        <span className="mt-2 block text-center text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/70">
-          {label}
-        </span>
-      </div>
+      {/* Large thin monospace number */}
+      <span className="block font-mono text-5xl font-extralight tabular-nums tracking-tighter text-white md:text-6xl lg:text-7xl">
+        {count.toLocaleString()}{suffix}
+      </span>
+      {/* Uppercase micro label */}
+      <span className="mt-3 block font-mono text-[10px] font-medium uppercase tracking-[0.25em] text-white/35">
+        {label}
+      </span>
     </div>
   );
 }
 
 /**
- * Infographic-style stats section — glassmorphic cards on navy gradient.
- * Renders 3-4 big numbers with animated count-up on scroll.
+ * Editorial infographic stats — thin monospace typography on clean dark background.
+ * No cards, no borders, no icons. Just numbers.
  */
 export function InfographicStats({ metrics, areaSqm, durationMonths, className }: InfographicStatsProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -112,30 +113,21 @@ export function InfographicStats({ metrics, areaSqm, durationMonths, className }
 
   if (items.length === 0) return null;
 
-  // Show max 4 stats
   const displayItems = items.slice(0, 4);
 
   return (
     <section
       ref={ref}
-      className={cn(
-        "relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 py-12 md:py-16",
-        className,
-      )}
+      className={cn("bg-slate-950 py-14 md:py-20", className)}
     >
-      {/* Decorative grid pattern */}
-      <div className="absolute inset-0 opacity-[0.03]"
-        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none' stroke='%23fff' stroke-width='.5'/%3E%3C/svg%3E\")" }}
-      />
-
-      <div className="container-custom relative">
+      <div className="container-custom">
         <div className={cn(
-          "grid gap-4",
+          "grid gap-10",
           displayItems.length <= 2 ? "grid-cols-2" :
           displayItems.length === 3 ? "grid-cols-3" : "grid-cols-2 md:grid-cols-4",
         )}>
           {displayItems.map((item, i) => (
-            <StatCard key={i} {...item} index={i} visible={visible} />
+            <StatColumn key={i} {...item} index={i} visible={visible} />
           ))}
         </div>
       </div>

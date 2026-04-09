@@ -10,7 +10,7 @@ solutions.get("/", async (c) => {
   const url = new URL(c.req.url);
   const search = url.searchParams.get("search");
 
-  let where = "WHERE is_active = 1";
+  let where = "WHERE is_active = 1 AND deleted_at IS NULL";
   const params: unknown[] = [];
 
   if (search) {
@@ -38,7 +38,7 @@ solutions.get("/all", requireAuth, async (c) => {
 solutions.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
   const row = await c.env.DB.prepare(
-    "SELECT * FROM solutions WHERE slug = ? AND is_active = 1",
+    "SELECT * FROM solutions WHERE slug = ? AND is_active = 1 AND deleted_at IS NULL",
   )
     .bind(slug)
     .first<SolutionRow>();
@@ -129,7 +129,22 @@ solutions.put("/:id", requireAuth, async (c) => {
 /** DELETE /api/admin/solutions/:id — delete solution (admin) */
 solutions.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
-  await c.env.DB.prepare("DELETE FROM solutions WHERE id = ?").bind(id).run();
+
+  // Deletion constraint: check for projects referencing this solution
+  const count = await c.env.DB.prepare(
+    `SELECT COUNT(*) as cnt FROM projects
+     WHERE related_solutions LIKE '%' || ? || '%'
+     AND (deleted_at IS NULL)
+     AND is_active = 1`,
+  ).bind(String(id)).first<{ cnt: number }>();
+  if (count && count.cnt > 0) {
+    return err(
+      `Không thể xóa giải pháp đang được ${count.cnt} dự án liên kết. Vui lòng gỡ liên kết trước.`,
+      409,
+    );
+  }
+
+  await c.env.DB.prepare("UPDATE solutions SET deleted_at = datetime('now') WHERE id = ?").bind(id).run();
   return ok({ deleted: true });
 });
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router";
-import { Menu, X, ChevronDown, Camera, ShieldCheck, Flame, Network, Volume2, Cpu, Package } from "lucide-react";
+import { Menu, X, ChevronDown, Camera, ShieldCheck, Flame, Network, Volume2, Cpu, Package, Phone } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { SOLUTIONS } from "@/data/solutions";
 import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
@@ -54,6 +54,54 @@ const PRODUCT_MENU_COLUMNS = [
   },
 ];
 
+/* ─── Custom Hooks & Abstractions ─── */
+function useHoverMenu(delay = 150) {
+  const [isOpen, setIsOpen] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(true);
+  };
+
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setIsOpen(false), delay);
+  };
+
+  return { isOpen, setIsOpen, handleEnter, handleLeave };
+}
+
+function MobileAccordionItem({ 
+  label, 
+  isActive, 
+  children 
+}: { 
+  label: string; 
+  isActive: boolean; 
+  children: React.ReactNode; 
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "hover:bg-accent flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors",
+          isActive && "bg-primary/10 text-primary font-semibold"
+        )}
+      >
+        {label}
+        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+      </button>
+      {isOpen && (
+        <div className="ml-4 flex flex-col gap-0.5 border-l pl-3 pt-1">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Header() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -70,8 +118,8 @@ export default function Header() {
     <>
       <header
         className={cn(
-          "bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-50 border-b backdrop-blur transition-shadow duration-200",
-          scrolled && "shadow-sm",
+          "bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-50 border-b border-slate-200 backdrop-blur transition-all duration-300 dark:border-slate-800",
+          scrolled && "header-scrolled",
         )}
       >
         <div className="container-custom flex h-16 items-center justify-between lg:h-[4.5rem]">
@@ -117,7 +165,15 @@ export default function Header() {
           <div className="hidden shrink-0 items-center gap-2 lg:flex">
             <CartBadge onClick={() => setCartOpen(true)} />
             <ThemeToggle />
-            <Button asChild size="sm">
+            <a
+              href={`tel:${SITE.phoneRaw}`}
+              className="flex h-9 w-9 items-center justify-center rounded-md text-[#3C5DAA] transition-colors hover:bg-primary/5"
+              aria-label="Gọi hotline"
+              title={`Hotline: ${SITE.phone}`}
+            >
+              <Phone className="h-4 w-4" />
+            </a>
+            <Button asChild size="sm" className="cta-glow rounded-[4px] bg-[#3C5DAA] px-5 text-white hover:bg-[#3C5DAA]/90">
               <Link to="/lien-he">Liên hệ</Link>
             </Button>
           </div>
@@ -153,18 +209,8 @@ export default function Header() {
 
 function SolutionsDropdown() {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isOpen, setIsOpen, handleEnter, handleLeave } = useHoverMenu();
   const isActive = location.pathname.startsWith("/giai-phap");
-
-  const handleEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsOpen(true);
-  };
-
-  const handleLeave = () => {
-    timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
-  };
 
   return (
     <div
@@ -198,7 +244,7 @@ function SolutionsDropdown() {
             : "pointer-events-none -translate-y-2 opacity-0",
         )}
       >
-        <div className="w-[580px] rounded-xl border bg-card p-4 shadow-xl">
+        <div className="mega-menu-animated w-[580px] rounded-xl border bg-card p-5 shadow-xl">
           {/* Header */}
           <div className="mb-3 flex items-center justify-between border-b pb-3">
             <p className="text-sm font-semibold">Giải pháp công nghệ</p>
@@ -212,7 +258,7 @@ function SolutionsDropdown() {
           </div>
 
           {/* 2-column grid */}
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-1.5">
             {SOLUTIONS.map((solution) => (
               <Link
                 key={solution.slug}
@@ -246,18 +292,8 @@ function SolutionsDropdown() {
 
 function ProductsDropdown() {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isOpen, setIsOpen, handleEnter, handleLeave } = useHoverMenu();
   const isActive = location.pathname.startsWith("/san-pham");
-
-  const handleEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsOpen(true);
-  };
-
-  const handleLeave = () => {
-    timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
-  };
 
   return (
     <div
@@ -289,7 +325,7 @@ function ProductsDropdown() {
             : "pointer-events-none -translate-y-2 opacity-0",
         )}
       >
-        <div className="w-[680px] rounded-xl border bg-card p-5 shadow-xl">
+        <div className="mega-menu-animated w-[680px] rounded-xl border bg-card p-5 shadow-xl">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between border-b pb-3">
             <p className="text-sm font-semibold">Danh mục sản phẩm</p>
@@ -337,94 +373,60 @@ function ProductsDropdown() {
 
 function MobileNav({ onClose }: { onClose: () => void }) {
   const location = useLocation();
-  const [solutionsOpen, setSolutionsOpen] = useState(false);
-  const [productsOpen, setProductsOpen] = useState(false);
 
   return (
     <nav className="mt-8 flex flex-col gap-1">
       {NAV_LINKS.map((link) =>
         link.href === "/giai-phap" ? (
-          <div key={link.href}>
-            <button
-              onClick={() => setSolutionsOpen(!solutionsOpen)}
-              className={cn(
-                "hover:bg-accent flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors",
-                location.pathname.startsWith("/giai-phap") &&
-                  "bg-primary/10 text-primary font-semibold",
-              )}
+          <MobileAccordionItem
+            key={link.href}
+            label={link.label}
+            isActive={location.pathname.startsWith("/giai-phap")}
+          >
+            <Link
+              to="/giai-phap"
+              onClick={onClose}
+              className="rounded-md px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
             >
-              Giải pháp
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  solutionsOpen && "rotate-180",
-                )}
-              />
-            </button>
-            {solutionsOpen && (
-              <div className="ml-4 flex flex-col gap-0.5 border-l pl-3 pt-1">
-                <Link
-                  to="/giai-phap"
-                  onClick={onClose}
-                  className="rounded-md px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
-                >
-                  Tất cả giải pháp
-                </Link>
-                {SOLUTIONS.map((s) => (
-                  <Link
-                    key={s.slug}
-                    to={`/giai-phap/${s.slug}`}
-                    onClick={onClose}
-                    className="rounded-md px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
-                  >
-                    {s.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+              Tất cả giải pháp
+            </Link>
+            {SOLUTIONS.map((s) => (
+              <Link
+                key={s.slug}
+                to={`/giai-phap/${s.slug}`}
+                onClick={onClose}
+                className="rounded-md px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
+              >
+                {s.title}
+              </Link>
+            ))}
+          </MobileAccordionItem>
         ) : link.href === "/san-pham" ? (
-          <div key={link.href}>
-            <button
-              onClick={() => setProductsOpen(!productsOpen)}
-              className={cn(
-                "hover:bg-accent flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors",
-                location.pathname.startsWith("/san-pham") &&
-                  "bg-primary/10 text-primary font-semibold",
-              )}
+          <MobileAccordionItem
+            key={link.href}
+            label={link.label}
+            isActive={location.pathname.startsWith("/san-pham")}
+          >
+            <Link
+              to="/san-pham"
+              onClick={onClose}
+              className="rounded-md px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
             >
-              Sản phẩm
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  productsOpen && "rotate-180",
-                )}
-              />
-            </button>
-            {productsOpen && (
-              <div className="ml-4 flex flex-col gap-0.5 border-l pl-3 pt-1">
+              Tất cả sản phẩm
+            </Link>
+            {PRODUCT_MENU_COLUMNS.flatMap((col) =>
+              col.items.map((item) => (
                 <Link
-                  to="/san-pham"
+                  key={item.slug}
+                  to={`/san-pham?category=${item.slug}`}
                   onClick={onClose}
-                  className="rounded-md px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
+                  className="rounded-md px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
                 >
-                  Tất cả sản phẩm
+                  {item.label}
                 </Link>
-                {PRODUCT_MENU_COLUMNS.flatMap((col) =>
-                  col.items.map((item) => (
-                    <Link
-                      key={item.slug}
-                      to={`/san-pham?category=${item.slug}`}
-                      onClick={onClose}
-                      className="rounded-md px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  )),
-                )}
-              </div>
+              )),
             )}
-          </div>
+          </MobileAccordionItem>
         ) : (
           <Link
             key={link.href}

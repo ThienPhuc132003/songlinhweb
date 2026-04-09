@@ -7,9 +7,15 @@ const siteConfig = new Hono<{ Bindings: Env }>();
 
 /** GET /api/site-config — get all config as key-value map */
 siteConfig.get("/", async (c) => {
-  // Try cache first
-  const cached = await c.env.CACHE.get("site-config", "json");
-  if (cached) return ok(cached);
+  // Try cache first (guard: CACHE binding may not exist)
+  if (c.env.CACHE) {
+    try {
+      const cached = await c.env.CACHE.get("site-config", "json");
+      if (cached) return ok(cached);
+    } catch {
+      // KV unavailable — fall through to DB
+    }
+  }
 
   const rows = await c.env.DB.prepare(
     "SELECT key, value FROM site_config",
@@ -20,10 +26,16 @@ siteConfig.get("/", async (c) => {
     config[row.key] = row.value;
   }
 
-  // Cache for 5 minutes
-  await c.env.CACHE.put("site-config", JSON.stringify(config), {
-    expirationTtl: 300,
-  });
+  // Cache for 5 minutes (best-effort)
+  if (c.env.CACHE) {
+    try {
+      await c.env.CACHE.put("site-config", JSON.stringify(config), {
+        expirationTtl: 300,
+      });
+    } catch {
+      // KV unavailable — skip caching
+    }
+  }
 
   return ok(config);
 });
@@ -50,10 +62,29 @@ siteConfig.put("/", requireAuth, async (c) => {
   const batch = entries.map(([key, value]) => stmt.bind(key, value));
   await c.env.DB.batch(batch);
 
-  // Invalidate cache
-  await c.env.CACHE.delete("site-config");
+  // Invalidate cache (best-effort)
+  if (c.env.CACHE) {
+    try {
+      await c.env.CACHE.delete("site-config");
+    } catch {
+      // KV unavailable — skip
+    }
+  }
 
   return ok({ updated: entries.length });
+});
+
+/** POST /api/admin/site-config/clear-cache — manually clear KV cache */
+siteConfig.post("/clear-cache", requireAuth, async (c) => {
+  if (c.env.CACHE) {
+    try {
+      await c.env.CACHE.delete("site-config");
+      return ok({ cleared: true });
+    } catch {
+      return err("KV cache unavailable");
+    }
+  }
+  return ok({ cleared: false, message: "No KV cache configured" });
 });
 
 export default siteConfig;

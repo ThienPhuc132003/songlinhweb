@@ -8,7 +8,7 @@ export default function FloatingBar() {
       {/* Zalo (placeholder - update with actual Zalo link) */}
       <Button
         size="icon"
-        className="h-12 w-12 rounded-full bg-blue-500 shadow-lg hover:bg-blue-600"
+        className="h-12 w-12 rounded-full bg-primary shadow-lg hover:bg-primary/90"
         asChild
       >
         <a

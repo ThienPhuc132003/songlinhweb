@@ -268,8 +268,8 @@ export default function AdminProjects() {
         onChange={(e) => setStatusFilter(e.target.value)}
       >
         <option value="all">Tất cả trạng thái</option>
-        <option value="active">Hoạt động</option>
-        <option value="hidden">Đã ẩn</option>
+        <option value="active">Công khai</option>
+        <option value="hidden">Chờ duyệt</option>
       </select>
       {categories.length > 0 && (
         <select
@@ -302,13 +302,13 @@ export default function AdminProjects() {
           onClick={() => bulkMutation.mutate({ action: "activate" })}
           className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
         >
-          Kích hoạt
+          Công khai
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "deactivate" })}
           className="rounded-md bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
         >
-          Ẩn
+          Chờ duyệt
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "feature" })}

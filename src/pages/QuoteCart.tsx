@@ -68,7 +68,7 @@ export default function QuoteCart() {
 
     setSubmitting(true);
     try {
-      const result = await api.quotes.submit({
+      const result = await api.quotations.submit({
         ...form,
         items: items.map((item) => ({
           product_id: item.productId,
@@ -107,9 +107,9 @@ export default function QuoteCart() {
 
         {/* RFQ ID Badge */}
         {quoteId && (
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
-            <FileSpreadsheet className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-semibold text-blue-700">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2">
+            <FileSpreadsheet className="h-5 w-5 text-primary" />
+            <span className="text-sm font-semibold text-primary">
               Mã yêu cầu: SLTECH_RFQ_{quoteId}
             </span>
           </div>
@@ -221,7 +221,7 @@ export default function QuoteCart() {
                           <div className="min-w-0">
                             <Link
                               to={`/san-pham/${item.slug}`}
-                              className="font-medium text-slate-900 hover:text-blue-600 transition-colors line-clamp-1"
+                              className="font-medium text-slate-900 hover:text-primary transition-colors line-clamp-1"
                             >
                               {item.name}
                             </Link>
@@ -411,8 +411,8 @@ export default function QuoteCart() {
 
             {/* Process info */}
             <div className="mt-4 rounded-lg bg-blue-50 p-3">
-              <p className="text-xs font-semibold text-blue-700">ℹ️ Quy trình</p>
-              <ol className="mt-1.5 space-y-0.5 text-xs text-blue-600">
+              <p className="text-xs font-semibold text-primary">ℹ️ Quy trình</p>
+              <ol className="mt-1.5 space-y-0.5 text-xs text-primary/80">
                 <li>1. Chọn sản phẩm & gửi yêu cầu</li>
                 <li>2. SLTECH tiếp nhận & tư vấn</li>
                 <li>3. Nhận báo giá qua email (24-48h)</li>

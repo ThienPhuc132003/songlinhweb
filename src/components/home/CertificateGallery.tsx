@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Import certificate images
+// Certificate images
 import certHikvision from "@/assets/Image/Certificate/Certificate_Hikvision.jpg";
 import certAxis from "@/assets/Image/Certificate/Certificate_Axis_SilverPartner.jpg";
 import certHanwha from "@/assets/Image/Certificate/Certificate_HanwhaTechwin.jpg";
@@ -19,47 +20,181 @@ const CERTIFICATES = [
   { title: "Legrand Certified Partner", src: certLegrand },
 ];
 
+// ─── Lightbox with keyboard navigation ────────────────────────────────────────
+
+function CertLightbox({
+  index,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const cert = CERTIFICATES[index];
+
+  const handleKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    },
+    [onClose, onPrev, onNext],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
+  }, [handleKey]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] max-w-4xl flex-col items-center px-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Image */}
+        <img
+          src={cert.src}
+          alt={cert.title}
+          className="max-h-[80vh] rounded-sm object-contain shadow-2xl"
+        />
+
+        {/* Caption */}
+        <div className="mt-4 text-center">
+          <p className="text-sm font-medium text-white/90">{cert.title}</p>
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+            {index + 1} / {CERTIFICATES.length}
+          </p>
+        </div>
+
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute -top-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+          aria-label="Đóng"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        {/* Prev */}
+        <button
+          onClick={onPrev}
+          className="absolute left-0 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+          aria-label="Trước"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        {/* Next */}
+        <button
+          onClick={onNext}
+          className="absolute right-0 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+          aria-label="Sau"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── CertificateGallery ───────────────────────────────────────────────────────
+
 export function CertificateGallery({ className }: { className?: string }) {
-  const headingRef = useScrollReveal();
-  const gridRef = useScrollReveal();
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const handlePrev = useCallback(() => {
+    setLightbox((prev) =>
+      prev !== null
+        ? (prev - 1 + CERTIFICATES.length) % CERTIFICATES.length
+        : null,
+    );
+  }, []);
+
+  const handleNext = useCallback(() => {
+    setLightbox((prev) =>
+      prev !== null ? (prev + 1) % CERTIFICATES.length : null,
+    );
+  }, []);
 
   return (
     <>
-      <section className={cn("section-padding", className)}>
-        <div className="container-custom">
-          <div ref={headingRef} className="reveal mb-10 text-center md:mb-14">
-            <h2 className="text-primary mb-3 text-2xl font-bold md:text-3xl">
-              Chứng nhận & Giải thưởng
-            </h2>
-            <p className="text-muted-foreground mx-auto max-w-lg">
-              Đối tác được ủy quyền chính thức từ các thương hiệu công nghệ hàng
-              đầu thế giới
-            </p>
-          </div>
+      <section
+        className={cn(
+          "relative overflow-hidden border-y border-slate-200 bg-[#F8FAFC] py-24 dark:border-border dark:bg-muted/10 md:py-32",
+          className,
+        )}
+      >
+        {/* Watermark background */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.025]" aria-hidden>
+          <span className="select-none whitespace-nowrap font-mono text-[8rem] font-bold uppercase tracking-[0.2em] text-slate-900 md:text-[12rem]">
+            VERIFIED
+          </span>
+        </div>
 
-          <div
-            ref={gridRef}
-            className="reveal-stagger grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6"
+        <div className="container-custom relative z-10">
+          {/* Heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mb-16 text-center"
           >
+            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
+              Uy tín được chứng nhận
+            </p>
+            <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
+              Chứng nhận &{" "}
+              <span className="font-semibold">Giải thưởng</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-500 dark:text-muted-foreground">
+              Đối tác được ủy quyền chính thức từ các thương hiệu công nghệ
+              hàng đầu thế giới
+            </p>
+          </motion.div>
+
+          {/* Grid — Consistent aspect ratios */}
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6">
             {CERTIFICATES.map((cert, i) => (
-              <button
+              <motion.button
                 key={cert.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.5,
+                  delay: i * 0.08,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
                 onClick={() => setLightbox(i)}
-                className="reveal-item group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:shadow-lg"
+                className="group relative overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/40 hover:shadow-xl dark:border-border dark:bg-card"
               >
                 <img
                   src={cert.src}
                   alt={cert.title}
-                  className="aspect-[3/4] w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                  className="aspect-[3/4] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                   loading="lazy"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                  <span className="text-xs font-medium text-white/90 line-clamp-2">
+                {/* Bottom info */}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent px-4 py-4">
+                  <span className="text-[11px] font-medium leading-tight text-white/90 line-clamp-2">
                     {cert.title}
                   </span>
                 </div>
-              </button>
+                {/* Hover accent */}
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-[#3C5DAA] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              </motion.button>
             ))}
           </div>
         </div>
@@ -67,27 +202,12 @@ export function CertificateGallery({ className }: { className?: string }) {
 
       {/* Lightbox */}
       {lightbox !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setLightbox(null)}
-        >
-          <div className="relative max-h-[90vh] max-w-3xl">
-            <img
-              src={CERTIFICATES[lightbox].src}
-              alt={CERTIFICATES[lightbox].title}
-              className="max-h-[85vh] rounded-lg object-contain"
-            />
-            <p className="mt-2 text-center text-sm text-white/80">
-              {CERTIFICATES[lightbox].title}
-            </p>
-            <button
-              onClick={() => setLightbox(null)}
-              className="absolute -top-3 -right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition-colors hover:bg-white/40"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
+        <CertLightbox
+          index={lightbox}
+          onClose={() => setLightbox(null)}
+          onPrev={handlePrev}
+          onNext={handleNext}
+        />
       )}
     </>
   );

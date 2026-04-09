@@ -309,6 +309,8 @@ export default function AdminProducts() {
       header: "Sản phẩm",
       render: (r) => {
         const isDeleted = !!(r as Product & { deleted_at?: string | null }).deleted_at;
+        const brandDisplay = r.brand_name || r.brand;
+        const brandLogo = r.brand_logo;
         return (
           <div className={`flex items-center gap-3 ${isDeleted ? "opacity-50" : ""}`}>
             {r.image_url && (
@@ -320,8 +322,11 @@ export default function AdminProducts() {
             )}
             <div>
               <p className={`font-medium ${isDeleted ? "line-through" : ""}`}>{r.name}</p>
-              <p className="text-muted-foreground text-xs">
-                {(r.brand_name || r.brand) && `${r.brand_name || r.brand} · `}{r.model_number || r.slug}
+              <p className="text-muted-foreground text-xs flex items-center gap-1">
+                {brandLogo && (
+                  <img src={brandLogo} alt="" className="h-3.5 w-3.5 rounded object-contain" />
+                )}
+                {brandDisplay && `${brandDisplay} · `}{r.model_number || r.slug}
               </p>
               {isDeleted && (
                 <span className="text-xs text-red-500 font-medium">Đã xóa</span>
@@ -354,7 +359,7 @@ export default function AdminProducts() {
           return (
             <button
               onClick={(e) => { e.stopPropagation(); restoreMutation.mutate(r.id); }}
-              className="text-xs text-blue-600 hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-medium"
             >
               Khôi phục
             </button>
@@ -449,6 +454,7 @@ export default function AdminProducts() {
         onSpecChange={updateSpec}
         onSpecAdd={addSpec}
         onSpecRemove={removeSpec}
+        onSpecReplace={setSpecEntries}
         galleryUrls={galleryUrls}
         onGalleryChange={setGalleryUrls}
         selectedFeatureIds={selectedFeatureIds}

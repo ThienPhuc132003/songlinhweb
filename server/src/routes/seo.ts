@@ -13,10 +13,10 @@ seo.get("/sitemap.xml", async (c) => {
       "SELECT slug, updated_at FROM products WHERE is_active = 1 AND deleted_at IS NULL ORDER BY sort_order ASC",
     ).all<{ slug: string; updated_at: string }>(),
     c.env.DB.prepare(
-      "SELECT slug, created_at FROM projects WHERE is_active = 1 ORDER BY sort_order ASC",
+      "SELECT slug, created_at FROM projects WHERE is_active = 1 AND deleted_at IS NULL ORDER BY sort_order ASC",
     ).all<{ slug: string; created_at: string }>(),
     c.env.DB.prepare(
-      "SELECT slug, updated_at FROM solutions WHERE is_active = 1 ORDER BY sort_order ASC",
+      "SELECT slug, updated_at FROM solutions WHERE is_active = 1 AND deleted_at IS NULL ORDER BY sort_order ASC",
     ).all<{ slug: string; updated_at: string }>(),
   ]);
 

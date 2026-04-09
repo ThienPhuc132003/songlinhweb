@@ -460,8 +460,8 @@ interface BulkActionBarProps {
 export function BulkActionBar({ selectedCount, onClear, children }: BulkActionBarProps) {
   if (selectedCount === 0) return null;
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50 p-3 animate-in slide-in-from-top-2 duration-200">
-      <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+    <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/10 p-3 animate-in slide-in-from-top-2 duration-200">
+      <span className="text-sm font-medium text-primary dark:text-primary">
         {selectedCount} đã chọn
       </span>
       <div className="flex gap-2">{children}</div>
@@ -704,7 +704,7 @@ export function StatusBadge({ active }: { active: boolean | number }) {
         isActive ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
       }`}
     >
-      {isActive ? "Hoạt động" : "Ẩn"}
+      {isActive ? "Công khai" : "Chờ duyệt"}
     </span>
   );
 }

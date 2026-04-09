@@ -25,7 +25,7 @@ function ProjectCard({
   return (
     <Link
       to={`/du-an/${slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
+      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-lg dark:border-border dark:bg-card"
     >
       {/* Image — consistent aspect-video */}
       <div className="relative shrink-0 overflow-hidden">
@@ -48,16 +48,16 @@ function ProjectCard({
       </div>
       {/* Info */}
       <div className="flex flex-1 flex-col p-5">
-        <span className="text-primary mb-1 block text-xs font-medium">
+        <span className="mb-1 block font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-[#3C5DAA]">
           {category}
         </span>
         <h3 className="group-hover:text-primary line-clamp-2 text-sm font-semibold leading-snug transition-colors">
           {title}
         </h3>
         {/* CTA — pinned to bottom */}
-        <span className="mt-auto inline-flex items-center pt-3 text-xs font-medium text-primary transition-colors group-hover:text-primary/80">
+        <span className="mt-auto inline-flex items-center pt-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-[#3C5DAA] transition-colors group-hover:text-[#3C5DAA]/70">
           Xem chi tiết
-          <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="ml-1.5 h-3 w-3 transition-transform group-hover:translate-x-1" />
         </span>
       </div>
     </Link>
@@ -103,17 +103,21 @@ export function FeaturedProjects({ className }: { className?: string }) {
   }, [emblaApi, onSelect]);
 
   return (
-    <section className={cn("section-padding", className)}>
+    <section className={cn("border-y border-slate-200 bg-[#F8FAFC] py-24 dark:border-border dark:bg-muted/10 md:py-32", className)}>
       <div className="container-custom">
         <div
           ref={headingRef}
-          className="reveal mb-10 flex flex-col items-start justify-between gap-4 md:mb-14 md:flex-row md:items-end"
+          className="reveal mb-14 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end"
         >
           <div>
-            <h2 className="text-primary mb-3 text-2xl font-bold md:text-3xl">
-              Dự án tiêu biểu
+            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
+              Dự án nổi bật
+            </p>
+            <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
+              Dự án{" "}
+              <span className="font-semibold">tiêu biểu</span>
             </h2>
-            <p className="text-muted-foreground max-w-lg">
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-500 dark:text-muted-foreground">
               Những dự án được {SITE.displayName} tư vấn, thiết kế và thi công
               thành công
             </p>
@@ -156,7 +160,7 @@ export function FeaturedProjects({ className }: { className?: string }) {
         </div>
 
         <div className="mt-8 text-center">
-          <Button asChild variant="outline" className="min-h-11">
+          <Button asChild variant="outline" className="min-h-11 rounded-none border-slate-300 px-8 font-medium tracking-wide dark:border-border">
             <Link to="/du-an">
               Xem tất cả dự án
               <ArrowRight className="ml-2 h-4 w-4" />

@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { MapPin, Calendar, Building2 } from "lucide-react";
 
 interface ProjectHeroProps {
   title: string;
@@ -12,9 +11,9 @@ interface ProjectHeroProps {
 }
 
 /**
- * Full-width hero — clean gradient that lets the cover image shine.
- * Shows category badge + project meta (client, location, year) inline.
- * Uses lighter overlays for a portfolio-quality look.
+ * Split-layout hero: 60% cover image / 40% dark overview panel.
+ * Editorial style — no decorative icons, clean typography hierarchy.
+ * Stacks on mobile (image on top, info below).
  */
 export function ProjectHero({
   title,
@@ -25,63 +24,65 @@ export function ProjectHero({
   completionYear,
   className,
 }: ProjectHeroProps) {
-  const metaItems: Array<{ icon: React.ReactNode; text: string }> = [];
-
-  if (clientName) {
-    metaItems.push({ icon: <Building2 className="h-3.5 w-3.5" />, text: clientName });
-  }
-  if (location) {
-    metaItems.push({ icon: <MapPin className="h-3.5 w-3.5" />, text: location });
-  }
-  if (completionYear) {
-    metaItems.push({ icon: <Calendar className="h-3.5 w-3.5" />, text: completionYear });
-  }
+  const metaRows: Array<{ label: string; value: string }> = [];
+  if (clientName) metaRows.push({ label: "Chủ đầu tư", value: clientName });
+  if (location) metaRows.push({ label: "Vị trí", value: location });
+  if (completionYear) metaRows.push({ label: "Hoàn thành", value: completionYear });
 
   return (
-    <section
-      className={cn(
-        "relative flex min-h-[360px] items-end overflow-hidden bg-slate-900 md:min-h-[440px]",
-        className,
-      )}
-    >
-      {/* Cover image — now more visible */}
-      {coverImage && (
-        <img
-          src={coverImage}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      )}
+    <section className={cn("grid md:grid-cols-[3fr_2fr]", className)}>
+      {/* Left: Full-height cover image — clean crop, no overlay */}
+      <div className="relative min-h-[300px] bg-slate-900 md:min-h-[480px]">
+        {coverImage ? (
+          <img
+            src={coverImage}
+            alt={title}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          /* Subtle grid texture fallback */
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none' stroke='%23fff' stroke-width='.3'/%3E%3C/svg%3E\")",
+              opacity: 0.06,
+            }}
+          />
+        )}
+        {/* Thin bottom edge gradient for mobile stacking */}
+        <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-slate-900 to-transparent md:hidden" />
+      </div>
 
-      {/* Lighter gradient — shows image details */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
-
-      {/* Content */}
-      <div className="container-custom relative z-10 pb-10 pt-24 md:pb-14">
+      {/* Right: Dark overview panel */}
+      <div className="flex flex-col justify-center bg-slate-900 px-8 py-12 md:px-12 md:py-16">
+        {/* Category badge */}
         {category && (
-          <span className="mb-3 inline-block rounded-full bg-white/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+          <p className="mb-5 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-white/40">
             {category}
-          </span>
+          </p>
         )}
 
-        <h1 className="max-w-4xl text-2xl font-bold leading-tight text-white md:text-4xl lg:text-[2.75rem]">
+        {/* Title — editorial thin weight  */}
+        <h1 className="text-2xl font-extralight leading-[1.15] tracking-tight text-white md:text-3xl lg:text-4xl">
           {title}
         </h1>
 
-        {/* Inline meta: Client • Location • Year */}
-        {metaItems.length > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/75">
-            {metaItems.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5">
-                {item.icon}
-                <span className="font-medium">{item.text}</span>
-                {i < metaItems.length - 1 && (
-                  <span className="ml-2 text-white/30">•</span>
-                )}
-              </span>
+        {/* Divider */}
+        <div className="my-6 h-px w-12 bg-white/15" />
+
+        {/* Meta rows — clean mono labels */}
+        {metaRows.length > 0 && (
+          <dl className="space-y-3">
+            {metaRows.map((row) => (
+              <div key={row.label} className="flex items-baseline gap-4">
+                <dt className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 w-24">
+                  {row.label}
+                </dt>
+                <dd className="text-sm font-medium text-white/80">{row.value}</dd>
+              </div>
             ))}
-          </div>
+          </dl>
         )}
       </div>
     </section>

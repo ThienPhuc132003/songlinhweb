@@ -232,6 +232,13 @@ export const adminApi = {
         method: "POST",
         body: JSON.stringify({ action, product_ids: productIds, value }),
       }),
+    getSpecTemplates: () =>
+      adminFetch<{ templates: Record<string, string[]>; mapping: Record<string, string> }>("/products/spec-templates"),
+    updateSpecTemplates: (data: { templates: Record<string, string[]>; mapping?: Record<string, string> }) =>
+      adminFetch<{ updated: boolean }>("/products/spec-templates", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
   },
 
   // Dashboard
@@ -372,6 +379,10 @@ export const adminApi = {
       adminFetch<{ updated: number }>("/site-config", {
         method: "PUT",
         body: JSON.stringify(entries),
+      }),
+    clearCache: () =>
+      adminFetch<{ cleared: boolean }>("/site-config/clear-cache", {
+        method: "POST",
       }),
   },
 

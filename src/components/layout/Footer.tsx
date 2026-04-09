@@ -1,67 +1,153 @@
 import { Link } from "react-router";
 import { SITE, NAV_LINKS, SOLUTIONS_DATA } from "@/lib/constants";
-import { Separator } from "@/components/ui/separator";
+import { Phone, Mail, MapPin, Clock, ArrowUpRight, LucideIcon } from "lucide-react";
+
+const FooterLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
+  <Link
+    to={to}
+    className="block text-sm text-[#94A3B8] transition-colors duration-300 hover:text-white"
+  >
+    {children}
+  </Link>
+);
+
+const ContactItem = ({ 
+  href, 
+  icon: Icon, 
+  iconClassName = "text-[#3C5DAA]", 
+  align = "center", 
+  children 
+}: { 
+  href?: string; 
+  icon: LucideIcon; 
+  iconClassName?: string;
+  align?: "center" | "start";
+  children: React.ReactNode;
+}) => {
+  const inner = (
+    <>
+      <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClassName} ${align === "start" ? "mt-0.5" : ""}`} />
+      {children}
+    </>
+  );
+  
+  if (href) {
+    return (
+      <a href={href} className={`flex items-${align} gap-2.5 text-[#CBD5E1] transition-colors duration-300 hover:text-[#3C5DAA]`}>
+        {inner}
+      </a>
+    );
+  }
+  return <div className={`flex items-${align} gap-2.5 text-[#94A3B8]`}>{inner}</div>;
+};
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-primary-foreground">
-      <div className="container-custom section-padding">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.webp" alt={SITE.shortName} className="h-10 w-auto brightness-200" />
-              <span className="text-lg font-bold">{SITE.displayName}</span>
+    <footer className="footer-editorial relative bg-[#1E3A6E]">
+      {/* Brand accent line — sharp top edge */}
+      <div className="h-[3px] w-full bg-white/20" />
+
+      {/* Main content */}
+      <div className="container-custom py-16 md:py-20">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {/* Column 1 — Brand */}
+          <div className="space-y-6">
+            <Link to="/" className="group flex items-center gap-3">
+              <img
+                src="/logo.webp"
+                alt={SITE.shortName}
+                className="h-10 w-auto brightness-200"
+              />
+              <span className="text-lg font-semibold tracking-tight text-white">
+                {SITE.displayName}
+              </span>
             </Link>
-            <p className="text-primary-foreground/80 text-sm leading-relaxed">{SITE.tagline}</p>
-            <div className="space-y-2.5 text-sm">
-              <a href={`tel:${SITE.phoneRaw}`} className="block transition-opacity hover:opacity-80">
+            <p className="text-sm leading-relaxed text-[#94A3B8]">
+              {SITE.tagline}
+            </p>
+            <div className="space-y-3 text-sm">
+              <ContactItem href={`tel:${SITE.phoneRaw}`} icon={Phone}>
                 Hotline: {SITE.phone}
-              </a>
-              <a href={`mailto:${SITE.email}`} className="block transition-opacity hover:opacity-80">
+              </ContactItem>
+              <ContactItem href={`mailto:${SITE.email}`} icon={Mail}>
                 {SITE.email}
-              </a>
-              <p className="text-primary-foreground/80">{SITE.address}</p>
-              <p className="text-primary-foreground/80">Thứ 2 - Thứ 7: {SITE.workingHours}</p>
+              </ContactItem>
+              <ContactItem icon={MapPin} align="start" iconClassName="text-[#3C5DAA]/70">
+                {SITE.address}
+              </ContactItem>
+              <ContactItem icon={Clock} iconClassName="text-[#3C5DAA]/70">
+                Thứ 2 – Thứ 7: {SITE.workingHours}
+              </ContactItem>
             </div>
           </div>
+
+          {/* Column 2 — Quick Links */}
           <div>
-            <h3 className="mb-4 text-base font-semibold">Liên kết nhanh</h3>
-            <nav className="space-y-2">
-              <Link to="/" className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
-                Trang chủ
-              </Link>
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.05em] text-white">
+              Liên kết nhanh
+            </p>
+            <nav className="space-y-2.5">
+              <FooterLink to="/">Trang chủ</FooterLink>
               {NAV_LINKS.map((link) => (
-                <Link key={link.href} to={link.href} className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
+                <FooterLink key={link.href} to={link.href}>
                   {link.label}
-                </Link>
+                </FooterLink>
               ))}
-              <Link to="/lien-he" className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
-                Liên hệ
-              </Link>
+              <FooterLink to="/lien-he">Liên hệ</FooterLink>
             </nav>
           </div>
+
+          {/* Column 3 — Solutions */}
           <div>
-            <h3 className="mb-4 text-base font-semibold">Giải pháp</h3>
-            <nav className="space-y-2">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.05em] text-white">
+              Giải pháp
+            </p>
+            <nav className="space-y-2.5">
               {SOLUTIONS_DATA.slice(0, 6).map((solution) => (
-                <Link key={solution.slug} to={`/giai-phap/${solution.slug}`} className="text-primary-foreground/80 hover:text-primary-foreground block text-sm transition-colors">
+                <Link
+                  key={solution.slug}
+                  to={`/giai-phap/${solution.slug}`}
+                  className="group flex items-center gap-1 text-sm text-[#94A3B8] transition-colors duration-300 hover:text-[#3C5DAA]"
+                >
                   {solution.title}
+                  <ArrowUpRight className="h-3 w-3 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
                 </Link>
               ))}
             </nav>
           </div>
+
+          {/* Column 4 — Map */}
           <div>
-            <h3 className="mb-4 text-base font-semibold">Bản đồ</h3>
-            <div className="aspect-square w-full overflow-hidden rounded-lg">
-              <iframe src={SITE.mapEmbedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Song Linh Technologies location map" />
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.05em] text-white">
+              Vị trí
+            </p>
+            <div className="aspect-square w-full overflow-hidden rounded-lg border-2 border-[#3C5DAA]/40">
+              <iframe
+                src={SITE.mapEmbedUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0 ,filter: 'brightness(0.85) contrast(0.95)'}}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Song Linh Technologies location map"
+                className="transition-[filter] duration-500 hover:brightness-110"
+              />
             </div>
           </div>
         </div>
       </div>
-      <Separator className="bg-primary-foreground/20" />
-      <div className="container-custom flex flex-col items-center justify-between gap-2 py-4 text-sm md:flex-row">
-        <p className="text-primary-foreground/60">&copy; {new Date().getFullYear()} {SITE.displayName}. Bản quyền thuộc {SITE.name}.</p>
-        <p className="text-primary-foreground/60">MST: {SITE.taxId}</p>
+      {/* Copyright */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-custom flex flex-col items-center justify-between gap-2 py-5 md:flex-row">
+          <p className="text-xs text-[#94A3B8]">
+            &copy; {new Date().getFullYear()} {SITE.displayName}. Bản quyền
+            thuộc {SITE.name}.
+          </p>
+          <p className="font-mono text-[10px] tracking-wider text-[#64748B]">
+            MST: {SITE.taxId}
+          </p>
+        </div>
       </div>
     </footer>
   );

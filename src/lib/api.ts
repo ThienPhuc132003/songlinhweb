@@ -119,7 +119,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  quotes: {
+  quotations: {
     submit: (data: QuoteRequestPayload) =>
       fetchApi<{ id: number; message: string }>("/quotations", {
         method: "POST",
@@ -133,6 +133,9 @@ export const api = {
           items: data.items,
         }),
       }),
+  },
+  siteConfig: {
+    get: () => fetchApi<Record<string, string>>("/site-config"),
   },
 };
 

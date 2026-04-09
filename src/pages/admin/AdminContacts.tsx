@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-  new: { label: "Mới", color: "bg-blue-100 text-blue-700" },
+  new: { label: "Mới", color: "bg-primary/10 text-primary" },
   read: { label: "Đã đọc", color: "bg-yellow-100 text-yellow-700" },
   replied: { label: "Đã trả lời", color: "bg-green-100 text-green-700" },
   archived: { label: "Lưu trữ", color: "bg-slate-100 text-slate-500" },

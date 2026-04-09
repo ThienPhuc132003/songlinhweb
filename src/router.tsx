@@ -34,6 +34,7 @@ const AdminContacts = lazy(() => import("./pages/admin/AdminContacts"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminFeatures = lazy(() => import("./pages/admin/AdminFeatures"));
 const AdminQuotations = lazy(() => import("./pages/admin/AdminQuotations"));
+const AdminSolutions = lazy(() => import("./pages/admin/AdminSolutions"));
 
 // Admin layout wrapper
 import AdminLayout from "./components/admin/AdminLayout";
@@ -278,6 +279,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <AdminQuotations />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: "solutions",
+        element: (
+          <SuspenseWrapper>
+            <AdminSolutions />
           </SuspenseWrapper>
         ),
       },

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { useProducts } from "@/hooks/useApi";
-import { SAMPLE_PRODUCTS } from "@/lib/constants";
+import type { Product, ProductFeature } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,7 +32,18 @@ import { GroupedFeatureFilter } from "@/components/products/GroupedFeatureFilter
 
 const ITEMS_PER_PAGE = 8;
 
-
+/** Enriched product from API with joined fields */
+interface EnrichedProduct extends Product {
+  product_features?: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    group_name: string;
+    color?: string | null;
+    icon?: string | null;
+    is_priority?: number;
+  }>;
+}
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,74 +63,13 @@ export default function Products() {
     tags: selectedTags.length > 0 ? selectedTags : undefined,
   });
 
-  // Determine if we're using API data or sample fallback
-  const isApiData = !!productsData?.items?.length;
-  const rawProducts = isApiData ? productsData.items : SAMPLE_PRODUCTS;
+  const products = useMemo(
+    () => (productsData?.items ?? []) as EnrichedProduct[],
+    [productsData],
+  );
 
-  // Client-side filtering (only for sample data fallback)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filteredProducts = useMemo((): any[] => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any[] = [...rawProducts];
-
-    // Category filter (client-side for sample data only)
-    if (!isApiData && category) {
-      result = result.filter((p) => p.category_slug === category);
-    }
-
-    // Brand filter (client-side for sample data only)
-    if (!isApiData && brand) {
-      result = result.filter(
-        (p) => (p.brand as string)?.toLowerCase() === brand.toLowerCase(),
-      );
-    }
-
-    // Search filter (client-side for sample data only)
-    if (!isApiData && search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          (p.name as string)?.toLowerCase().includes(q) ||
-          (p.model_number as string)?.toLowerCase().includes(q) ||
-          (p.description as string)?.toLowerCase().includes(q) ||
-          (p.brand as string)?.toLowerCase().includes(q),
-      );
-    }
-
-    // Feature tag filter — server-side for API data, client-side for sample
-    if (!isApiData && selectedTags.length > 0) {
-      result = result.filter((p) => {
-        // Sample data uses legacy JSON features field
-        let productFeatures: string[] = [];
-        if (typeof p.features === "string") {
-          try {
-            productFeatures = JSON.parse(p.features as string);
-          } catch {
-            productFeatures = [];
-          }
-        } else if (Array.isArray(p.features)) {
-          productFeatures = p.features as string[];
-        }
-        return selectedTags.every((tag) =>
-          productFeatures.some(
-            (f) => f.toLowerCase() === tag.toLowerCase(),
-          ),
-        );
-      });
-    }
-
-    return result;
-  }, [rawProducts, isApiData, category, brand, search, selectedTags]);
-
-  // Client-side pagination
-  const totalItems = filteredProducts.length;
-  const totalPages = isApiData
-    ? (productsData?.totalPages ?? 1)
-    : Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
-  const paginatedProducts = isApiData
-    ? filteredProducts
-    : filteredProducts.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-
+  const totalItems = productsData?.total ?? products.length;
+  const totalPages = productsData?.totalPages ?? 1;
   const hasActiveFilters = !!(category || brand || search || selectedTags.length > 0);
 
   const clearFilters = () => {
@@ -247,16 +197,17 @@ export default function Products() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {isLoading
                   ? Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="space-y-3 rounded-xl border p-4">
-                        <Skeleton className="aspect-square w-full rounded-lg" />
-                        <Skeleton className="h-4 w-1/3" />
-                        <Skeleton className="h-5 w-3/4" />
-                        <Skeleton className="h-4 w-full" />
+                      <div key={i} className="space-y-3 rounded-xl border p-4 animate-pulse">
+                        <div className="aspect-square w-full rounded-lg bg-muted" />
+                        <div className="h-3 w-2/5 rounded bg-muted" />
+                        <div className="h-4 w-3/4 rounded bg-muted" />
+                        <div className="h-3 w-full rounded bg-muted" />
+                        <div className="h-3 w-1/2 rounded bg-muted" />
                       </div>
                     ))
-                  : paginatedProducts.map((product, i) => (
+                  : products.map((product, i) => (
                       <ProductCard
-                        key={(product as Record<string, unknown>).slug as string}
+                        key={product.slug}
                         product={product}
                         index={i}
                       />
@@ -264,7 +215,7 @@ export default function Products() {
               </div>
 
               {/* Empty state */}
-              {!isLoading && paginatedProducts.length === 0 && (
+              {!isLoading && products.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <Package className="mb-4 h-12 w-12 text-muted-foreground/30" />
                   <p className="text-muted-foreground">
@@ -321,33 +272,38 @@ export default function Products() {
   );
 }
 
+// ─── ProductCard ──────────────────────────────────────────────────────────────
+
 function ProductCard({
   product,
   index,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  product: any;
+  product: EnrichedProduct;
   index: number;
 }) {
   const [imgError, setImgError] = useState(false);
   const { add, remove, isInCompare, isFull } = useCompare();
   const { addItem, items: cartItems } = useCart();
   const [justAdded, setJustAdded] = useState(false);
-  const brandName = (product.brand as string) || (product.brand_name as string) || "";
-  const modelNum = (product.model_number as string) || "";
-  const catName = (product.category_name as string) || "";
-  const imageUrl = product.image_url as string | null;
-  const features = (() => {
+
+  const brandName = product.brand_name || product.brand || "";
+  const modelNum = product.model_number || "";
+  const catName = product.category_name || "";
+  const imageUrl = product.image_url;
+
+  // Parse legacy features JSON (if product_features relation is empty)
+  const legacyFeatures = useMemo(() => {
+    if (product.product_features && product.product_features.length > 0) return [];
     if (!product.features) return [];
     if (typeof product.features === "string") {
       try {
-        return JSON.parse(product.features);
+        return JSON.parse(product.features) as string[];
       } catch {
         return [];
       }
     }
-    return Array.isArray(product.features) ? product.features : [];
-  })();
+    return Array.isArray(product.features) ? (product.features as string[]) : [];
+  }, [product.features, product.product_features]);
 
   return (
     <motion.div
@@ -368,7 +324,7 @@ function ProductCard({
               <>
                 <img
                   src={imageUrl}
-                  alt={product.name as string}
+                  alt={product.name}
                   className="aspect-square w-full object-contain bg-gradient-to-br from-muted to-muted/50 p-4 transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                   onError={() => setImgError(true)}
@@ -379,7 +335,7 @@ function ProductCard({
               <ImagePlaceholder
                 className="aspect-square"
                 variant="product"
-                title={product.name as string}
+                title={product.name}
               />
             )}
             {brandName && (
@@ -397,7 +353,7 @@ function ProductCard({
               </span>
             )}
             <h3 className="mb-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
-              {product.name as string}
+              {product.name}
             </h3>
             {modelNum && (
               <p className="mb-2 font-mono text-[11px] text-muted-foreground">
@@ -405,47 +361,39 @@ function ProductCard({
               </p>
             )}
             <p className="mb-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-muted-foreground">
-              {(product.description as string) || "\u00A0"}
+              {product.description || "\u00A0"}
             </p>
 
             {/* Feature tags — use product_features if available */}
-            {(() => {
-              const pf = product.product_features as Array<{ id: number; name: string; color?: string | null; icon?: string | null; is_priority?: number }> | undefined;
-              if (pf && pf.length > 0) {
-                const sorted = [...pf].sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0));
-                return (
-                  <div className="flex flex-wrap gap-1">
-                    {sorted.slice(0, 3).map((f) => (
-                      <FeatureBadge key={f.id} name={f.name} color={f.color} icon={f.icon} size="sm" />
-                    ))}
-                    {sorted.length > 3 && (
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                        +{sorted.length - 3}
-                      </span>
-                    )}
-                  </div>
-                );
-              }
-              // Fallback to JSON features string
-              if (features.length > 0) {
-                return (
-                  <div className="flex flex-wrap gap-1">
-                    {(features as string[]).slice(0, 3).map((f: string) => (
-                      <span key={f} className="inline-flex items-center gap-0.5 rounded bg-primary/5 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                        <Tag className="h-2.5 w-2.5" />
-                        {f}
-                      </span>
-                    ))}
-                    {features.length > 3 && (
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                        +{features.length - 3}
-                      </span>
-                    )}
-                  </div>
-                );
-              }
-              return null;
-            })()}
+            {product.product_features && product.product_features.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {[...product.product_features]
+                  .sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0))
+                  .slice(0, 3)
+                  .map((f) => (
+                    <FeatureBadge key={f.id} name={f.name} color={f.color} icon={f.icon} size="sm" />
+                  ))}
+                {product.product_features.length > 3 && (
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    +{product.product_features.length - 3}
+                  </span>
+                )}
+              </div>
+            ) : legacyFeatures.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {legacyFeatures.slice(0, 3).map((f) => (
+                  <span key={f} className="inline-flex items-center gap-0.5 rounded bg-primary/5 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                    <Tag className="h-2.5 w-2.5" />
+                    {f}
+                  </span>
+                ))}
+                {legacyFeatures.length > 3 && (
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    +{legacyFeatures.length - 3}
+                  </span>
+                )}
+              </div>
+            ) : null}
 
             {/* CTA — pinned to bottom */}
             <div className="mt-auto pt-3 border-t flex items-center justify-between">
@@ -465,10 +413,10 @@ function ProductCard({
             e.preventDefault();
             e.stopPropagation();
             addItem({
-              productId: product.id as number,
-              slug: product.slug as string,
-              name: product.name as string,
-              imageUrl: product.image_url as string | null,
+              productId: product.id,
+              slug: product.slug,
+              name: product.name,
+              imageUrl: product.image_url,
               categoryName: catName || null,
             });
             setJustAdded(true);
@@ -477,7 +425,7 @@ function ProductCard({
           className={`rounded-full p-1.5 shadow-sm border transition-all ${
             justAdded
               ? "bg-emerald-500 text-white border-emerald-500"
-              : cartItems.some((i) => i.productId === (product.id as number))
+              : cartItems.some((i) => i.productId === product.id)
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-background/90 text-muted-foreground border-border hover:border-primary hover:text-primary"
           }`}
@@ -490,25 +438,25 @@ function ProductCard({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (isInCompare(product.id as number)) {
-              remove(product.id as number);
+            if (isInCompare(product.id)) {
+              remove(product.id);
             } else {
               add({
-                id: product.id as number,
-                slug: product.slug as string,
-                name: product.name as string,
-                image_url: product.image_url as string | null,
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                image_url: product.image_url,
                 brand_name: brandName || null,
               });
             }
           }}
-          disabled={!isInCompare(product.id as number) && isFull}
+          disabled={!isInCompare(product.id) && isFull}
           className={`rounded-full p-1.5 shadow-sm border transition-all ${
-            isInCompare(product.id as number)
+            isInCompare(product.id)
               ? "bg-primary text-primary-foreground border-primary"
               : "bg-background/90 text-muted-foreground border-border hover:border-primary hover:text-primary"
-          } ${!isInCompare(product.id as number) && isFull ? "opacity-30 cursor-not-allowed" : ""}`}
-          title={isInCompare(product.id as number) ? "Bỏ so sánh" : "Thêm so sánh"}
+          } ${!isInCompare(product.id) && isFull ? "opacity-30 cursor-not-allowed" : ""}`}
+          title={isInCompare(product.id) ? "Bỏ so sánh" : "Thêm so sánh"}
         >
           <GitCompareArrows className="h-3.5 w-3.5" />
         </button>
@@ -516,4 +464,3 @@ function ProductCard({
     </motion.div>
   );
 }
-

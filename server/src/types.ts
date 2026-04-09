@@ -2,7 +2,13 @@
 export interface Env {
   DB: D1Database;
   IMAGES: R2Bucket;
-  CACHE: KVNamespace;
+  /**
+   * KV Cache namespace — intentionally optional.
+   * Currently commented out in wrangler.toml (no KV namespace provisioned).
+   * All code accessing CACHE must handle `undefined` gracefully.
+   * When ready, create a KV namespace and update wrangler.toml.
+   */
+  CACHE?: KVNamespace;
   CORS_ORIGIN: string;
   ADMIN_API_KEY: string;
   RESEND_API_KEY?: string;
@@ -43,6 +49,7 @@ export interface SolutionRow {
   meta_description: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface ProductCategoryRow {
@@ -155,6 +162,7 @@ export interface PostRow {
   last_updated_at: string | null;
   reviewed_by: string | null;
   references: string;              // JSON array: '[{title, url, type}]'
+  deleted_at: string | null;
 }
 
 export interface GalleryAlbumRow {
@@ -166,6 +174,7 @@ export interface GalleryAlbumRow {
   category: string; // 'du-an' | 'ky-thuat' | 'hoat-dong' | 'general'
   sort_order: number;
   is_active: number;
+  deleted_at: string | null;
 }
 
 export interface GalleryImageRow {
@@ -183,6 +192,7 @@ export interface PartnerRow {
   website_url: string | null;
   sort_order: number;
   is_active: number;
+  deleted_at: string | null;
 }
 
 export interface ContactRow {
@@ -212,17 +222,10 @@ export interface ImageRow {
   sort_order: number;
 }
 
-export interface QuoteRequestRow {
-  id: number;
-  customer_name: string;
-  email: string | null;
-  phone: string;
-  company: string | null;
-  items: string; // JSON [{product_id, product_name, qty}]
-  note: string | null;
-  status: string;
-  created_at: string;
-}
+/** @deprecated Legacy quote_requests table — use QuotationRequestRow instead */
+// QuoteRequestRow removed — legacy /api/quotes route deprecated
+
+
 
 export interface ProductFeatureRow {
   id: number;
