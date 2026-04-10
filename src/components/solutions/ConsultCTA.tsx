@@ -58,3 +58,47 @@ export function ConsultCTA() {
     </aside>
   );
 }
+
+/** Full-width inline CTA — used in the editorial full-width template */
+export function ConsultCTAInline() {
+  return (
+    <section className="rounded-2xl bg-gradient-to-r from-[#3C5DAA] to-[#2d4a8a] p-8 text-white shadow-xl md:p-12">
+      <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
+        <div className="flex-1">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/60">
+            Bắt đầu dự án
+          </p>
+          <h3 className="mb-2 text-2xl font-bold tracking-tight md:text-3xl">
+            Tư vấn giải pháp chuyên nghiệp
+          </h3>
+          <p className="max-w-lg text-sm leading-relaxed text-white/80 md:text-base">
+            Đội ngũ kỹ sư Song Linh Technologies sẵn sàng khảo sát, tư vấn và thiết kế giải pháp phù hợp cho dự án của bạn.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+          <Button
+            asChild
+            size="lg"
+            className="bg-white font-semibold !text-[#3C5DAA] hover:bg-white/90"
+          >
+            <Link to="/lien-he">
+              <Phone className="mr-2 h-4 w-4" />
+              Liên hệ ngay
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="border-white/30 text-white hover:bg-white/10"
+          >
+            <a href="tel:0968811911">
+              <FileText className="mr-2 h-4 w-4" />
+              0968.811.911
+            </a>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}

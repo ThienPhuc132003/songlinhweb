@@ -1,36 +1,44 @@
-import { Phone, MessageCircle } from "lucide-react";
-import { SITE } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
+import { useSiteConfig } from "@/hooks/useApi";
+import LogoZalo from "@/assets/Image/LogoLienHe/LogoZalo.png";
+import LogoFacebook from "@/assets/Image/LogoLienHe/LogoFaceBook.png";
 
 export default function FloatingBar() {
-  return (
-    <div className="fixed right-4 bottom-4 z-50 flex flex-col gap-2">
-      {/* Zalo (placeholder - update with actual Zalo link) */}
-      <Button
-        size="icon"
-        className="h-12 w-12 rounded-full bg-primary shadow-lg hover:bg-primary/90"
-        asChild
-      >
-        <a
-          href="https://zalo.me/0968811911"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Chat Zalo"
-        >
-          <MessageCircle className="h-5 w-5" />
-        </a>
-      </Button>
+  const { data: config } = useSiteConfig();
 
-      {/* Phone */}
-      <Button
-        size="icon"
-        className="bg-secondary hover:bg-secondary/90 h-12 w-12 animate-pulse rounded-full shadow-lg"
-        asChild
+  const zaloUrl = config?.social_zalo || "https://zalo.me/0968811911";
+  const facebookUrl = config?.social_facebook || "https://facebook.com";
+
+  return (
+    <div className="fixed right-4 bottom-4 z-50 flex flex-col gap-3">
+      {/* Zalo */}
+      <a
+        href={zaloUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat Zalo"
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-110 hover:shadow-xl"
       >
-        <a href={`tel:${SITE.phoneRaw}`} aria-label="Gọi điện">
-          <Phone className="h-5 w-5" />
-        </a>
-      </Button>
+        <img
+          src={LogoZalo}
+          alt="Zalo"
+          className="h-9 w-9 object-contain transition-transform duration-300 group-hover:scale-110"
+        />
+      </a>
+
+      {/* Facebook */}
+      <a
+        href={facebookUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Facebook"
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+      >
+        <img
+          src={LogoFacebook}
+          alt="Facebook"
+          className="h-9 w-9 object-contain transition-transform duration-300 group-hover:scale-110"
+        />
+      </a>
     </div>
   );
 }

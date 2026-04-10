@@ -9,14 +9,17 @@ interface SystemArchitectureProps {
 export function SystemArchitecture({ architecture }: SystemArchitectureProps) {
   return (
     <section>
-      <h2 className="mb-6 text-2xl font-bold">{architecture.title}</h2>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
+        Kiến trúc hệ thống
+      </p>
+      <h2 className="mb-8 text-3xl font-bold">{architecture.title}</h2>
       <div className="rounded-xl border bg-card p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
           {/* Diagram placeholder */}
-          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 lg:w-1/2">
+          <div className="flex aspect-video w-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-gradient-to-br from-slate-50 to-white dark:border-slate-700 dark:from-slate-800 dark:to-slate-900 lg:w-1/2">
             <div className="text-center">
-              <Network className="mx-auto mb-2 h-12 w-12 text-primary/40" />
-              <p className="text-sm text-muted-foreground">System Architecture Diagram</p>
+              <Network className="mx-auto mb-2 h-12 w-12 text-[#3C5DAA]/30" />
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">System Architecture Diagram</p>
             </div>
           </div>
 
@@ -27,7 +30,7 @@ export function SystemArchitecture({ architecture }: SystemArchitectureProps) {
             </p>
 
             <div>
-              <h4 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
                 Tích hợp hệ thống
               </h4>
               <div className="flex flex-wrap gap-2">

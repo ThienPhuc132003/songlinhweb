@@ -225,7 +225,7 @@ export default function ProductDetail() {
               <div className="grid gap-8 md:grid-cols-2">
                 {/* Image + Gallery */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br from-muted to-muted/30">
+                  <div className="group/img flex items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br from-muted to-muted/30 cursor-zoom-in">
                     {imgError || !displayImage ? (
                       <div className="flex flex-col items-center justify-center gap-2 p-12">
                         <Package className="h-24 w-24 text-muted-foreground/20" />
@@ -237,7 +237,7 @@ export default function ProductDetail() {
                       <img
                         src={displayImage}
                         alt={product.name}
-                        className="aspect-square w-full object-contain p-6"
+                        className="aspect-square w-full object-contain p-6 transition-transform duration-500 ease-out group-hover/img:scale-110"
                         onError={() => setImgError(true)}
                       />
                     )}
@@ -249,9 +249,9 @@ export default function ProductDetail() {
                         <button
                           type="button"
                           onClick={() => setMainImage(product.image_url)}
-                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                             displayImage === product.image_url
-                              ? "border-primary"
+                              ? "border-primary ring-2 ring-primary/20"
                               : "border-transparent hover:border-primary/50"
                           }`}
                         >
@@ -267,9 +267,9 @@ export default function ProductDetail() {
                           key={img.id}
                           type="button"
                           onClick={() => setMainImage(img.url)}
-                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                             displayImage === img.url
-                              ? "border-primary"
+                              ? "border-primary ring-2 ring-primary/20"
                               : "border-transparent hover:border-primary/50"
                           }`}
                         >
@@ -332,23 +332,6 @@ export default function ProductDetail() {
                     {product.description}
                   </p>
 
-                  {/* Features badges */}
-                  {product.product_features && product.product_features.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {product.product_features
-                        .sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0))
-                        .map((f) => (
-                          <FeatureBadge
-                            key={f.id}
-                            name={f.name}
-                            color={f.color}
-                            icon={f.icon}
-                            size="md"
-                          />
-                        ))}
-                    </div>
-                  )}
-
                   {/* Warranty */}
                   {warranty && (
                     <div className="flex items-center gap-2 text-sm">
@@ -360,6 +343,30 @@ export default function ProductDetail() {
                 </div>
               </div>
 
+              {/* ─── Feature Badges (above specs for visibility) ─── */}
+              {product.product_features && product.product_features.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <h2 className="mb-3 text-lg font-semibold">Tính năng nổi bật</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {product.product_features
+                      .sort((a, b) => (b.is_priority ?? 0) - (a.is_priority ?? 0))
+                      .map((f) => (
+                        <FeatureBadge
+                          key={f.id}
+                          name={f.name}
+                          color={f.color}
+                          icon={f.icon}
+                          size="md"
+                        />
+                      ))}
+                  </div>
+                </motion.div>
+              )}
+
               {/* ─── Technical Specifications Table ─── */}
               {specEntries.length > 0 && (
                 <motion.div
@@ -367,12 +374,17 @@ export default function ProductDetail() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.15 }}
                 >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Cpu className="h-5 w-5 text-primary" />
-                    <h2 className="text-xl font-semibold">Thông số kỹ thuật</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="h-5 w-5 text-primary" />
+                      <h2 className="text-xl font-semibold">Thông số kỹ thuật</h2>
+                    </div>
+                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                      {specEntries.length} thông số
+                    </span>
                   </div>
-                  <div className="overflow-hidden rounded-xl border">
-                    <table className="w-full">
+                  <div className="overflow-x-auto -mx-1 px-1 rounded-xl border">
+                    <table className="w-full min-w-[480px]">
                       <thead>
                         <tr className="bg-muted/70">
                           <th className="w-2/5 px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -387,9 +399,9 @@ export default function ProductDetail() {
                         {specEntries.map(([key, value], i) => (
                           <tr
                             key={key}
-                            className={`border-t transition-colors hover:bg-muted/30 ${i % 2 === 0 ? "bg-muted/20" : "bg-background"}`}
+                            className={`border-t transition-colors hover:bg-primary/5 ${i % 2 === 0 ? "bg-muted/20" : "bg-background"}`}
                           >
-                            <td className="px-5 py-3 text-sm font-medium text-foreground">
+                            <td className="px-5 py-3 text-sm font-medium text-foreground whitespace-nowrap">
                               {key}
                             </td>
                             <td className="px-5 py-3 text-sm text-muted-foreground">
@@ -571,24 +583,7 @@ export default function ProductDetail() {
                       {inventoryInfo.label}
                     </span>
                   </div>
-                  {/* Top specs preview (first 4) */}
-                  {specEntries.length > 0 && (
-                    <>
-                      <div className="border-t pt-3 mt-3">
-                        {specEntries.slice(0, 4).map(([key, value]) => (
-                          <div key={key} className="flex items-center justify-between text-xs py-1">
-                            <span className="text-muted-foreground truncate mr-2">{key}</span>
-                            <span className="font-medium text-right truncate max-w-[150px]">{value}</span>
-                          </div>
-                        ))}
-                        {specEntries.length > 4 && (
-                          <p className="text-[10px] text-primary mt-1">
-                            +{specEntries.length - 4} thông số khác ↓
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
+
                 </div>
               </div>
 

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { Menu, X, ChevronDown, Camera, ShieldCheck, Flame, Network, Volume2, Cpu, Package, Phone } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { SOLUTIONS } from "@/data/solutions";
-import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
+import { SolutionIcon, SolutionIconBadge } from "@/components/ui/SolutionIcon";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -244,13 +244,15 @@ function SolutionsDropdown() {
             : "pointer-events-none -translate-y-2 opacity-0",
         )}
       >
-        <div className="mega-menu-animated w-[580px] rounded-xl border bg-card p-5 shadow-xl">
+        <div className="mega-menu-animated w-[600px] rounded-xl border border-slate-200 bg-white/95 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
           {/* Header */}
-          <div className="mb-3 flex items-center justify-between border-b pb-3">
-            <p className="text-sm font-semibold">Giải pháp công nghệ</p>
+          <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
+              Giải pháp công nghệ
+            </p>
             <Link
               to="/giai-phap"
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs text-muted-foreground transition-colors hover:text-[#3C5DAA]"
               onClick={() => setIsOpen(false)}
             >
               Xem tất cả →
@@ -258,24 +260,24 @@ function SolutionsDropdown() {
           </div>
 
           {/* 2-column grid */}
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
             {SOLUTIONS.map((solution) => (
               <Link
                 key={solution.slug}
                 to={`/giai-phap/${solution.slug}`}
                 onClick={() => setIsOpen(false)}
-                className="flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-accent"
+                className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
               >
-                <SolutionIconBadge
+                <SolutionIcon
                   name={solution.icon}
-                  size="sm"
-                  className="mt-0.5 shrink-0"
+                  size="md"
+                  className="mt-0.5 shrink-0 text-[#3C5DAA]"
                 />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium leading-tight">
+                  <p className="text-sm font-semibold leading-tight text-slate-900 dark:text-slate-100">
                     {solution.title}
                   </p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                  <p className="mt-0.5 line-clamp-1 text-xs leading-tight text-slate-500 dark:text-slate-400">
                     {solution.subtitle.split("—")[0].trim()}
                   </p>
                 </div>
@@ -325,13 +327,15 @@ function ProductsDropdown() {
             : "pointer-events-none -translate-y-2 opacity-0",
         )}
       >
-        <div className="mega-menu-animated w-[680px] rounded-xl border bg-card p-5 shadow-xl">
+        <div className="mega-menu-animated w-[720px] rounded-xl border border-slate-200 bg-white/95 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
           {/* Header */}
-          <div className="mb-4 flex items-center justify-between border-b pb-3">
-            <p className="text-sm font-semibold">Danh mục sản phẩm</p>
+          <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
+              Danh mục sản phẩm
+            </p>
             <Link
               to="/san-pham"
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs text-muted-foreground transition-colors hover:text-[#3C5DAA]"
               onClick={() => setIsOpen(false)}
             >
               Xem tất cả sản phẩm →
@@ -339,12 +343,12 @@ function ProductsDropdown() {
           </div>
 
           {/* 4-column mega menu */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-8">
             {PRODUCT_MENU_COLUMNS.map((col) => (
               <div key={col.title}>
-                <div className="mb-2 flex items-center gap-2">
-                  <col.icon className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                <div className="mb-3 flex items-center gap-2">
+                  <col.icon className="h-5 w-5 text-[#3C5DAA]" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
                     {col.title}
                   </span>
                 </div>
@@ -354,7 +358,7 @@ function ProductsDropdown() {
                       key={item.slug}
                       to={`/san-pham?category=${item.slug}`}
                       onClick={() => setIsOpen(false)}
-                      className="block rounded-md px-2 py-1.5 text-xs text-foreground/70 transition-colors hover:bg-accent hover:text-primary"
+                      className="block rounded-md px-2 py-1.5 text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#3C5DAA] dark:text-slate-400 dark:hover:bg-slate-800/50"
                     >
                       {item.label}
                     </Link>

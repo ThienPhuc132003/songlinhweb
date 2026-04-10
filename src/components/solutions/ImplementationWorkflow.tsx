@@ -12,11 +12,13 @@ const STEPS = [
 export function ImplementationWorkflow() {
   return (
     <section>
-      <h2 className="mb-6 text-2xl font-bold">Quy trình triển khai</h2>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
+        Quy trình triển khai
+      </p>
+      <h2 className="mb-8 text-3xl font-bold">5 bước triển khai</h2>
       <div className="relative">
         {/* Connection line */}
         <div className="absolute left-6 top-6 hidden h-0.5 w-[calc(100%-48px)] bg-gradient-to-r from-primary/20 via-primary to-primary/20 md:left-0 md:block md:w-full" />
-
         <div className="grid gap-6 md:grid-cols-5 md:gap-4">
           {STEPS.map((step, i) => {
             const Icon = step.icon;

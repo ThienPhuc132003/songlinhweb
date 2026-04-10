@@ -4,11 +4,16 @@ import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { useProducts } from "@/hooks/useApi";
-import type { Product, ProductFeature } from "@/types";
+import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   ArrowRight,
   ChevronLeft,
@@ -137,19 +142,44 @@ export default function Products() {
           </div>
 
           <div className="flex gap-8">
-            {/* ─── Sidebar ─── */}
+            {/* ─── Sidebar with Accordion ─── */}
             <aside
-              className={`w-64 shrink-0 space-y-6 ${
+              className={`w-64 shrink-0 ${
                 sidebarOpen ? "block" : "hidden"
               } lg:block`}
             >
-              <CategorySidebar />
-              <div className="border-t pt-4">
-                <BrandFilter />
-              </div>
+              <Accordion
+                type="multiple"
+                defaultValue={["categories", "brands"]}
+                className="space-y-0"
+              >
+                <AccordionItem value="categories" className="border-b-0">
+                  <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
+                    Danh mục sản phẩm
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <CategorySidebar hideTitle />
+                  </AccordionContent>
+                </AccordionItem>
 
-              {/* ─── Feature Tag Filter (Grouped) ─── */}
-              <GroupedFeatureFilter className="border-t pt-4" />
+                <AccordionItem value="brands" className="border-t">
+                  <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
+                    Thương hiệu
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <BrandFilter hideTitle />
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="features" className="border-t">
+                  <AccordionTrigger className="py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:no-underline">
+                    Tính năng
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <GroupedFeatureFilter hideTitle />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </aside>
 
             {/* ─── Products Grid ─── */}
@@ -305,9 +335,39 @@ function ProductCard({
     return Array.isArray(product.features) ? (product.features as string[]) : [];
   }, [product.features, product.product_features]);
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      imageUrl: product.image_url,
+      categoryName: catName || null,
+    });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 2000);
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInCompare(product.id)) {
+      remove(product.id);
+    } else {
+      add({
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        image_url: product.image_url,
+        brand_name: brandName || null,
+      });
+    }
+  };
+
   return (
     <motion.div
-      className="relative"
+      className="group/card relative"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -315,22 +375,19 @@ function ProductCard({
     >
       <Link
         to={`/san-pham/${product.slug}`}
-        className="group block h-full"
+        className="block h-full"
       >
         <div className="flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5">
           {/* Image */}
-          <div className="relative shrink-0 overflow-hidden">
+          <div className="relative shrink-0 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-muted dark:to-muted/50">
             {imageUrl && !imgError ? (
-              <>
-                <img
-                  src={imageUrl}
-                  alt={product.name}
-                  className="aspect-square w-full object-contain bg-gradient-to-br from-muted to-muted/50 p-4 transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                  onError={() => setImgError(true)}
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              </>
+              <img
+                src={imageUrl}
+                alt={product.name}
+                className="aspect-square w-full object-contain mix-blend-multiply p-6 transition-transform duration-500 group-hover/card:scale-105 dark:mix-blend-normal"
+                loading="lazy"
+                onError={() => setImgError(true)}
+              />
             ) : (
               <ImagePlaceholder
                 className="aspect-square"
@@ -338,9 +395,25 @@ function ProductCard({
                 title={product.name}
               />
             )}
+            {/* Brand logo chip (top-left) */}
             {brandName && (
-              <span className="absolute right-3 top-3 rounded-md bg-background/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-foreground/70 shadow-sm backdrop-blur-sm">
-                {brandName}
+              <span className="absolute left-3 top-3 flex items-center gap-1 rounded-md bg-background/90 px-2 py-1 shadow-sm backdrop-blur-sm">
+                {product.brand_logo && (
+                  <img
+                    src={product.brand_logo}
+                    alt={brandName}
+                    className="h-3.5 w-3.5 rounded-sm object-contain"
+                  />
+                )}
+                <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/70">
+                  {brandName}
+                </span>
+              </span>
+            )}
+            {/* Inventory status badge (top-right) */}
+            {product.inventory_status === "contact" && (
+              <span className="absolute right-3 top-3 rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm">
+                Liên hệ báo giá
               </span>
             )}
           </div>
@@ -352,12 +425,15 @@ function ProductCard({
                 {catName}
               </span>
             )}
-            <h3 className="mb-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
+            <h3 className="mb-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug transition-colors group-hover/card:text-primary">
               {product.name}
             </h3>
+            {/* SKU / Model display */}
             {modelNum && (
-              <p className="mb-2 font-mono text-[11px] text-muted-foreground">
-                {modelNum}
+              <p className="mb-1.5 flex items-center gap-1.5">
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  SKU: {modelNum}
+                </span>
               </p>
             )}
             <p className="mb-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-muted-foreground">
@@ -395,72 +471,49 @@ function ProductCard({
               </div>
             ) : null}
 
-            {/* CTA — pinned to bottom */}
-            <div className="mt-auto pt-3 border-t flex items-center justify-between">
-              <span className="inline-flex items-center text-xs font-medium text-primary transition-colors group-hover:text-primary/80">
-                Xem chi tiết
-                <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-              </span>
+            {/* Action bar — pinned to bottom, revealed on hover */}
+            <div className="mt-auto border-t pt-3">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center text-xs font-medium text-primary transition-colors group-hover/card:text-primary/80">
+                  Xem chi tiết
+                  <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover/card:translate-x-1" />
+                </span>
+
+                {/* Action icons — visible on hover */}
+                <div className="flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover/card:opacity-100">
+                  {/* Add to quote */}
+                  <button
+                    onClick={handleAddToCart}
+                    className={`rounded-full p-1.5 border transition-all ${
+                      justAdded
+                        ? "bg-emerald-500 text-white border-emerald-500"
+                        : cartItems.some((i) => i.productId === product.id)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
+                    }`}
+                    title={justAdded ? "Đã thêm" : "Thêm vào báo giá"}
+                  >
+                    {justAdded ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+                  </button>
+                  {/* Compare */}
+                  <button
+                    onClick={handleCompare}
+                    disabled={!isInCompare(product.id) && isFull}
+                    className={`rounded-full p-1.5 border transition-all ${
+                      isInCompare(product.id)
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
+                    } ${!isInCompare(product.id) && isFull ? "opacity-30 cursor-not-allowed" : ""}`}
+                    title={isInCompare(product.id) ? "Bỏ so sánh" : "Thêm so sánh"}
+                  >
+                    <GitCompareArrows className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </Link>
-      {/* Action buttons — outside the Link */}
-      <div className="absolute bottom-[52px] right-4 z-10 flex items-center gap-1.5">
-        {/* Add to quote cart */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            addItem({
-              productId: product.id,
-              slug: product.slug,
-              name: product.name,
-              imageUrl: product.image_url,
-              categoryName: catName || null,
-            });
-            setJustAdded(true);
-            setTimeout(() => setJustAdded(false), 2000);
-          }}
-          className={`rounded-full p-1.5 shadow-sm border transition-all ${
-            justAdded
-              ? "bg-emerald-500 text-white border-emerald-500"
-              : cartItems.some((i) => i.productId === product.id)
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-background/90 text-muted-foreground border-border hover:border-primary hover:text-primary"
-          }`}
-          title={justAdded ? "Đã thêm" : "Thêm vào báo giá"}
-        >
-          {justAdded ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" />}
-        </button>
-        {/* Compare button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (isInCompare(product.id)) {
-              remove(product.id);
-            } else {
-              add({
-                id: product.id,
-                slug: product.slug,
-                name: product.name,
-                image_url: product.image_url,
-                brand_name: brandName || null,
-              });
-            }
-          }}
-          disabled={!isInCompare(product.id) && isFull}
-          className={`rounded-full p-1.5 shadow-sm border transition-all ${
-            isInCompare(product.id)
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-background/90 text-muted-foreground border-border hover:border-primary hover:text-primary"
-          } ${!isInCompare(product.id) && isFull ? "opacity-30 cursor-not-allowed" : ""}`}
-          title={isInCompare(product.id) ? "Bỏ so sánh" : "Thêm so sánh"}
-        >
-          <GitCompareArrows className="h-3.5 w-3.5" />
-        </button>
-      </div>
     </motion.div>
   );
 }

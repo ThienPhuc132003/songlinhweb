@@ -6,9 +6,10 @@ import { useProductFeatures } from "@/hooks/useApi";
 
 interface GroupedFeatureFilterProps {
   className?: string;
+  hideTitle?: boolean;
 }
 
-export function GroupedFeatureFilter({ className }: GroupedFeatureFilterProps) {
+export function GroupedFeatureFilter({ className, hideTitle }: GroupedFeatureFilterProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: features = [] } = useProductFeatures();
   const selectedTags = searchParams.getAll("tag");
@@ -56,9 +57,11 @@ export function GroupedFeatureFilter({ className }: GroupedFeatureFilterProps) {
 
   return (
     <div className={className}>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Tính năng
-      </h3>
+      {!hideTitle && (
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Tính năng
+        </h3>
+      )}
 
       <div className="space-y-2">
         {Object.entries(featureGroups).map(([group, groupFeatures]) => {

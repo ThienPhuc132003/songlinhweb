@@ -381,69 +381,42 @@ products.post("/", requireAuth, async (c) => {
       .first();
     if (existing) return err(`Slug "${body.slug}" đã tồn tại. Vui lòng chọn slug khác.`, 409);
 
-    // Try full INSERT with all B2B columns first
-    try {
-      const result = await c.env.DB.prepare(
-        `INSERT INTO products (category_id, brand_id, slug, name, description, brand, model_number, image_url, gallery_urls, spec_sheet_url, specifications, features, inventory_status, warranty, sort_order, is_active, meta_title, meta_description)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+    const result = await c.env.DB.prepare(
+      `INSERT INTO products (category_id, brand_id, slug, name, description, brand, model_number, image_url, gallery_urls, spec_sheet_url, specifications, features, inventory_status, warranty, sort_order, is_active, meta_title, meta_description)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+    )
+      .bind(
+        body.category_id,
+        body.brand_id ?? null,
+        body.slug,
+        body.name,
+        body.description ?? "",
+        body.brand ?? "",
+        body.model_number ?? "",
+        body.image_url ?? null,
+        body.gallery_urls ?? "[]",
+        body.spec_sheet_url ?? null,
+        body.specifications ?? "{}",
+        body.features ?? "[]",
+        body.inventory_status ?? "in-stock",
+        body.warranty ?? "",
+        body.sort_order ?? 0,
+        body.meta_title ?? null,
+        body.meta_description ?? null,
       )
-        .bind(
-          body.category_id,
-          body.brand_id ?? null,
-          body.slug,
-          body.name,
-          body.description ?? "",
-          body.brand ?? "",
-          body.model_number ?? "",
-          body.image_url ?? null,
-          body.gallery_urls ?? "[]",
-          body.spec_sheet_url ?? null,
-          body.specifications ?? "{}",
-          body.features ?? "[]",
-          body.inventory_status ?? "in-stock",
-          body.warranty ?? "",
-          body.sort_order ?? 0,
-          body.meta_title ?? null,
-          body.meta_description ?? null,
-        )
-        .run();
-      const newId = result.meta.last_row_id;
-      // Sync feature assignments if provided
-      const featureIds = (body as Record<string, unknown>).feature_ids as number[] | undefined;
-      if (featureIds && Array.isArray(featureIds) && featureIds.length > 0) {
-        const placeholders = featureIds.map(() => "(?, ?)").join(", ");
-        const vals = featureIds.flatMap((fid: number) => [newId, fid]);
-        await c.env.DB.prepare(
-          `INSERT INTO product_to_features (product_id, feature_id) VALUES ${placeholders}`,
-        ).bind(...vals).run();
-      }
-      logAudit(c.env.DB, 'product', newId as number, 'create', { name: body.name, slug: body.slug });
-      return ok({ id: newId });
-    } catch {
-      // Fallback: core columns only (migration 0010 not yet applied)
-      const result = await c.env.DB.prepare(
-        `INSERT INTO products (category_id, brand_id, slug, name, description, brand, model_number, image_url, spec_sheet_url, specifications, features, sort_order, is_active, meta_title, meta_description)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-      )
-        .bind(
-          body.category_id,
-          body.brand_id ?? null,
-          body.slug,
-          body.name,
-          body.description ?? "",
-          body.brand ?? "",
-          body.model_number ?? "",
-          body.image_url ?? null,
-          body.spec_sheet_url ?? null,
-          body.specifications ?? "{}",
-          body.features ?? "[]",
-          body.sort_order ?? 0,
-          body.meta_title ?? null,
-          body.meta_description ?? null,
-        )
-        .run();
-      return ok({ id: result.meta.last_row_id });
+      .run();
+    const newId = result.meta.last_row_id;
+    // Sync feature assignments if provided
+    const featureIds = (body as Record<string, unknown>).feature_ids as number[] | undefined;
+    if (featureIds && Array.isArray(featureIds) && featureIds.length > 0) {
+      const placeholders = featureIds.map(() => "(?, ?)").join(", ");
+      const vals = featureIds.flatMap((fid: number) => [newId, fid]);
+      await c.env.DB.prepare(
+        `INSERT INTO product_to_features (product_id, feature_id) VALUES ${placeholders}`,
+      ).bind(...vals).run();
     }
+    logAudit(c.env.DB, 'product', newId as number, 'create', { name: body.name, slug: body.slug });
+    return ok({ id: newId });
   } catch (e) {
     console.error("Product CREATE error:", e);
     return err(`Lỗi tạo sản phẩm: ${e instanceof Error ? e.message : "Unknown error"}`, 500);

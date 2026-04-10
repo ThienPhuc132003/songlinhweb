@@ -27,7 +27,7 @@ export function ProjectUsedEquipment({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <h2 className="text-xl font-semibold">Sản phẩm đã sử dụng</h2>
+      <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#3C5DAA]">Sản phẩm đã sử dụng</h2>
       <p className="text-sm text-muted-foreground">
         Các thiết bị và sản phẩm được triển khai trong dự án này
       </p>

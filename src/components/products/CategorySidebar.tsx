@@ -46,9 +46,10 @@ function buildTree(
 
 interface CategorySidebarProps {
   className?: string;
+  hideTitle?: boolean;
 }
 
-export function CategorySidebar({ className }: CategorySidebarProps) {
+export function CategorySidebar({ className, hideTitle }: CategorySidebarProps) {
   const { data: categories, isLoading } = useProductCategories();
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get("category") ?? "";
@@ -76,9 +77,11 @@ export function CategorySidebar({ className }: CategorySidebarProps) {
 
   return (
     <div className={cn("space-y-1", className)}>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-        Danh mục sản phẩm
-      </h3>
+      {!hideTitle && (
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Danh mục sản phẩm
+        </h3>
+      )}
 
       {/* All products link */}
       <Link

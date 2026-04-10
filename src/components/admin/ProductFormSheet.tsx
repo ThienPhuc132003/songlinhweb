@@ -21,10 +21,9 @@ import {
   ChevronDown,
   ChevronRight,
   Wrench,
-  Package,
   BarChart3,
   Globe,
-  Tags,
+  Search,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -150,9 +149,6 @@ export function ProductFormSheet({
   brands,
   validationErrors,
 }: ProductFormSheetProps) {
-  const selectClass =
-    "border-input bg-background flex h-8 w-full rounded-md border px-2 py-1 text-xs";
-
   // Resolve current category slug for spec template auto-suggest
   const currentCategorySlug = useMemo(() => {
     if (!form.category_id) return undefined;
@@ -166,12 +162,11 @@ export function ProductFormSheet({
     return brands.find((b) => b.id === form.brand_id) ?? null;
   }, [form.brand_id, brands]);
 
-  // Spec entries count (non-empty)
+  // Computed counts for tab badges
   const filledSpecCount = specEntries.filter(([k]) => k.trim()).length;
-  // Feature count
   const featureCount = selectedFeatureIds.length;
-  // Gallery count
   const galleryCount = galleryUrls.length + (form.image_url ? 1 : 0);
+  const seoFilled = (form.meta_title ? 1 : 0) + (form.meta_description ? 1 : 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -224,41 +219,41 @@ export function ProductFormSheet({
           <div className="flex-1 grid grid-cols-[1fr_360px] min-h-0">
             {/* ─── LEFT PANEL (70%) — Tabs ─── */}
             <div className="border-r overflow-y-auto">
-              <Tabs defaultValue="info" className="h-full flex flex-col">
+              <Tabs defaultValue="general" className="h-full flex flex-col">
                 <div className="border-b px-4 shrink-0">
                   <TabsList variant="line" className="justify-start -mb-px">
-                    <TabsTrigger value="info" className="gap-1.5 text-xs">
-                      <PenLine className="h-3.5 w-3.5" /> Thông tin
+                    <TabsTrigger value="general" className="gap-1.5 text-xs">
+                      <PenLine className="h-3.5 w-3.5" /> Thông tin chung
                     </TabsTrigger>
-                    <TabsTrigger value="specs" className="gap-1.5 text-xs">
-                      <Wrench className="h-3.5 w-3.5" /> Thông số kỹ thuật
-                      {filledSpecCount > 0 && (
+                    <TabsTrigger value="technical" className="gap-1.5 text-xs">
+                      <Wrench className="h-3.5 w-3.5" /> Kỹ thuật
+                      {(filledSpecCount > 0 || featureCount > 0) && (
                         <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                          {filledSpecCount}
-                        </span>
-                      )}
-                    </TabsTrigger>
-                    <TabsTrigger value="features" className="gap-1.5 text-xs">
-                      <Tags className="h-3.5 w-3.5" /> Tính năng
-                      {featureCount > 0 && (
-                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                          {featureCount}
+                          {filledSpecCount + featureCount}
                         </span>
                       )}
                     </TabsTrigger>
                     <TabsTrigger value="assets" className="gap-1.5 text-xs">
-                      <ImageIcon className="h-3.5 w-3.5" /> SEO & Tài sản
+                      <ImageIcon className="h-3.5 w-3.5" /> Tài sản
                       {galleryCount > 0 && (
                         <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                           {galleryCount}
                         </span>
                       )}
                     </TabsTrigger>
+                    <TabsTrigger value="seo" className="gap-1.5 text-xs">
+                      <Search className="h-3.5 w-3.5" /> SEO
+                      {seoFilled > 0 && (
+                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          {seoFilled}/2
+                        </span>
+                      )}
+                    </TabsTrigger>
                   </TabsList>
                 </div>
 
-                {/* ─── TAB 1: Basics ─── */}
-                <TabsContent value="info" className="flex-1 overflow-y-auto p-5 mt-0 space-y-5">
+                {/* ─── TAB 1: General ─── */}
+                <TabsContent value="general" className="flex-1 overflow-y-auto p-5 mt-0 space-y-5">
                   {/* Name + Slug */}
                   <div className="grid grid-cols-2 gap-4">
                     <F label="Tên sản phẩm" required error={validationErrors.name}>
@@ -376,10 +371,59 @@ export function ProductFormSheet({
                       placeholder="Mô tả chi tiết sản phẩm..."
                     />
                   </F>
+
+                  {/* ─── B2B Fields: Inventory + Warranty ─── */}
+                  <div className="rounded-lg border p-4 space-y-4">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
+                      Thông tin B2B
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <F label="Tình trạng kho">
+                        <div className="flex gap-2">
+                          {INVENTORY_OPTIONS.map((opt) => (
+                            <label
+                              key={opt.value}
+                              className={`flex-1 cursor-pointer rounded-md border px-2.5 py-2 text-center text-[11px] font-medium transition-colors ${
+                                form.inventory_status === opt.value
+                                  ? opt.color
+                                  : "border-input text-muted-foreground hover:border-primary/30"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="inventory_status"
+                                value={opt.value}
+                                checked={form.inventory_status === opt.value}
+                                onChange={(e) =>
+                                  setForm((f) => ({
+                                    ...f,
+                                    inventory_status: e.target.value,
+                                  }))
+                                }
+                                className="sr-only"
+                              />
+                              {opt.label}
+                            </label>
+                          ))}
+                        </div>
+                      </F>
+                      <F label="Bảo hành">
+                        <Input
+                          value={form.warranty || ""}
+                          className="h-9 text-sm"
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, warranty: e.target.value }))
+                          }
+                          placeholder="VD: 24 Tháng"
+                        />
+                      </F>
+                    </div>
+                  </div>
                 </TabsContent>
 
-                {/* ─── TAB 2: Technical Specs ─── */}
-                <TabsContent value="specs" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
+                {/* ─── TAB 2: Technical (Specs + Features merged) ─── */}
+                <TabsContent value="technical" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
+                  {/* Specs Editor */}
                   <div className="rounded-lg border p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -442,24 +486,26 @@ export function ProductFormSheet({
                         Chưa có thông số. Sử dụng &quot;Mẫu thông số&quot; hoặc nhấn &quot;+ Thêm thông số&quot;.
                       </p>
                     )}
+
+                    <p className="text-[10px] text-muted-foreground">
+                      {filledSpecCount} thông số đã nhập
+                    </p>
                   </div>
 
-                  {/* Spec count summary */}
-                  <p className="text-[10px] text-muted-foreground">
-                    {filledSpecCount} thông số đã nhập
-                  </p>
+                  {/* Features / Tags */}
+                  <div className="rounded-lg border p-4 space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Tính năng & Tags
+                    </p>
+                    <SearchableFeatureSelect
+                      features={allFeatures}
+                      selectedIds={selectedFeatureIds}
+                      onChange={onFeatureIdsChange}
+                    />
+                  </div>
                 </TabsContent>
 
-                {/* ─── TAB 3: Features & Tags ─── */}
-                <TabsContent value="features" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
-                  <SearchableFeatureSelect
-                    features={allFeatures}
-                    selectedIds={selectedFeatureIds}
-                    onChange={onFeatureIdsChange}
-                  />
-                </TabsContent>
-
-                {/* ─── TAB 4: SEO & Assets ─── */}
+                {/* ─── TAB 3: Assets (Gallery + PDF) ─── */}
                 <TabsContent value="assets" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
                   {/* Primary Image */}
                   <ImageUploadField
@@ -494,16 +540,18 @@ export function ProductFormSheet({
                       }
                     />
                   </div>
+                </TabsContent>
 
-                  {/* SEO Section */}
-                  <div className="rounded-lg border p-4 space-y-3">
+                {/* ─── TAB 4: SEO ─── */}
+                <TabsContent value="seo" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
+                  <div className="rounded-lg border p-4 space-y-4">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
-                      SEO & Meta
+                      SEO & Meta Tags
                     </p>
                     <F label="Meta Title">
                       <Input
                         value={form.meta_title || ""}
-                        className="h-8 text-xs"
+                        className="h-9 text-sm"
                         onChange={(e) =>
                           setForm((f) => ({
                             ...f,
@@ -514,13 +562,16 @@ export function ProductFormSheet({
                       />
                       <p className="text-[10px] text-muted-foreground mt-0.5">
                         {(form.meta_title || form.name || "").length}/60
+                        {(form.meta_title || form.name || "").length > 60 && (
+                          <span className="text-destructive ml-1">⚠ Quá dài</span>
+                        )}
                       </p>
                     </F>
                     <F label="Meta Description">
                       <Textarea
                         value={form.meta_description || ""}
-                        rows={2}
-                        className="text-xs"
+                        rows={3}
+                        className="text-sm"
                         onChange={(e) =>
                           setForm((f) => ({
                             ...f,
@@ -530,25 +581,41 @@ export function ProductFormSheet({
                         placeholder={form.description || "Sử dụng mô tả"}
                       />
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {(form.meta_description || form.description || "").length}
-                        /160
+                        {(form.meta_description || form.description || "").length}/160
+                        {(form.meta_description || form.description || "").length > 160 && (
+                          <span className="text-destructive ml-1">⚠ Quá dài</span>
+                        )}
                       </p>
                     </F>
-                    {/* Google Preview */}
-                    <div className="rounded-lg border p-3 bg-background">
-                      <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                        Google Preview
+                    <F label="Custom Slug">
+                      <Input
+                        value={form.slug || ""}
+                        className="h-9 font-mono text-xs"
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, slug: e.target.value }))
+                        }
+                        placeholder="custom-url-slug"
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        URL: sltech.vn/san-pham/<span className="font-semibold">{form.slug || "slug"}</span>
                       </p>
-                      <p className="text-[#1a0dab] text-xs font-medium truncate">
-                        {form.meta_title || form.name || "Tiêu đề"} — SLTECH
-                      </p>
-                      <p className="text-[#006621] text-[10px]">
-                        sltech.vn/san-pham/{form.slug || "slug"}
-                      </p>
-                      <p className="text-[10px] text-[#545454] line-clamp-2">
-                        {form.meta_description || form.description || "Mô tả..."}
-                      </p>
-                    </div>
+                    </F>
+                  </div>
+
+                  {/* Google Preview */}
+                  <div className="rounded-lg border p-4 bg-background space-y-1.5">
+                    <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Google Search Preview
+                    </p>
+                    <p className="text-[#1a0dab] text-sm font-medium truncate">
+                      {form.meta_title || form.name || "Tiêu đề"} — SLTECH
+                    </p>
+                    <p className="text-[#006621] text-[11px]">
+                      sltech.vn/san-pham/{form.slug || "slug"}
+                    </p>
+                    <p className="text-[11px] text-[#545454] line-clamp-2">
+                      {form.meta_description || form.description || "Mô tả sản phẩm sẽ hiển thị ở đây..."}
+                    </p>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -556,51 +623,6 @@ export function ProductFormSheet({
 
             {/* ─── RIGHT PANEL (30%) — Sticky Sidebar ─── */}
             <div className="overflow-y-auto p-4 space-y-5 bg-muted/10">
-              {/* B2B Data */}
-              <SidebarSection title="Dữ liệu B2B" icon={Package}>
-                <div className="grid grid-cols-2 gap-2">
-                  <F label="Tình trạng kho">
-                    <div className="flex flex-col gap-1.5">
-                      {INVENTORY_OPTIONS.map((opt) => (
-                        <label
-                          key={opt.value}
-                          className={`cursor-pointer rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                            form.inventory_status === opt.value
-                              ? opt.color
-                              : "border-input text-muted-foreground hover:border-primary/30"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="inventory_status"
-                            value={opt.value}
-                            checked={form.inventory_status === opt.value}
-                            onChange={(e) =>
-                              setForm((f) => ({
-                                ...f,
-                                inventory_status: e.target.value,
-                              }))
-                            }
-                            className="sr-only"
-                          />
-                          {opt.label}
-                        </label>
-                      ))}
-                    </div>
-                  </F>
-                  <F label="Bảo hành">
-                    <Input
-                      value={form.warranty || ""}
-                      className="h-8 text-xs"
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, warranty: e.target.value }))
-                      }
-                      placeholder="24 Tháng"
-                    />
-                  </F>
-                </div>
-              </SidebarSection>
-
               {/* Sort & Status */}
               <SidebarSection title="Trạng thái" icon={BarChart3}>
                 <div className="grid grid-cols-2 gap-2">
@@ -619,7 +641,7 @@ export function ProductFormSheet({
                   </F>
                   <F label="Trạng thái">
                     <select
-                      className={selectClass}
+                      className="border-input bg-background flex h-8 w-full rounded-md border px-2 py-1 text-xs"
                       value={form.is_active ?? 1}
                       onChange={(e) =>
                         setForm((f) => ({
@@ -654,20 +676,36 @@ export function ProductFormSheet({
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Thông số</span>
-                    <span className="font-medium">{filledSpecCount} mục</span>
+                    <span className="text-muted-foreground">Tình trạng</span>
+                    <span className="font-medium">
+                      {INVENTORY_OPTIONS.find((o) => o.value === form.inventory_status)?.label || "—"}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Tính năng</span>
-                    <span className="font-medium">{featureCount} tag</span>
+                    <span className="text-muted-foreground">Bảo hành</span>
+                    <span className="font-medium">{form.warranty || "—"}</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Hình ảnh</span>
-                    <span className="font-medium">{galleryCount} ảnh</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Datasheet</span>
-                    <span className="font-medium">{form.spec_sheet_url ? "✅ Có" : "—"}</span>
+                  <div className="border-t pt-2 mt-2 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Thông số</span>
+                      <span className="font-medium">{filledSpecCount} mục</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Tính năng</span>
+                      <span className="font-medium">{featureCount} tag</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Hình ảnh</span>
+                      <span className="font-medium">{galleryCount} ảnh</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Datasheet</span>
+                      <span className="font-medium">{form.spec_sheet_url ? "✅ Có" : "—"}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">SEO</span>
+                      <span className="font-medium">{seoFilled}/2 trường</span>
+                    </div>
                   </div>
                 </div>
               </SidebarSection>

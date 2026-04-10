@@ -20,15 +20,49 @@ const METRIC_LABELS: Record<string, string> = {
   speakers: "Loa", controllers: "Bộ điều khiển", nodes: "Nodes",
 };
 
-function parseStatValue(raw: string | number): { num: number; suffix: string } {
+/**
+ * Parse raw metric value into numeric + suffix.
+ * Returns null for purely textual values (no leading digits).
+ */
+export function parseStatValue(raw: string | number): { num: number; suffix: string } | null {
   if (typeof raw === "number") return { num: raw, suffix: "" };
-  const match = raw.match(/^([\d,]+)\+?\s*(.*)/);
+  const match = raw.match(/^([\d.,]+)\+?\s*(.*)/);
   if (match) {
-    const num = parseInt(match[1].replace(/,/g, ""), 10);
-    const rest = raw.includes("+") ? "+" : "";
-    return { num: isNaN(num) ? 0 : num, suffix: rest + (match[2] ? " " + match[2] : "") };
+    const numStr = match[1].replace(/[.,]/g, "");
+    const num = parseInt(numStr, 10);
+    if (isNaN(num) || num === 0) return null;
+    const suffix = raw.includes("+") ? "+" : "";
+    return { num, suffix: suffix + (match[2] ? " " + match[2] : "") };
   }
-  return { num: 0, suffix: raw };
+  return null;
+}
+
+/**
+ * Build the full list of StatItems from metrics + area/duration.
+ * Exported so ProjectDetail can also use the full list for the "Quy mô triển khai" section.
+ */
+export function buildStatItems(
+  metrics: Record<string, string | number>,
+  areaSqm?: number | null,
+  durationMonths?: number | null,
+): StatItem[] {
+  const items: StatItem[] = [];
+  if (areaSqm) items.push({ value: areaSqm, label: "Diện tích (m²)" });
+  if (durationMonths) items.push({ value: durationMonths, suffix: " tháng", label: "Thời gian" });
+
+  for (const [key, val] of Object.entries(metrics)) {
+    if (val && val !== 0) {
+      const parsed = parseStatValue(val);
+      if (parsed) {
+        items.push({
+          value: parsed.num,
+          suffix: parsed.suffix,
+          label: METRIC_LABELS[key] ?? key,
+        });
+      }
+    }
+  }
+  return items;
 }
 
 /** Animated count-up hook with cubic ease-out */
@@ -65,12 +99,10 @@ function StatColumn({ value, suffix, label, index, visible }: StatItem & { index
         transform: visible ? "translateY(0)" : "translateY(12px)",
       }}
     >
-      {/* Large thin monospace number */}
-      <span className="block font-mono text-5xl font-extralight tabular-nums tracking-tighter text-white md:text-6xl lg:text-7xl">
+      <span className="block font-mono text-5xl font-extralight tabular-nums tracking-tighter text-[#3C5DAA] md:text-6xl lg:text-7xl">
         {count.toLocaleString()}{suffix}
       </span>
-      {/* Uppercase micro label */}
-      <span className="mt-3 block font-mono text-[10px] font-medium uppercase tracking-[0.25em] text-white/35">
+      <span className="mt-3 block font-mono text-[10px] font-medium uppercase tracking-[0.25em] text-slate-500">
         {label}
       </span>
     </div>
@@ -78,8 +110,9 @@ function StatColumn({ value, suffix, label, index, visible }: StatItem & { index
 }
 
 /**
- * Editorial infographic stats — thin monospace typography on clean dark background.
- * No cards, no borders, no icons. Just numbers.
+ * Hero infographic stats — white background, brand-blue numbers.
+ * Capped at 4 items for visual balance. Remaining items render
+ * in the "Quy mô triển khai" list on the detail page.
  */
 export function InfographicStats({ metrics, areaSqm, durationMonths, className }: InfographicStatsProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -96,29 +129,16 @@ export function InfographicStats({ metrics, areaSqm, durationMonths, className }
     return () => observer.disconnect();
   }, []);
 
-  const items: StatItem[] = [];
-  if (areaSqm) items.push({ value: areaSqm, label: "Diện tích (m²)" });
-  if (durationMonths) items.push({ value: durationMonths, suffix: " tháng", label: "Thời gian" });
+  const allItems = buildStatItems(metrics, areaSqm, durationMonths);
+  if (allItems.length === 0) return null;
 
-  for (const [key, val] of Object.entries(metrics)) {
-    if (val && val !== 0) {
-      const parsed = parseStatValue(val);
-      items.push({
-        value: parsed.num,
-        suffix: parsed.suffix,
-        label: METRIC_LABELS[key] ?? key,
-      });
-    }
-  }
-
-  if (items.length === 0) return null;
-
-  const displayItems = items.slice(0, 4);
+  // Hero bar: max 4 items for clean visual balance
+  const displayItems = allItems.slice(0, 4);
 
   return (
     <section
       ref={ref}
-      className={cn("bg-slate-950 py-14 md:py-20", className)}
+      className={cn("bg-white border-b border-slate-200 py-10 md:py-16", className)}
     >
       <div className="container-custom">
         <div className={cn(

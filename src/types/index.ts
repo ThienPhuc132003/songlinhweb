@@ -48,12 +48,12 @@ export interface Product {
   brand: string;
   model_number: string;
   image_url: string | null;
-  gallery_urls?: string;   // JSON array of gallery image URLs
+  gallery_urls: string;    // JSON array of gallery image URLs
   spec_sheet_url: string | null;
   specifications: string; // JSON object
   features: string;       // JSON array
-  inventory_status?: string; // 'in-stock' | 'pre-order' | 'contact'
-  warranty?: string;         // e.g. '24 Months'
+  inventory_status: string; // 'in-stock' | 'pre-order' | 'contact'
+  warranty: string;          // e.g. '24 Months'
   is_active: number;
   sort_order: number;
   meta_title: string | null;

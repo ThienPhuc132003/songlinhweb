@@ -61,7 +61,7 @@ export function ProjectGallery({
   return (
     <>
       <div className={cn("space-y-4", className)}>
-        <h2 className="text-xl font-semibold">Hình ảnh dự án</h2>
+        <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#3C5DAA]">Hình ảnh dự án</h2>
 
         {/* Masonry layout using CSS columns */}
         <div

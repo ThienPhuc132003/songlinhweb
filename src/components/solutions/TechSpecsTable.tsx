@@ -23,7 +23,10 @@ export function TechSpecsTable({ specs }: TechSpecsTableProps) {
 
   return (
     <section>
-      <h2 className="mb-6 text-2xl font-bold">Thông số kỹ thuật</h2>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
+        Thông số kỹ thuật
+      </p>
+      <h2 className="mb-8 text-3xl font-bold">Bảng thông số</h2>
       <div className="overflow-hidden rounded-xl border">
         <Table>
           <TableHeader>

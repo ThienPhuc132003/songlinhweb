@@ -5,9 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface BrandFilterProps {
   className?: string;
+  hideTitle?: boolean;
 }
 
-export function BrandFilter({ className }: BrandFilterProps) {
+export function BrandFilter({ className, hideTitle }: BrandFilterProps) {
   const { data: brands, isLoading } = useBrands();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeBrand = searchParams.get("brand") ?? "";
@@ -38,9 +39,11 @@ export function BrandFilter({ className }: BrandFilterProps) {
 
   return (
     <div className={cn("space-y-2", className)}>
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-        Thương hiệu
-      </h3>
+      {!hideTitle && (
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Thương hiệu
+        </h3>
+      )}
       <div className="space-y-1">
         {brands.map((brand) => (
           <button

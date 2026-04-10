@@ -11,9 +11,8 @@ interface ProjectHeroProps {
 }
 
 /**
- * Split-layout hero: 60% cover image / 40% dark overview panel.
- * Editorial style — no decorative icons, clean typography hierarchy.
- * Stacks on mobile (image on top, info below).
+ * Full-width Cover Image with a subtle gradient overlay.
+ * Project Title and Client Name in massive white typography over the image.
  */
 export function ProjectHero({
   title,
@@ -30,9 +29,9 @@ export function ProjectHero({
   if (completionYear) metaRows.push({ label: "Hoàn thành", value: completionYear });
 
   return (
-    <section className={cn("grid md:grid-cols-[3fr_2fr]", className)}>
-      {/* Left: Full-height cover image — clean crop, no overlay */}
-      <div className="relative min-h-[300px] bg-slate-900 md:min-h-[480px]">
+    <section className={cn("relative min-h-[400px] md:min-h-[500px] lg:min-h-[600px] flex items-end", className)}>
+      {/* Background Image */}
+      <div className="absolute inset-0 bg-slate-950">
         {coverImage ? (
           <img
             src={coverImage}
@@ -40,49 +39,48 @@ export function ProjectHero({
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          /* Subtle grid texture fallback */
           <div
             className="absolute inset-0"
             style={{
               backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none' stroke='%23fff' stroke-width='.3'/%3E%3C/svg%3E\")",
-              opacity: 0.06,
+                "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none' stroke='%23fff' stroke-width='.1'/%3E%3C/svg%3E\")",
+              opacity: 0.1,
             }}
           />
         )}
-        {/* Thin bottom edge gradient for mobile stacking */}
-        <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-slate-900 to-transparent md:hidden" />
       </div>
 
-      {/* Right: Dark overview panel */}
-      <div className="flex flex-col justify-center bg-slate-900 px-8 py-12 md:px-12 md:py-16">
+      {/* Gradient Overlay for Text Readability */}
+      <div className="absolute inset-x-0 bottom-0 top-1/3 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent" />
+
+      {/* Content Container positioned at the bottom */}
+      <div className="container-custom relative z-10 pb-12 pt-24 md:pb-16 flex flex-col items-start w-full">
         {/* Category badge */}
         {category && (
-          <p className="mb-5 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-white/40">
+          <p className="mb-4 inline-flex px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-white">
             {category}
           </p>
         )}
 
-        {/* Title — editorial thin weight  */}
-        <h1 className="text-2xl font-extralight leading-[1.15] tracking-tight text-white md:text-3xl lg:text-4xl">
+        {/* Title — massive weight */}
+        <h1 className="text-3xl font-extralight leading-tight tracking-tight text-white md:text-5xl lg:text-6xl max-w-5xl">
           {title}
         </h1>
 
-        {/* Divider */}
-        <div className="my-6 h-px w-12 bg-white/15" />
-
-        {/* Meta rows — clean mono labels */}
+        {/* Meta rows — horizontal layout under title */}
         {metaRows.length > 0 && (
-          <dl className="space-y-3">
+          <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/20 pt-6">
             {metaRows.map((row) => (
-              <div key={row.label} className="flex items-baseline gap-4">
-                <dt className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 w-24">
+              <div key={row.label} className="flex flex-col gap-1">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
                   {row.label}
-                </dt>
-                <dd className="text-sm font-medium text-white/80">{row.value}</dd>
+                </span>
+                <span className="text-sm md:text-base font-medium text-white/90">
+                  {row.value}
+                </span>
               </div>
             ))}
-          </dl>
+          </div>
         )}
       </div>
     </section>

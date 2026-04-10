@@ -40,11 +40,11 @@ export function SolutionHero({ title, subtitle, heroImage }: SolutionHeroProps) 
           transition={{ duration: 0.6 }}
           className="max-w-2xl"
         >
-          <div className="mb-4 h-1 w-16 rounded bg-primary" />
-          <h1 className="mb-4 text-3xl font-bold text-white drop-shadow-lg lg:text-4xl xl:text-5xl">
+          <div className="mb-4 h-1 w-16 rounded bg-[#3C5DAA]" />
+          <h1 className="mb-4 text-3xl font-bold tracking-tight text-white drop-shadow-lg lg:text-4xl xl:text-5xl">
             {title}
           </h1>
-          <p className="mb-8 text-lg leading-relaxed text-white/80 lg:text-xl">
+          <p className="mb-8 max-w-xl text-lg leading-relaxed text-white/80 lg:text-xl">
             {subtitle}
           </p>
           <Button

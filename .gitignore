@@ -28,3 +28,9 @@ Thumbs.db
 # Debug/review screenshots
 *.png
 docs/screenshots/*.png
+
+# Raw reference data (not for production bundle)
+src/assets/Image/DataXample/
+
+# Wrangler local D1 state (binary SQLite)
+server/.wrangler/

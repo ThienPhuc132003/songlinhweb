@@ -61,13 +61,31 @@ projects.get("/all", requireAuth, async (c) => {
     "SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC",
   ).all<ProjectRow>();
 
-  // Attach gallery images for each project
+  // Batch-fetch junction product IDs for ALL projects (single source of truth)
+  let junctionMap = new Map<number, number[]>();
+  try {
+    const allJunction = await c.env.DB.prepare(
+      "SELECT project_id, product_id FROM project_products",
+    ).all<{ project_id: number; product_id: number }>();
+    for (const j of allJunction.results) {
+      if (!junctionMap.has(j.project_id)) junctionMap.set(j.project_id, []);
+      junctionMap.get(j.project_id)!.push(j.product_id);
+    }
+  } catch { /* table may not exist */ }
+
+  // Attach gallery images + override related_products from junction table
   const data = await Promise.all(
     rows.results.map(async (row) => {
       const imgs = await c.env.DB.prepare(
         "SELECT image_url FROM entity_images WHERE entity_type = 'project' AND entity_id = ? ORDER BY sort_order",
       ).bind(row.id).all<{ image_url: string }>();
-      return { ...row, images: imgs.results };
+      // Junction table is the single source of truth for related products
+      const junctionProducts = junctionMap.get(row.id) || [];
+      return {
+        ...row,
+        related_products: JSON.stringify(junctionProducts),
+        images: imgs.results,
+      };
     }),
   );
 
@@ -193,6 +211,16 @@ projects.post("/", requireAuth, async (c) => {
         ).bind(newId, galleryUrls[i], i).run();
       }
     }
+
+    // Sync project_products junction table on CREATE (was missing before)
+    try {
+      const productIds: number[] = JSON.parse(body.related_products || "[]");
+      for (const pid of productIds) {
+        await c.env.DB.prepare(
+          "INSERT OR IGNORE INTO project_products (project_id, product_id) VALUES (?, ?)",
+        ).bind(newId, pid).run();
+      }
+    } catch { /* ignore parse errors */ }
 
     logAudit(c.env.DB, 'project', newId as number, 'create', { name: body.title, slug: body.slug });
     return ok({ id: newId });

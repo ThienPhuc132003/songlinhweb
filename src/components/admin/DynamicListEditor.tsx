@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ export interface DynamicField {
   widthClass?: string;
 }
 
-interface DynamicListEditorProps<T extends Record<string, string | number>> {
+export interface DynamicListEditorProps<T extends Record<string, string | number> = Record<string, string | number>> {
   /** Label for the section */
   label: string;
   /** Description text */
@@ -43,7 +44,7 @@ const ICON_OPTIONS = [
   "Lock", "Settings", "Wrench", "Clock", "Globe",
 ];
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Generic Object-List Editor ───────────────────────────────────────────────
 
 export function DynamicListEditor<T extends Record<string, string | number>>({
   label,
@@ -203,6 +204,111 @@ export function DynamicListEditor<T extends Record<string, string | number>>({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ─── Simple String-List Editor ────────────────────────────────────────────────
+
+interface StringListEditorProps {
+  /** JSON string: '["Item 1", "Item 2"]' */
+  value: string;
+  onChange: (json: string) => void;
+  className?: string;
+  placeholder?: string;
+  label: string;
+}
+
+/**
+ * Visual list editor for string arrays (e.g. Highlights, Challenges).
+ * Replaces raw JSON textarea with add/remove row interface.
+ */
+export function StringListEditor({
+  value,
+  onChange,
+  className,
+  placeholder = "Thêm nội dung...",
+  label,
+}: StringListEditorProps) {
+  const [items, setItems] = useState<string[]>([]);
+
+  // Parse JSON on mount
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(value || "[]");
+      if (Array.isArray(parsed)) {
+        setItems(parsed.map(String));
+      } else {
+        setItems([]);
+      }
+    } catch {
+      setItems([]);
+    }
+  }, []);
+
+  // Serialize items to JSON and call onChange
+  const emitChange = (newItems: string[]) => {
+    setItems(newItems);
+    const validItems = newItems.filter((item) => item.trim() !== "");
+    onChange(JSON.stringify(validItems));
+  };
+
+  const addItem = () => {
+    emitChange([...items, ""]);
+  };
+
+  const removeItem = (index: number) => {
+    emitChange(items.filter((_, i) => i !== index));
+  };
+
+  const updateItem = (index: number, val: string) => {
+    const updated = items.map((item, i) => (i === index ? val : item));
+    emitChange(updated);
+  };
+
+  return (
+    <div className={cn("space-y-3", className)}>
+      <label className="text-sm font-medium">{label}</label>
+
+      {/* Items */}
+      {items.map((item, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <Input
+            value={item}
+            onChange={(e) => updateItem(i, e.target.value)}
+            placeholder={placeholder}
+            className="h-8 text-sm"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+            onClick={() => removeItem(i)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      ))}
+
+      {/* Add row button */}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={addItem}
+        className="w-full gap-1 border-dashed text-xs"
+      >
+        <Plus className="h-3 w-3" />
+        Thêm dòng
+      </Button>
+
+      {/* Item count */}
+      {items.length > 0 && (
+        <p className="text-[10px] text-muted-foreground text-right">
+          {items.filter(i => i.trim()).length} mục
+        </p>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useProjects } from "@/hooks/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2, ArrowRight } from "lucide-react";
+import type { Project } from "@/types";
 
 interface RelatedProjectsProps {
   projectSlugs: string[];
@@ -12,10 +13,7 @@ export function RelatedProjects({ projectSlugs }: RelatedProjectsProps) {
 
   if (!projectSlugs.length) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allProjects: any[] = Array.isArray(projectData)
-    ? projectData
-    : (projectData as any)?.data ?? [];
+  const allProjects: Project[] = projectData?.items ?? [];
 
   const projects = allProjects.filter((p) =>
     projectSlugs.includes(p.slug)
@@ -38,7 +36,10 @@ export function RelatedProjects({ projectSlugs }: RelatedProjectsProps) {
 
   return (
     <section>
-      <h2 className="mb-6 text-2xl font-bold">Dự án liên quan</h2>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
+        Dự án tiêu biểu
+      </p>
+      <h2 className="mb-8 text-3xl font-bold">Dự án liên quan</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {projects.map((project) => (
           <Link

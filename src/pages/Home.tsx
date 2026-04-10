@@ -22,7 +22,7 @@ export default function Home() {
       <HeroSlider />
 
       {/* 2. Solutions Overview */}
-      <SolutionCards limit={8} />
+      <SolutionCards limit={4} />
 
       {/* 3. Company Introduction (includes Stats) */}
       <CompanyIntro />

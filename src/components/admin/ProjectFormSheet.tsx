@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { RelationalMultiSelect } from "@/components/admin/RelationalMultiSelect";
 import { KeyMetricsEditor } from "@/components/admin/KeyMetricsEditor";
+import { StringListEditor } from "@/components/admin/DynamicListEditor";
 import { adminApi, type Solution, type Product } from "@/lib/admin-api";
 import { FileText, Loader2, PenLine, Image as ImageIcon, Wrench } from "lucide-react";
 
@@ -294,20 +295,20 @@ export function ProjectFormSheet({
                   </div>
 
                   {/* Challenges */}
-                  <F label="Thách thức (Challenges)">
-                    <Textarea value={form.challenges || ""} rows={4} className="text-sm"
-                      onChange={(e) => setForm((f) => ({ ...f, challenges: e.target.value || null }))}
-                      placeholder="Các thách thức kỹ thuật trong dự án..."
-                    />
-                  </F>
+                  <StringListEditor
+                    label="Thách thức (Challenges)"
+                    value={form.challenges || "[]"}
+                    onChange={(json) => setForm((f) => ({ ...f, challenges: json }))}
+                    placeholder="Các thách thức kỹ thuật trong dự án..."
+                  />
 
                   {/* Outcomes */}
-                  <F label="Kết quả đạt được (Outcomes)">
-                    <Textarea value={form.outcomes || ""} rows={4} className="text-sm"
-                      onChange={(e) => setForm((f) => ({ ...f, outcomes: e.target.value || null }))}
-                      placeholder="Kết quả đạt được, metrics, feedback..."
-                    />
-                  </F>
+                  <StringListEditor
+                    label="Kết quả đạt được / Điểm nổi bật (Outcomes)"
+                    value={form.outcomes || "[]"}
+                    onChange={(json) => setForm((f) => ({ ...f, outcomes: json }))}
+                    placeholder="Hiệu năng, metrics, điểm đặc biệt..."
+                  />
                 </TabsContent>
 
                 {/* TAB: Gallery */}
@@ -376,23 +377,13 @@ export function ProjectFormSheet({
                     </select>
                   </F>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   <F label="Ngành">
                     <select className={selectClass} value={form.client_industry ?? ""}
                       onChange={(e) => setForm((f) => ({ ...f, client_industry: e.target.value || null }))}
                     >
                       <option value="">— Chọn —</option>
                       {INDUSTRY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </F>
-                  <F label="Quy mô">
-                    <select className={selectClass} value={form.project_scale ?? ""}
-                      onChange={(e) => setForm((f) => ({ ...f, project_scale: e.target.value || null }))}
-                    >
-                      <option value="">— Chọn —</option>
-                      <option value="small">Nhỏ</option>
-                      <option value="medium">Vừa</option>
-                      <option value="large">Lớn</option>
                     </select>
                   </F>
                 </div>
@@ -427,18 +418,7 @@ export function ProjectFormSheet({
                   value={form.key_metrics || "{}"}
                   onChange={(json) => setForm((f) => ({ ...f, key_metrics: json }))}
                 />
-                <div className="grid grid-cols-2 gap-2">
-                  <F label="Diện tích (m²)">
-                    <Input type="number" value={form.area_sqm ?? ""} className="h-8 text-xs"
-                      onChange={(e) => setForm((f) => ({ ...f, area_sqm: e.target.value ? Number(e.target.value) : null }))}
-                    />
-                  </F>
-                  <F label="Thời gian (tháng)">
-                    <Input type="number" value={form.duration_months ?? ""} className="h-8 text-xs"
-                      onChange={(e) => setForm((f) => ({ ...f, duration_months: e.target.value ? Number(e.target.value) : null }))}
-                    />
-                  </F>
-                </div>
+
               </SidebarSection>
 
               {/* Linkages */}
@@ -504,22 +484,6 @@ export function ProjectFormSheet({
                   onChange={(ids) => setForm((f) => ({ ...f, related_products: JSON.stringify(ids) }))}
                   fetchOptions={fetchProductOptions} placeholder="Chọn sản phẩm..."
                 />
-              </SidebarSection>
-
-              {/* Testimonial */}
-              <SidebarSection title="Testimonial">
-                <F label="Người phát biểu">
-                  <Input value={form.testimonial_name || ""} className="h-8 text-xs"
-                    onChange={(e) => setForm((f) => ({ ...f, testimonial_name: e.target.value || null }))}
-                    placeholder="Nguyễn Văn A, Giám đốc IT"
-                  />
-                </F>
-                <F label="Nội dung phát biểu">
-                  <Textarea value={form.testimonial_content || ""} rows={3} className="text-xs"
-                    onChange={(e) => setForm((f) => ({ ...f, testimonial_content: e.target.value || null }))}
-                    placeholder="Song Linh Technologies đã hoàn thành dự án..."
-                  />
-                </F>
               </SidebarSection>
 
               {/* SEO */}
