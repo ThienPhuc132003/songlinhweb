@@ -64,11 +64,11 @@ contact.get("/", requireAuth, async (c) => {
   const url = new URL(c.req.url);
   const status = url.searchParams.get("status");
 
-  let query = "SELECT * FROM contacts";
+  let query = "SELECT * FROM contacts WHERE deleted_at IS NULL";
   const params: unknown[] = [];
 
   if (status) {
-    query += " WHERE status = ?";
+    query += " AND status = ?";
     params.push(status);
   }
 
@@ -97,18 +97,31 @@ contact.put("/:id/status", requireAuth, async (c) => {
   return ok({ id, status: body.status });
 });
 
-/** DELETE /api/admin/contacts/:id */
+/** DELETE /api/admin/contacts/:id — soft delete */
 contact.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
-  await c.env.DB.prepare("DELETE FROM contacts WHERE id = ?").bind(id).run();
+  await c.env.DB.prepare(
+    "UPDATE contacts SET deleted_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
   return ok({ deleted: true });
 });
+
+/** Escape HTML special characters to prevent XSS */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 /** Send email notification via Resend */
 async function sendEmailNotification(
   env: Env,
   data: { company_name: string; email: string; phone: string; message: string },
 ) {
+  const adminEmail = env.ADMIN_NOTIFICATION_EMAIL || "songlinh@sltech.vn";
+
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -116,16 +129,16 @@ async function sendEmailNotification(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "SLTECH Website <noreply@sltech.vn>",
-      to: ["songlinh@sltech.vn"],
-      subject: `[Website] Liên hệ mới từ ${data.company_name}`,
+      from: "Song Linh Technologies <noreply@sltech.vn>",
+      to: [adminEmail],
+      subject: `[Website] Liên hệ mới từ ${escapeHtml(data.company_name)}`,
       html: `
         <h2>Yêu cầu liên hệ mới</h2>
         <table style="border-collapse:collapse;">
-          <tr><td style="padding:8px;font-weight:bold;">Công ty:</td><td style="padding:8px;">${data.company_name}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;">Email:</td><td style="padding:8px;">${data.email}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;">SĐT:</td><td style="padding:8px;">${data.phone}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;">Nội dung:</td><td style="padding:8px;">${data.message}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;">Công ty:</td><td style="padding:8px;">${escapeHtml(data.company_name)}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;">Email:</td><td style="padding:8px;">${escapeHtml(data.email)}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;">SĐT:</td><td style="padding:8px;">${escapeHtml(data.phone)}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;">Nội dung:</td><td style="padding:8px;">${escapeHtml(data.message)}</td></tr>
         </table>
       `,
     }),

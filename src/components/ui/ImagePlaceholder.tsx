@@ -11,7 +11,7 @@ interface ImagePlaceholderProps {
 
 /**
  * Branded image placeholder used across all card types when images are unavailable.
- * Shows the SLTECH "SL" monogram on a professional gradient background.
+ * Shows the Song Linh Technologies "SL" monogram on a professional gradient background.
  */
 export function ImagePlaceholder({
   title,

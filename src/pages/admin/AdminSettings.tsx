@@ -591,7 +591,7 @@ export default function AdminSettings() {
                 <Textarea
                   value={formData.about_description ?? ""}
                   onChange={(e) => handleChange("about_description", e.target.value)}
-                  placeholder="**SLTECH** là công ty chuyên về..."
+                  placeholder="**Song Linh Technologies** là công ty chuyên về..."
                   rows={6}
                   className="font-mono text-sm"
                 />
@@ -666,7 +666,7 @@ export default function AdminSettings() {
             />
           </SectionCard>
 
-          <SectionCard title='"Tại sao chọn SLTECH?"'>
+          <SectionCard title='"Tại sao chọn Song Linh Technologies?"'>
             <DynamicListEditor
               label="Ưu thế cạnh tranh"
               description="4 lý do hàng đầu để khách hàng B2B tin tưởng"

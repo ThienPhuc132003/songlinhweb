@@ -126,7 +126,7 @@ export default function QuoteCart() {
             </div>
           </div>
           <p className="text-sm text-slate-500">
-            Đội ngũ SLTECH sẽ phản hồi trong vòng <strong>24 — 48 giờ</strong> làm việc.
+            Đội ngũ Song Linh Technologies sẽ phản hồi trong vòng <strong>24 — 48 giờ</strong> làm việc.
           </p>
         </div>
 
@@ -414,7 +414,7 @@ export default function QuoteCart() {
               <p className="text-xs font-semibold text-primary">ℹ️ Quy trình</p>
               <ol className="mt-1.5 space-y-0.5 text-xs text-primary/80">
                 <li>1. Chọn sản phẩm & gửi yêu cầu</li>
-                <li>2. SLTECH tiếp nhận & tư vấn</li>
+                <li>2. Song Linh Technologies tiếp nhận & tư vấn</li>
                 <li>3. Nhận báo giá qua email (24-48h)</li>
               </ol>
             </div>

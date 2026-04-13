@@ -334,7 +334,7 @@ export function ProductFormSheet({
                         onChange={(e) =>
                           setForm((f) => ({
                             ...f,
-                            category_id: Number(e.target.value) || null,
+                            category_id: Number(e.target.value) || undefined,
                           }))
                         }
                         required
@@ -608,7 +608,7 @@ export function ProductFormSheet({
                       Google Search Preview
                     </p>
                     <p className="text-[#1a0dab] text-sm font-medium truncate">
-                      {form.meta_title || form.name || "Tiêu đề"} — SLTECH
+                      {form.meta_title || form.name || "Tiêu đề"} — Song Linh Technologies
                     </p>
                     <p className="text-[#006621] text-[11px]">
                       sltech.vn/san-pham/{form.slug || "slug"}

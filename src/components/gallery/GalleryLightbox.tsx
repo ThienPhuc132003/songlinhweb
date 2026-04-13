@@ -97,14 +97,20 @@ export function GalleryLightbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, zoom]);
 
-  // Lock body scroll
+  // Lock body scroll — ALWAYS clean up on unmount to prevent overflow leak
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+      // Exit fullscreen if active when component unmounts (e.g. navigation)
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
   }, [open]);
 
   const navigate = useCallback(
@@ -327,7 +333,7 @@ export function GalleryLightbox({
                     }}
                     className={`shrink-0 rounded-md overflow-hidden transition-all duration-200 ${
                       i === index
-                        ? "ring-2 ring-cyan-400 w-12 h-9 opacity-100"
+                        ? "ring-2 ring-primary w-12 h-9 opacity-100"
                         : "ring-1 ring-white/10 w-10 h-7 opacity-50 hover:opacity-80"
                     }`}
                   >

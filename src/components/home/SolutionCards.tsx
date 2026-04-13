@@ -22,9 +22,6 @@ export function SolutionCards({ limit, className }: SolutionCardsProps) {
       <div className="container-custom">
         {/* Editorial heading */}
         <motion.div {...fadeUp()} className="mb-16 text-center">
-          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-            Năng lực giải pháp
-          </p>
           <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
             Giải pháp{" "}
             <span className="font-semibold">của chúng tôi</span>

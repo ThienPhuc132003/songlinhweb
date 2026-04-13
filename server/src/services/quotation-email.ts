@@ -101,7 +101,7 @@ export async function sendQuotationAdminEmail(
     <!-- Footer -->
     <div style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;">
       <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center;">
-        Email tự động từ <strong>sltech.vn</strong> — Vui lòng không reply email này.
+        Email tự động từ <strong>Song Linh Technologies</strong> — Vui lòng không reply email này.
       </p>
     </div>
   </div>`;
@@ -109,7 +109,7 @@ export async function sendQuotationAdminEmail(
   const adminEmail = env.ADMIN_NOTIFICATION_EMAIL || "phuc.trinh@sltech.vn";
 
   const emailPayload: Record<string, unknown> = {
-    from: "SLTECH Website <onboarding@resend.dev>",
+    from: "Song Linh Technologies <onboarding@resend.dev>",
     to: [adminEmail],
     subject: `[RFQ #${data.id}] ${data.customer_name}${data.company_name ? ` — ${data.company_name}` : ""}${data.project_name ? ` | ${data.project_name}` : ""} (${data.items.length} SP)`,
     html,
@@ -156,7 +156,7 @@ export async function sendQuotationCustomerEmail(
   <div style="font-family:'Segoe UI',Roboto,sans-serif;max-width:640px;margin:0 auto;background:#fff;">
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);padding:28px 32px;border-radius:12px 12px 0 0;text-align:center;">
-      <h1 style="margin:0;color:#fff;font-size:24px;font-weight:700;">SONG LINH TECHNOLOGY</h1>
+      <h1 style="margin:0;color:#fff;font-size:24px;font-weight:700;">SONG LINH TECHNOLOGIES</h1>
       <p style="margin:6px 0 0;color:#93c5fd;font-size:14px;">Hệ thống tích hợp ELV & ICT</p>
     </div>
 
@@ -190,16 +190,16 @@ export async function sendQuotationCustomerEmail(
         📧 <a href="mailto:songlinh@sltech.vn" style="color:#2563eb;text-decoration:none;">songlinh@sltech.vn</a>
       </p>
       <p style="margin:0 0 20px;font-size:14px;">
-        📞 <a href="tel:+84901234567" style="color:#2563eb;text-decoration:none;">Hotline SLTECH</a>
+        📞 <a href="tel:+84901234567" style="color:#2563eb;text-decoration:none;">Hotline Song Linh Technologies</a>
       </p>
 
-      <p style="color:#64748b;font-size:14px;margin:0;">Trân trọng,<br><strong style="color:#1e3a5f;">Đội ngũ SLTECH</strong></p>
+      <p style="color:#64748b;font-size:14px;margin:0;">Trân trọng,<br><strong style="color:#1e3a5f;">Đội ngũ Song Linh Technologies</strong></p>
     </div>
 
     <!-- Footer -->
     <div style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;text-align:center;">
       <p style="margin:0 0 4px;font-size:12px;color:#94a3b8;">
-        <strong>Song Linh Technology Co., Ltd</strong>
+        <strong>Song Linh Technologies Co., Ltd</strong>
       </p>
       <p style="margin:0;font-size:12px;color:#94a3b8;">
         <a href="https://sltech.vn" style="color:#2563eb;text-decoration:none;">sltech.vn</a>
@@ -208,9 +208,9 @@ export async function sendQuotationCustomerEmail(
   </div>`;
 
   const emailPayload = {
-    from: "SLTECH <onboarding@resend.dev>",
+    from: "Song Linh Technologies <onboarding@resend.dev>",
     to: [data.email],
-    subject: `SLTECH — Xác nhận yêu cầu báo giá #${data.id}`,
+    subject: `Song Linh Technologies — Xác nhận yêu cầu báo giá #${data.id}`,
     html,
   };
 

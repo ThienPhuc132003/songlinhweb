@@ -374,7 +374,7 @@ quotations.put("/:id/status", requireAuth, async (c) => {
   return ok({ id, status: body.status });
 });
 
-/** DELETE /api/admin/quotations/:id — delete (cascade items) */
+/** DELETE /api/admin/quotations/:id — soft delete */
 quotations.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
 
@@ -386,7 +386,7 @@ quotations.delete("/:id", requireAuth, async (c) => {
 
   if (!existing) return err("Quotation request not found", 404);
 
-  // Delete XLSX from R2 if exists
+  // Delete XLSX from R2 if exists (cleanup R2 on soft-delete)
   if (existing.excel_url) {
     try {
       await c.env.IMAGES.delete(existing.excel_url);
@@ -395,11 +395,10 @@ quotations.delete("/:id", requireAuth, async (c) => {
     }
   }
 
-  // Delete items first (in case cascade isn't enabled), then request
-  await c.env.DB.batch([
-    c.env.DB.prepare("DELETE FROM quotation_items WHERE quote_id = ?").bind(id),
-    c.env.DB.prepare("DELETE FROM quotation_requests WHERE id = ?").bind(id),
-  ]);
+  // Soft delete the quotation request (keep items for audit trail)
+  await c.env.DB.prepare(
+    "UPDATE quotation_requests SET deleted_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
 
   return ok({ deleted: true });
 });

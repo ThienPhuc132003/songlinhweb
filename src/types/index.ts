@@ -38,6 +38,17 @@ export interface ProductCategory {
   product_count?: number;
 }
 
+export interface Brand {
+  id: number;
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  description: string;
+  website_url: string | null;
+  sort_order: number;
+  is_active: number;
+}
+
 export interface Product {
   id: number;
   category_id: number;
@@ -69,6 +80,23 @@ export interface Product {
   brand_logo?: string | null;
   brand_website?: string | null;
   product_features?: ProductFeature[];
+  // Detail-only fields (populated by API on /:slug endpoint)
+  images?: EntityImage[];
+  related?: Array<{
+    slug: string;
+    name: string;
+    image_url: string | null;
+    brand: string;
+    model_number: string;
+    category_name: string;
+  }>;
+  linked_projects?: Array<{
+    slug: string;
+    title: string;
+    thumbnail_url: string | null;
+    client_name: string | null;
+    location: string;
+  }>;
 }
 
 export interface ProductFeature {
@@ -311,3 +339,29 @@ export interface QuotationItem {
   notes: string | null;
 }
 
+// ===== Admin-Only Types =====
+
+export interface DashboardStats {
+  totalProducts: number;
+  totalBrands: number;
+  totalCategories: number;
+  totalProjects: number;
+  recentProducts: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    image_url: string | null;
+    brand_name: string | null;
+    created_at: string;
+  }>;
+}
+
+export interface AuditLog {
+  id: number;
+  entity_type: string;
+  entity_id: number;
+  action: string;
+  changes: string;
+  performed_by: string;
+  created_at: string;
+}

@@ -33,9 +33,6 @@ export function Testimonials({ className }: { className?: string }) {
       <div className="container-custom">
         {/* Editorial heading */}
         <motion.div {...fadeUp()} className="mb-16 text-center">
-          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-            Phản hồi
-          </p>
           <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
             Khách hàng{" "}
             <span className="font-semibold">nói gì về chúng tôi</span>

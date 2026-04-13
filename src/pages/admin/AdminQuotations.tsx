@@ -516,7 +516,7 @@ function QuoteRow({
                           className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
                         >
                           <a
-                            href={`mailto:${detail.email}?subject=${encodeURIComponent(`[SLTECH] Báo giá #${detail.id}${detail.project_name ? ` - ${detail.project_name}` : ""}`)}&body=${encodeURIComponent(`Kính gửi ${detail.customer_name},\n\nCảm ơn quý khách đã gửi yêu cầu báo giá. Song Linh Technologies xin phản hồi như sau:\n\n---\n\nTrân trọng,\nSong Linh Technologies`)}`}
+                            href={`mailto:${detail.email}?subject=${encodeURIComponent(`[Song Linh] Báo giá #${detail.id}${detail.project_name ? ` - ${detail.project_name}` : ""}`)}&body=${encodeURIComponent(`Kính gửi ${detail.customer_name},\n\nCảm ơn quý khách đã gửi yêu cầu báo giá. Song Linh Technologies xin phản hồi như sau:\n\n---\n\nTrân trọng,\nSong Linh Technologies`)}`}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Mail className="mr-1.5 h-4 w-4" />

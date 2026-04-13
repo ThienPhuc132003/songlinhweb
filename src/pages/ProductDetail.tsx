@@ -26,19 +26,7 @@ import {
 import { FeatureBadge } from "@/components/ui/FeatureBadge";
 import { useCompare } from "@/contexts/CompareContext";
 import { useCart } from "@/contexts/CartContext";
-
-/** Safely parse JSON string or return typed value */
-function safeJson<T>(value: string | T | null | undefined, fallback: T): T {
-  if (!value) return fallback;
-  if (typeof value === "string") {
-    try {
-      return JSON.parse(value) as T;
-    } catch {
-      return fallback;
-    }
-  }
-  return value as T;
-}
+import { safeJson } from "@/lib/utils";
 
 /** Inventory status display config */
 const INVENTORY_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; className: string }> = {
@@ -78,32 +66,16 @@ export default function ProductDetail() {
   const inventoryInfo = INVENTORY_CONFIG[inventoryStatus] || INVENTORY_CONFIG["contact"];
   const InventoryIcon = inventoryInfo.icon;
 
-  const relatedProducts = ((product as unknown as Record<string, unknown>)?.related ?? []) as Array<{
-    slug: string;
-    name: string;
-    image_url: string | null;
-    brand: string;
-    model_number: string;
-    category_name: string;
-  }>;
+  const relatedProducts = product?.related ?? [];
 
-  const linkedProjects = ((product as unknown as Record<string, unknown>)?.linked_projects ?? []) as Array<{
-    slug: string;
-    title: string;
-    thumbnail_url: string | null;
-    client_name: string | null;
-    location: string;
-  }>;
+  const linkedProjects = product?.linked_projects ?? [];
 
   const { add, remove, isInCompare, isFull } = useCompare();
   const { addItem, items: cartItems } = useCart();
   const inCompare = product ? isInCompare(product.id) : false;
   const inCart = product ? cartItems.some((i) => i.productId === product.id) : false;
 
-  // Combine entity_images and gallery_urls for the thumbnail gallery
-  const entityImages = (product as unknown as Record<string, unknown>)?.images as
-    | Array<{ id: number; image_url: string; caption: string | null }>
-    | undefined;
+  const entityImages = product?.images;
   const allGalleryImages = [
     ...galleryUrls.map((url, i) => ({ id: `g-${i}`, url })),
     ...(entityImages || []).map((img) => ({ id: `e-${img.id}`, url: img.image_url })),
@@ -593,7 +565,7 @@ export default function ProductDetail() {
                   Liên hệ báo giá dự án
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Nhận báo giá tốt nhất cho dự án của bạn từ đội ngũ kỹ thuật SLTECH.
+                  Nhận báo giá tốt nhất cho dự án của bạn từ đội ngũ kỹ thuật Song Linh Technologies.
                 </p>
                 <div className="flex flex-col gap-2">
                   {/* Primary CTA — RFQ */}

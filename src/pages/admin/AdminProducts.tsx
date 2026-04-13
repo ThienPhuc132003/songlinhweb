@@ -22,7 +22,7 @@ const defaultForm: Partial<Product> = {
   slug: "",
   name: "",
   description: "",
-  category_id: null,
+  category_id: undefined,
   brand_id: null,
   brand: "",
   model_number: "",

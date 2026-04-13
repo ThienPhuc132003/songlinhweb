@@ -34,29 +34,11 @@ gallery.get("/", async (c) => {
   return ok(rows.results);
 });
 
-/** GET /api/gallery/:slug — get album with all images */
-gallery.get("/:slug", async (c) => {
-  const slug = c.req.param("slug");
-  const album = await c.env.DB.prepare(
-    "SELECT * FROM gallery_albums WHERE slug = ? AND is_active = 1 AND deleted_at IS NULL",
-  )
-    .bind(slug)
-    .first<GalleryAlbumRow>();
-
-  if (!album) return err("Album not found", 404);
-
-  const images = await c.env.DB.prepare(
-    "SELECT * FROM gallery_images WHERE album_id = ? ORDER BY sort_order ASC",
-  )
-    .bind(album.id)
-    .all<GalleryImageRow>();
-
-  // Count images
-  return ok({ ...album, images: images.results, image_count: images.results.length });
-});
-
 /* ═══════════════════════════════════════════════════════════════
    ADMIN CRUD ROUTES
+   ⚠ IMPORTANT: Static admin routes (/all, /albums/:id) MUST be
+   registered BEFORE the dynamic public /:slug route to prevent
+   route shadowing in Hono's first-match-wins router.
    ═══════════════════════════════════════════════════════════════ */
 
 /** GET /api/admin/gallery/all — list ALL albums including inactive */
@@ -88,6 +70,28 @@ gallery.get("/albums/:id", requireAuth, async (c) => {
     .bind(album.id)
     .all<GalleryImageRow>();
 
+  return ok({ ...album, images: images.results, image_count: images.results.length });
+});
+
+/** GET /api/gallery/:slug — get album with all images (PUBLIC)
+ *  ⚠ This catch-all MUST be AFTER all static routes above */
+gallery.get("/:slug", async (c) => {
+  const slug = c.req.param("slug");
+  const album = await c.env.DB.prepare(
+    "SELECT * FROM gallery_albums WHERE slug = ? AND is_active = 1 AND deleted_at IS NULL",
+  )
+    .bind(slug)
+    .first<GalleryAlbumRow>();
+
+  if (!album) return err("Album not found", 404);
+
+  const images = await c.env.DB.prepare(
+    "SELECT * FROM gallery_images WHERE album_id = ? ORDER BY sort_order ASC",
+  )
+    .bind(album.id)
+    .all<GalleryImageRow>();
+
+  // Count images
   return ok({ ...album, images: images.results, image_count: images.results.length });
 });
 
@@ -143,7 +147,7 @@ gallery.put("/albums/:id", requireAuth, async (c) => {
   return ok({ id });
 });
 
-/** DELETE /api/admin/gallery/albums/:id — deletes album + images + R2 files */
+/** DELETE /api/admin/gallery/albums/:id — soft delete album, hard delete images + R2 files */
 gallery.delete("/albums/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const deleteR2 = c.req.query("delete_r2") !== "false"; // default: delete R2 files
@@ -175,13 +179,14 @@ gallery.delete("/albums/:id", requireAuth, async (c) => {
     );
   }
 
-  // Delete DB records (images cascade via FK, but explicit for safety)
+  // Delete child images (hard delete — they are child entities)
   await c.env.DB.prepare("DELETE FROM gallery_images WHERE album_id = ?")
     .bind(id)
     .run();
-  await c.env.DB.prepare("DELETE FROM gallery_albums WHERE id = ?")
-    .bind(id)
-    .run();
+  // Soft delete the album itself
+  await c.env.DB.prepare(
+    "UPDATE gallery_albums SET deleted_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
 
   return ok({ deleted: true });
 });

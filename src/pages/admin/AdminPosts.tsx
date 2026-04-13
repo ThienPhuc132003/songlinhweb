@@ -132,7 +132,7 @@ export default function AdminPosts() {
       if (typeof refsRaw === 'string') {
         parsedRefs = JSON.parse(refsRaw || '[]');
       } else if (Array.isArray(refsRaw)) {
-        parsedRefs = refsRaw;
+        parsedRefs = refsRaw as typeof parsedRefs;
       }
     } catch { parsedRefs = []; }
     setForm({

@@ -162,7 +162,7 @@ export interface PostRow {
   last_updated_at: string | null;
   reviewed_by: string | null;
   references: string;              // JSON array: '[{title, url, type}]'
-  deleted_at: string | null;
+  deleted_at: string | null;       // Soft delete (migration 0027)
 }
 
 export interface GalleryAlbumRow {
@@ -174,7 +174,7 @@ export interface GalleryAlbumRow {
   category: string; // 'du-an' | 'ky-thuat' | 'hoat-dong' | 'general'
   sort_order: number;
   is_active: number;
-  deleted_at: string | null;
+  deleted_at: string | null;       // Soft delete (migration 0027)
 }
 
 export interface GalleryImageRow {
@@ -192,7 +192,7 @@ export interface PartnerRow {
   website_url: string | null;
   sort_order: number;
   is_active: number;
-  deleted_at: string | null;
+  deleted_at: string | null;       // Soft delete (migration 0027)
 }
 
 export interface ContactRow {
@@ -232,6 +232,9 @@ export interface ProductFeatureRow {
   name: string;
   slug: string;
   group_name: string;
+  color: string | null;
+  icon: string | null;
+  is_priority: number;
   sort_order: number;
   is_active: number;
   created_at: string;

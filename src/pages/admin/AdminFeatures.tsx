@@ -185,7 +185,7 @@ export default function AdminFeatures() {
       key: "is_active",
       header: "Trạng thái",
       className: "w-28",
-      render: (r) => <StatusBadge active={r.is_active} />,
+      render: (r) => <StatusBadge active={r.is_active ?? 0} />,
     },
   ];
 

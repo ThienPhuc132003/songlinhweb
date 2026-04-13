@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export interface CompareProduct {
   id: number;
@@ -20,9 +20,28 @@ interface CompareContextType {
 const CompareContext = createContext<CompareContextType | null>(null);
 
 const MAX_COMPARE = 3;
+const STORAGE_KEY = "sltech-compare";
+
+function loadFromSession(): CompareProduct[] {
+  try {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function CompareProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CompareProduct[]>([]);
+  const [items, setItems] = useState<CompareProduct[]>(loadFromSession);
+
+  // Sync state → sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      /* sessionStorage unavailable (SSR / privacy mode) */
+    }
+  }, [items]);
 
   const add = useCallback((product: CompareProduct) => {
     setItems((prev) => {

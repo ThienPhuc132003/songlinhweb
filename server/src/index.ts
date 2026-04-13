@@ -17,7 +17,6 @@ import quotations from "./routes/quotations";
 import features from "./routes/features";
 import admin from "./routes/admin";
 import seo from "./routes/seo";
-import solutions from "./routes/solutions";
 import { cleanupOldXlsxFiles } from "./services/r2-cleanup";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -58,11 +57,28 @@ app.use("/api/product-features*", async (c, next) => {
   }
 });
 
+// Cache-Control for other public read-only routes (5 min edge, 1 min browser)
+const cachedPublicRoutes = [
+  "/api/projects*",
+  "/api/posts*",
+  "/api/brands*",
+  "/api/partners*",
+  "/api/gallery*",
+];
+for (const pattern of cachedPublicRoutes) {
+  app.use(pattern, async (c, next) => {
+    await next();
+    if (c.req.method === "GET" && !c.req.url.includes("/admin/")) {
+      c.header("Cache-Control", "public, s-maxage=300, max-age=60");
+    }
+  });
+}
+
 /* ───────── Health Check ───────── */
 
 app.get("/", (c) => {
   return c.json({
-    name: "SLTECH API",
+    name: "Song Linh Technologies API",
     version: "1.0.0",
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -83,7 +99,6 @@ app.route("/api/contact", contact);
 // Legacy: app.route("/api/quotes") removed — use /api/quotations
 app.route("/api/quotations", quotations);
 app.route("/api/product-features", features);
-app.route("/api/solutions", solutions);
 
 /* ───────── Admin Routes ───────── */
 
@@ -99,7 +114,6 @@ app.route("/api/admin/upload", upload);
 // Legacy: app.route("/api/admin/quotes") removed — use /api/admin/quotations
 app.route("/api/admin/quotations", quotations);
 app.route("/api/admin/product-features", features);
-app.route("/api/admin/solutions", solutions);
 app.route("/api/admin", admin);
 
 /* ───────── SEO Routes ───────── */

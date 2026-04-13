@@ -5,7 +5,7 @@
  * Uses raw XML + ZIP (via JSZip-like approach with built-in compression).
  * 
  * Why not ExcelJS? Workers has 1MB bundle limit; ExcelJS is ~2MB.
- * This approach generates valid XLSX files under 50KB with SLTECH branding.
+ * This approach generates valid XLSX files under 50KB with Song Linh Technologies branding.
  */
 
 interface XlsxQuotationData {
@@ -116,8 +116,8 @@ export async function generateQuotationXlsx(
 
   // Footer
   rows.push({ cells: [{ v: "────────────────────────────────────────────", s: "normal" }] });
-  rows.push({ cells: [{ v: "SLTECH — songlinh@sltech.vn — sltech.vn", s: "subtitle" }] });
-  rows.push({ cells: [{ v: "File này được tạo tự động từ website sltech.vn", s: "normal" }] });
+  rows.push({ cells: [{ v: "Song Linh Technologies — songlinh@sltech.vn — sltech.vn", s: "subtitle" }] });
+  rows.push({ cells: [{ v: "File này được tạo tự động từ website Song Linh Technologies", s: "normal" }] });
 
   return buildXlsx(rows, fileName);
 }

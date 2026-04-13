@@ -282,7 +282,7 @@ export default function AdminLayout() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
               <LayoutDashboard className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-primary text-base font-bold tracking-tight">SLTECH</span>
+            <span className="text-primary text-base font-bold tracking-tight">Song Linh</span>
           </div>
           <button
             className="rounded p-1 hover:bg-slate-100 lg:hidden"

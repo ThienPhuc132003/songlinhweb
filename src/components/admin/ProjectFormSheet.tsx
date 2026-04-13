@@ -506,7 +506,7 @@ export function ProjectFormSheet({
                 <div className="rounded-lg border p-3 bg-background">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Preview</p>
                   <p className="text-[#1a0dab] text-xs font-medium truncate">
-                    {form.meta_title || form.title || "Tiêu đề"} — SLTECH
+                    {form.meta_title || form.title || "Tiêu đề"} — Song Linh Technologies
                   </p>
                   <p className="text-[#006621] text-[10px]">sltech.vn/du-an/{form.slug || "slug"}</p>
                   <p className="text-[10px] text-[#545454] line-clamp-2">

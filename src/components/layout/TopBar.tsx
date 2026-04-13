@@ -7,13 +7,6 @@ export default function TopBar() {
       <div className="container-custom flex items-center justify-between py-2">
         <div className="flex items-center gap-6">
           <a
-            href={`tel:${SITE.phoneRaw}`}
-            className="flex items-center gap-1.5 transition-colors duration-200 hover:text-[#3C5DAA]"
-          >
-            <Phone className="h-3.5 w-3.5" />
-            <span>Hotline: {SITE.phone}</span>
-          </a>
-          <a
             href={`mailto:${SITE.email}`}
             className="flex items-center gap-1.5 transition-colors duration-200 hover:text-[#3C5DAA]"
           >

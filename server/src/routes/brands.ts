@@ -11,7 +11,7 @@ const brands = new Hono<{ Bindings: Env }>();
 /** GET /api/brands — list active brands */
 brands.get("/", async (c) => {
   const rows = await c.env.DB.prepare(
-    `SELECT * FROM brands WHERE is_active = 1 ORDER BY sort_order ASC`,
+    `SELECT * FROM brands WHERE is_active = 1 AND deleted_at IS NULL ORDER BY sort_order ASC`,
   ).all<BrandRow>();
   return ok(rows.results);
 });
@@ -99,7 +99,7 @@ brands.put("/:id", requireAuth, async (c) => {
   return ok({ id });
 });
 
-/** DELETE /api/admin/brands/:id */
+/** DELETE /api/admin/brands/:id — soft delete */
 brands.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
 
@@ -111,7 +111,9 @@ brands.delete("/:id", requireAuth, async (c) => {
     return err(`Không thể xóa thương hiệu đang có ${count.cnt} sản phẩm. Vui lòng đổi thương hiệu cho sản phẩm trước.`, 409);
   }
 
-  await c.env.DB.prepare("DELETE FROM brands WHERE id = ?").bind(id).run();
+  await c.env.DB.prepare(
+    "UPDATE brands SET deleted_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
   logAudit(c.env.DB, 'brand', id, 'delete');
   return ok({ deleted: true });
 });

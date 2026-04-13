@@ -33,9 +33,6 @@ export function CompanyIntro({ className }: { className?: string }) {
         <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
           {/* Left — editorial text */}
           <motion.div {...fadeUp()}>
-            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-              Về chúng tôi
-            </p>
             <h2 className="mb-6 text-3xl font-extralight leading-[1.15] tracking-tight md:text-4xl">
               Về{" "}
               <span className="font-semibold">{SITE.displayName}</span>

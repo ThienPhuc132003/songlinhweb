@@ -88,13 +88,13 @@ export async function sendQuoteNotification(
     <!-- Footer -->
     <div style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;">
       <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center;">
-        Email tự động từ <strong>sltech.vn</strong> — Vui lòng không reply email này.
+        Email tự động từ <strong>Song Linh Technologies</strong> — Vui lòng không reply email này.
       </p>
     </div>
   </div>`;
 
   const emailPayload: Record<string, unknown> = {
-    from: "SLTECH Website <noreply@sltech.vn>",
+    from: "Song Linh Technologies <noreply@sltech.vn>",
     to: ["songlinh@sltech.vn"],
     subject: `[Báo giá #${data.id}] ${data.customer_name}${data.company ? ` — ${data.company}` : ""} (${data.items.length} sản phẩm)`,
     html,
@@ -104,7 +104,7 @@ export async function sendQuoteNotification(
   if (csvContent) {
     emailPayload.attachments = [
       {
-        filename: `SLTECH_BaoGia_${data.id}.csv`,
+        filename: `SongLinh_BaoGia_${data.id}.csv`,
         content: btoa(unescape(encodeURIComponent(csvContent))),
       },
     ];

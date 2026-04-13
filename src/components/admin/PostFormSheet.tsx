@@ -704,7 +704,7 @@ export function PostFormSheet({
                       Google Preview
                     </p>
                     <p className="text-[#1a0dab] text-xs font-medium truncate">
-                      {form.meta_title || form.title || "Tiêu đề"} — SLTECH
+                      {form.meta_title || form.title || "Tiêu đề"} — Song Linh Technologies
                     </p>
                     <p className="text-[#006621] text-[10px]">
                       sltech.vn/tin-tuc/{form.slug || "slug"}

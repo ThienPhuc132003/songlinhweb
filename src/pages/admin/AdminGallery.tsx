@@ -148,11 +148,30 @@ export default function AdminGallery() {
   });
 
   /* ─── Handlers ─── */
-  const openCreate = () => {
-    setEditId(null);
-    setForm(defaultForm);
+  const openCreate = async () => {
+    const draftTitle = `Album mới ${new Date().toLocaleDateString("vi-VN")}`;
+    const draftSlug = autoSlug(draftTitle);
+    const draftData: Partial<GalleryAlbum> = {
+      ...defaultForm,
+      title: draftTitle,
+      slug: draftSlug,
+    };
+    setForm(draftData);
     setAlbumImages([]);
     setWorkspaceOpen(true);
+
+    // Auto-create draft in DB so images can be uploaded immediately
+    try {
+      const result = await adminApi.gallery.createAlbum(draftData);
+      if (result?.id) {
+        setEditId(result.id);
+        qc.invalidateQueries({ queryKey: ["admin", "gallery"] });
+        toast.success("Album đã tạo — bạn có thể upload ảnh ngay");
+      }
+    } catch (error) {
+      toast.error("Không thể tạo album. Hãy điền thông tin rồi nhấn Lưu.");
+      setEditId(null);
+    }
   };
 
   const openEdit = (row: GalleryAlbum) => {
@@ -422,14 +441,14 @@ export default function AdminGallery() {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="rounded-full bg-slate-100 dark:bg-slate-800 p-4 mb-3">
-                  <ImageIcon className="h-8 w-8 text-slate-400" />
+                <div className="rounded-full bg-[#3C5DAA]/5 p-4 mb-3">
+                  <ImageIcon className="h-8 w-8 text-[#3C5DAA]/40" />
                 </div>
                 <p className="text-sm text-slate-500">
-                  Lưu album trước để bắt đầu upload ảnh
+                  Đang tạo album...
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  Nhấn "💾 Lưu album" ở góc phải trên để tạo album
+                  Vui lòng đợi giây lát để bắt đầu upload ảnh
                 </p>
               </div>
             )}

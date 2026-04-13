@@ -138,20 +138,21 @@ features.put("/:id", requireAuth, async (c) => {
   return ok({ id });
 });
 
-/** DELETE /api/admin/product-features/:id — delete feature + clean junction */
+/** DELETE /api/admin/product-features/:id — soft delete feature + clean junction */
 features.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
 
-  // Clean up junction table
+  // Clean up junction table (hard delete — child relation)
   await c.env.DB.prepare(
     "DELETE FROM product_to_features WHERE feature_id = ?",
   )
     .bind(id)
     .run();
 
-  await c.env.DB.prepare("DELETE FROM product_features WHERE id = ?")
-    .bind(id)
-    .run();
+  // Soft delete the feature itself
+  await c.env.DB.prepare(
+    "UPDATE product_features SET deleted_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
 
   return ok({ deleted: true });
 });

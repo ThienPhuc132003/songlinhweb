@@ -110,9 +110,6 @@ export function FeaturedProjects({ className }: { className?: string }) {
           className="reveal mb-14 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end"
         >
           <div>
-            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-              Dự án nổi bật
-            </p>
             <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
               Dự án{" "}
               <span className="font-semibold">tiêu biểu</span>

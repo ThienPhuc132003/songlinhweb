@@ -4,6 +4,41 @@ import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { logAudit } from "../lib/audit";
 
+/* ───────── Shared Helper ───────── */
+
+interface ProductFeatureJoin {
+  id: number;
+  name: string;
+  slug: string;
+  group_name: string;
+  color: string | null;
+  icon: string | null;
+  is_priority: number;
+}
+
+/** Batch-fetch product features and group by product ID */
+async function batchFetchFeatures(
+  db: D1Database,
+  productIds: number[],
+): Promise<Map<number, ProductFeatureJoin[]>> {
+  if (productIds.length === 0) return new Map();
+
+  const rows = await db.prepare(
+    `SELECT ptf.product_id, pf.id, pf.name, pf.slug, pf.group_name, pf.color, pf.icon, pf.is_priority
+     FROM product_to_features ptf
+     JOIN product_features pf ON pf.id = ptf.feature_id
+     WHERE ptf.product_id IN (${productIds.map(() => "?").join(",")}) AND pf.is_active = 1
+     ORDER BY pf.is_priority DESC, pf.group_name ASC, pf.sort_order ASC`,
+  ).bind(...productIds).all<{ product_id: number } & ProductFeatureJoin>();
+
+  const map = new Map<number, ProductFeatureJoin[]>();
+  for (const f of rows.results) {
+    if (!map.has(f.product_id)) map.set(f.product_id, []);
+    map.get(f.product_id)!.push({ id: f.id, name: f.name, slug: f.slug, group_name: f.group_name, color: f.color, icon: f.icon, is_priority: f.is_priority });
+  }
+  return map;
+}
+
 const products = new Hono<{ Bindings: Env }>();
 
 /* ───────── Categories ───────── */
@@ -95,27 +130,8 @@ products.get("/", async (c) => {
     .bind(...params, limit, offset)
     .all<ProductRow & { category_name: string; category_slug: string; brand_name: string | null; brand_slug: string | null; brand_logo: string | null }>();
 
-  // Batch-fetch features for returned products (same pattern as admin endpoint)
-  const productIds = rows.results.map((r) => r.id);
-  let featureMap = new Map<number, Array<{ id: number; name: string; slug: string; group_name: string; color: string | null; icon: string | null; is_priority: number }>>();
-
-  if (productIds.length > 0) {
-    const allFeatures = await c.env.DB.prepare(
-      `SELECT ptf.product_id, pf.id, pf.name, pf.slug, pf.group_name, pf.color, pf.icon, pf.is_priority
-       FROM product_to_features ptf
-       JOIN product_features pf ON pf.id = ptf.feature_id
-       WHERE ptf.product_id IN (${productIds.map(() => "?").join(",")}) AND pf.is_active = 1
-       ORDER BY pf.is_priority DESC, pf.group_name ASC, pf.sort_order ASC`,
-    )
-      .bind(...productIds)
-      .all<{ product_id: number; id: number; name: string; slug: string; group_name: string; color: string | null; icon: string | null; is_priority: number }>();
-
-    for (const f of allFeatures.results) {
-      if (!featureMap.has(f.product_id)) featureMap.set(f.product_id, []);
-      featureMap.get(f.product_id)!.push({ id: f.id, name: f.name, slug: f.slug, group_name: f.group_name, color: f.color, icon: f.icon, is_priority: f.is_priority });
-    }
-  }
-
+  // Batch-fetch features for returned products
+  const featureMap = await batchFetchFeatures(c.env.DB, rows.results.map((r) => r.id));
   const enriched = rows.results.map((r) => ({
     ...r,
     product_features: featureMap.get(r.id) || [],
@@ -149,21 +165,8 @@ products.get("/items/all", requireAuth, async (c) => {
      ORDER BY p.sort_order ASC`,
   ).all<ProductRow & { category_name: string; category_slug: string; brand_name: string | null; brand_slug: string | null; brand_logo: string | null }>();
 
-  // Fetch features for all products in one batch
-  const allFeatures = await c.env.DB.prepare(
-    `SELECT ptf.product_id, pf.id, pf.name, pf.slug, pf.group_name, pf.color, pf.icon, pf.is_priority
-     FROM product_to_features ptf
-     JOIN product_features pf ON pf.id = ptf.feature_id
-     ORDER BY pf.is_priority DESC, pf.group_name ASC, pf.sort_order ASC`,
-  ).all<{ product_id: number; id: number; name: string; slug: string; group_name: string; color: string | null; icon: string | null; is_priority: number }>();
-
-  // Group features by product_id
-  const featureMap = new Map<number, Array<{ id: number; name: string; slug: string; group_name: string; color: string | null; icon: string | null; is_priority: number }>>();
-  for (const f of allFeatures.results) {
-    if (!featureMap.has(f.product_id)) featureMap.set(f.product_id, []);
-    featureMap.get(f.product_id)!.push({ id: f.id, name: f.name, slug: f.slug, group_name: f.group_name, color: f.color, icon: f.icon, is_priority: f.is_priority });
-  }
-
+  // Batch-fetch features for all products
+  const featureMap = await batchFetchFeatures(c.env.DB, rows.results.map((r) => r.id));
   const enriched = rows.results.map((r) => ({
     ...r,
     product_features: featureMap.get(r.id) || [],
@@ -190,25 +193,10 @@ products.get("/compare", async (c) => {
   ).bind(...ids).all<ProductRow & { category_name: string; category_slug: string; brand_name: string | null; brand_slug: string | null; brand_logo: string | null }>();
 
   // Batch-fetch features
-  const pids = rows.results.map((r) => r.id);
-  const featureRows = pids.length > 0
-    ? await c.env.DB.prepare(
-        `SELECT ptf.product_id, pf.id, pf.name, pf.slug, pf.group_name, pf.color, pf.icon, pf.is_priority
-         FROM product_to_features ptf
-         JOIN product_features pf ON pf.id = ptf.feature_id
-         WHERE ptf.product_id IN (${pids.map(() => "?").join(",")}) AND pf.is_active = 1`,
-      ).bind(...pids).all<{ product_id: number; id: number; name: string; slug: string; group_name: string; color: string | null; icon: string | null; is_priority: number }>()
-    : { results: [] as Array<{ product_id: number; id: number; name: string; slug: string; group_name: string; color: string | null; icon: string | null; is_priority: number }> };
-
-  const fmap = new Map<number, typeof featureRows.results>();
-  for (const f of featureRows.results) {
-    if (!fmap.has(f.product_id)) fmap.set(f.product_id, []);
-    fmap.get(f.product_id)!.push(f);
-  }
-
+  const featureMap = await batchFetchFeatures(c.env.DB, rows.results.map((r) => r.id));
   const enriched = rows.results.map((r) => ({
     ...r,
-    product_features: fmap.get(r.id) || [],
+    product_features: featureMap.get(r.id) || [],
   }));
 
   return ok(enriched);

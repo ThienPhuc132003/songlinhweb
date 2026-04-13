@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useSiteConfig } from "@/hooks/useApi";
 import { COMPANY_STATS } from "@/lib/constants";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -118,7 +117,7 @@ export function StatsGrid({ variant = "card", className }: StatsGridProps) {
     );
   }
 
-  // Card variant (About page)
+  // Card variant — Editorial Technical (sharp, industrial)
   return (
     <div className={cn("grid grid-cols-2 gap-4", className)}>
       {stats.map((stat, i) => (
@@ -129,19 +128,16 @@ export function StatsGrid({ variant = "card", className }: StatsGridProps) {
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: i * 0.08 }}
         >
-          <Card
-            className={cn(
-              "text-center h-full",
-              i === 0 && "border-primary/30 bg-primary/5",
-            )}
+          <div
+            className="group h-full rounded-sm border border-slate-200 bg-white px-5 py-6 text-center shadow-none transition-all duration-300 hover:border-l-4 hover:border-l-[#3C5DAA] hover:border-slate-300 dark:border-border dark:bg-card"
           >
-            <CardContent className="p-5">
-              <div className="text-primary text-3xl font-bold">
-                <CountUp target={stat.value} suffix={stat.suffix} />
-              </div>
-              <p className="text-muted-foreground mt-1 text-sm">{stat.label}</p>
-            </CardContent>
-          </Card>
+            <div className="font-mono text-3xl font-bold text-[#3C5DAA]">
+              <CountUp target={stat.value} suffix={stat.suffix} />
+            </div>
+            <p className="mt-2 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400 dark:text-muted-foreground">
+              {stat.label}
+            </p>
+          </div>
         </motion.div>
       ))}
     </div>

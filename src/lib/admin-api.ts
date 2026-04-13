@@ -3,7 +3,23 @@
  */
 
 const API_URL = import.meta.env.VITE_API_URL || "";
-import type { ProductCategory, QuotationRequest } from "@/types";
+import type {
+  ProductCategory,
+  QuotationRequest,
+  Solution,
+  Project,
+  Post,
+  Product,
+  Brand,
+  Partner,
+  GalleryAlbum,
+  GalleryImage,
+  Contact,
+  SiteConfig,
+  ProductFeature,
+  DashboardStats,
+  AuditLog,
+} from "@/types";
 export type { ProductCategory };
 
 function getApiKey(): string {
@@ -22,10 +38,10 @@ export function hasApiKey(): boolean {
   return !!localStorage.getItem("sltech_admin_key");
 }
 
-async function adminFetch<T>(
+async function adminRequest(
   endpoint: string,
   options?: RequestInit,
-): Promise<T> {
+): Promise<Response> {
   const apiKey = getApiKey();
   const res = await fetch(`${API_URL}/admin${endpoint}`, {
     headers: {
@@ -47,6 +63,14 @@ async function adminFetch<T>(
     throw new Error(errorBody.error || `API Error ${res.status}`);
   }
 
+  return res;
+}
+
+async function adminFetch<T>(
+  endpoint: string,
+  options?: RequestInit,
+): Promise<T> {
+  const res = await adminRequest(endpoint, options);
   const json = await res.json();
   return json.data;
 }
@@ -63,27 +87,7 @@ async function adminFetchPaginated<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<PaginatedResult<T>> {
-  const apiKey = getApiKey();
-  const res = await fetch(`${API_URL}/admin${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": apiKey,
-      ...(options?.headers || {}),
-    },
-    ...options,
-  });
-
-  if (res.status === 401) {
-    clearApiKey();
-    window.location.href = "/admin/login";
-    throw new Error("Unauthorized");
-  }
-
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(errorBody.error || `API Error ${res.status}`);
-  }
-
+  const res = await adminRequest(endpoint, options);
   const json = await res.json();
   return {
     items: json.data ?? [],
@@ -462,215 +466,23 @@ export const adminApi = {
   },
 };
 
-// ─── Types (re-export for admin) ─────────────────────────────────────────────
+// ─── Types (re-export from canonical @/types) ────────────────────────────────
+// All domain types are defined ONCE in @/types/index.ts.
+// Admin pages import types from this file — we re-export so imports don't break.
 
-export interface Solution {
-  id: number;
-  slug: string;
-  title: string;
-  description: string;
-  content_md: string | null;
-  icon: string;
-  hero_image_url: string | null;
-  sort_order: number;
-  is_active: number;
-  meta_title: string | null;
-  meta_description: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Project {
-  id: number;
-  slug: string;
-  title: string;
-  description: string;
-  location: string;
-  client_name: string | null;
-  thumbnail_url: string | null;
-  content_md: string | null;
-  category: string;
-  year: number | null;
-  sort_order: number;
-  is_featured: number;
-  is_active: number;
-  created_at: string;
-  // Case study metadata
-  system_types: string;
-  brands_used: string;
-  area_sqm: number | null;
-  duration_months: number | null;
-  key_metrics: string;
-  compliance_standards: string;
-  client_industry: string | null;
-  project_scale: string | null;
-  meta_title: string | null;
-  meta_description: string | null;
-  // B2B Portfolio fields
-  completion_year: string | null;
-  related_solutions: string;
-  related_products: string;
-  // Case Study fields (migration 0017)
-  challenges: string | null;
-  outcomes: string | null;
-  testimonial_name: string | null;
-  testimonial_content: string | null;
-  video_url: string | null;
-}
-
-export interface Post {
-  id: number;
-  slug: string;
-  title: string;
-  excerpt: string;
-  content_md: string | null;
-  thumbnail_url: string | null;
-  author: string;
-  tags: string;
-  is_published: number;
-  published_at: string | null;
-  meta_title: string | null;
-  meta_description: string | null;
-  // New fields (migration 0018)
-  status: string;          // 'draft' | 'published' | 'archived'
-  category: string;        // 'general' | 'technology' | 'project-update' | 'industry-news'
-  view_count: number;
-  is_featured: number;
-  reading_time_min: number;
-  created_at: string;
-  updated_at: string;
-  // Authority fields (migration 0019)
-  last_updated_at: string | null;
-  reviewed_by: string | null;
-  references: string;              // JSON array string
-}
-
-export interface Product {
-  id: number;
-  slug: string;
-  name: string;
-  description: string;
-  category_id: number | null;
-  brand_id: number | null;
-  brand: string;
-  model_number: string;
-  image_url: string | null;
-  gallery_urls: string;       // JSON array
-  spec_sheet_url: string | null;
-  specifications: string; // JSON
-  features: string;       // JSON
-  inventory_status: string; // 'in-stock' | 'pre-order' | 'contact'
-  warranty: string;
-  sort_order: number;
-  is_active: number;
-  meta_title: string | null;
-  meta_description: string | null;
-  created_at: string;
-  updated_at: string;
-  // Joined fields
-  category_name?: string;
-  category_slug?: string;
-  brand_name?: string | null;
-  brand_slug?: string | null;
-  brand_logo?: string | null;
-}
-
-// ProductCategory re-exported from @/types (imported at top)
-
-export interface Brand {
-  id: number;
-  slug: string;
-  name: string;
-  logo_url: string | null;
-  description: string;
-  website_url: string | null;
-  sort_order: number;
-  is_active: number;
-}
-
-export interface Partner {
-  id: number;
-  name: string;
-  logo_url: string | null;
-  website_url: string | null;
-  sort_order: number;
-  is_active: number;
-}
-
-export interface GalleryAlbum {
-  id: number;
-  slug: string;
-  title: string;
-  cover_url: string | null;
-  description: string;
-  category: string;
-  sort_order: number;
-  is_active: number;
-  image_count?: number;
-}
-
-export interface GalleryImage {
-  id: number;
-  album_id: number;
-  image_url: string;
-  caption: string | null;
-  sort_order: number;
-}
-
-export interface Contact {
-  id: number;
-  company_name: string;
-  contact_person: string | null;
-  email: string;
-  phone: string;
-  address: string | null;
-  message: string;
-  status: string;
-  created_at: string;
-}
-
-export interface SiteConfig {
-  key: string;
-  value: string;
-}
-
-export interface ProductFeature {
-  id: number;
-  name: string;
-  slug: string;
-  group_name: string;
-  sort_order: number;
-  is_active: number;
-  color?: string | null;
-  icon?: string | null;
-  is_priority?: number;
-  created_at?: string;
-  updated_at?: string;
-  product_count?: number;
-}
-
-export interface DashboardStats {
-  totalProducts: number;
-  totalBrands: number;
-  totalCategories: number;
-  totalProjects: number;
-  recentProducts: Array<{
-    id: number;
-    name: string;
-    slug: string;
-    image_url: string | null;
-    brand_name: string | null;
-    created_at: string;
-  }>;
-}
-
-export interface AuditLog {
-  id: number;
-  entity_type: string;
-  entity_id: number;
-  action: string;
-  changes: string;
-  performed_by: string;
-  created_at: string;
-}
+export type {
+  Solution,
+  Project,
+  Post,
+  Product,
+  Brand,
+  Partner,
+  GalleryAlbum,
+  GalleryImage,
+  Contact,
+  SiteConfig,
+  ProductFeature,
+  DashboardStats,
+  AuditLog,
+} from "@/types";
 

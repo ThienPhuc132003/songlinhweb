@@ -33,7 +33,7 @@ export function generateQuoteCSV(data: QuoteExportData): string {
   const lines: string[] = [];
 
   // Header info
-  lines.push("YÊU CẦU BÁO GIÁ - SLTECH");
+  lines.push("YÊU CẦU BÁO GIÁ - SONG LINH TECHNOLOGIES");
   lines.push(`Mã yêu cầu:,#${data.id}`);
   lines.push(`Ngày gửi:,${formatDate(data.created_at)}`);
   lines.push("");
@@ -59,7 +59,7 @@ export function generateQuoteCSV(data: QuoteExportData): string {
   lines.push(`Tổng số sản phẩm:,${data.items.reduce((sum, i) => sum + i.qty, 0)}`);
   lines.push("");
   lines.push("---");
-  lines.push("File này được tạo tự động từ website sltech.vn");
+  lines.push("File này được tạo tự động từ website Song Linh Technologies");
 
   return BOM + lines.join("\r\n");
 }

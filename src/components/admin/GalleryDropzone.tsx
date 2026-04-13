@@ -135,12 +135,12 @@ export function GalleryDropzone({ albumId, onUploadComplete, disabled }: Gallery
     <div className="space-y-3">
       {/* Drop Zone */}
       <div
-        className={`relative rounded-xl border-2 border-dashed transition-all duration-300 ${
+        className={`relative rounded-lg border-2 border-dashed transition-all duration-300 ${
           isDragOver
-            ? "border-cyan-400 bg-cyan-400/5 scale-[1.01]"
+            ? "border-[#3C5DAA] bg-[#3C5DAA]/5 scale-[1.01]"
             : disabled
-              ? "border-slate-700 bg-slate-800/30 opacity-50"
-              : "border-slate-600 bg-slate-800/20 hover:border-slate-500 hover:bg-slate-800/30"
+              ? "border-slate-300 bg-slate-100/50 opacity-50"
+              : "border-slate-300 bg-slate-50 hover:border-[#3C5DAA]/40 hover:bg-[#3C5DAA]/[0.02]"
         } ${disabled ? "pointer-events-none" : "cursor-pointer"}`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -154,16 +154,16 @@ export function GalleryDropzone({ albumId, onUploadComplete, disabled }: Gallery
           <div
             className={`rounded-full p-3 mb-3 transition-colors ${
               isDragOver
-                ? "bg-cyan-400/10 text-cyan-400"
-                : "bg-slate-700/50 text-slate-400"
+                ? "bg-[#3C5DAA]/10 text-[#3C5DAA]"
+                : "bg-slate-200/60 text-slate-400"
             }`}
           >
             <Upload className="h-6 w-6" />
           </div>
-          <p className="text-sm font-medium text-slate-300">
+          <p className="text-sm font-medium text-slate-600">
             {isDragOver ? "Thả ảnh vào đây..." : "Kéo thả ảnh hoặc click để chọn"}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             JPG, PNG, WebP • Tự động chuyển sang WebP • Tối đa 10MB/file
           </p>
         </div>

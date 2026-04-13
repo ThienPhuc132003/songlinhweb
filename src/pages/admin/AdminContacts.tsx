@@ -56,7 +56,7 @@ export default function AdminContacts() {
   const updateStatus = (contact: Contact, status: string) => {
     statusMutation.mutate({ id: contact.id, status });
     if (selectedContact?.id === contact.id) {
-      setSelectedContact({ ...contact, status });
+      setSelectedContact({ ...contact, status: status as Contact["status"] });
     }
   };
 

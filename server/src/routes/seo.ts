@@ -5,7 +5,7 @@ const seo = new Hono<{ Bindings: Env }>();
 
 /** GET /sitemap.xml — dynamic sitemap */
 seo.get("/sitemap.xml", async (c) => {
-  const baseUrl = "https://sltech.vn";
+  const baseUrl = (c.env.SITE_URL || "https://sltech.vn").replace(/\/$/, "");
 
   // Fetch all active entities
   const [products, projects, solutions] = await Promise.all([
@@ -88,11 +88,12 @@ seo.get("/sitemap.xml", async (c) => {
 
 /** GET /robots.txt */
 seo.get("/robots.txt", (c) => {
+  const siteUrl = (c.env.SITE_URL || "https://sltech.vn").replace(/\/$/, "");
   const body = `User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://sltech.vn/sitemap.xml
+Sitemap: ${siteUrl}/sitemap.xml
 `;
   return new Response(body, {
     headers: {

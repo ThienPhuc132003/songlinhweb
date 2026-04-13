@@ -1,5 +1,4 @@
 import type {
-  Solution,
   Product,
   ProductCategory,
   ProductFeature,
@@ -61,15 +60,6 @@ async function fetchPaginated<T>(
 }
 
 export const api = {
-  solutions: {
-    list: (search?: string) => {
-      const params = new URLSearchParams();
-      if (search) params.set("search", search);
-      const qs = params.toString();
-      return fetchApi<Solution[]>(`/solutions${qs ? `?${qs}` : ""}`);
-    },
-    get: (slug: string) => fetchApi<Solution>(`/solutions/${slug}`),
-  },
   products: {
     list: (opts?: { category?: string; brand?: string; search?: string; page?: number; limit?: number; tags?: string[] }) => {
       const params = new URLSearchParams();

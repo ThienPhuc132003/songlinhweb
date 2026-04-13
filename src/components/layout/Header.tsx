@@ -165,14 +165,6 @@ export default function Header() {
           <div className="hidden shrink-0 items-center gap-2 lg:flex">
             <CartBadge onClick={() => setCartOpen(true)} />
             <ThemeToggle />
-            <a
-              href={`tel:${SITE.phoneRaw}`}
-              className="flex h-9 w-9 items-center justify-center rounded-md text-[#3C5DAA] transition-colors hover:bg-primary/5"
-              aria-label="Gọi hotline"
-              title={`Hotline: ${SITE.phone}`}
-            >
-              <Phone className="h-4 w-4" />
-            </a>
             <Button asChild size="sm" className="cta-glow rounded-[4px] bg-[#3C5DAA] px-5 text-white hover:bg-[#3C5DAA]/90">
               <Link to="/lien-he">Liên hệ</Link>
             </Button>
