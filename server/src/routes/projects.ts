@@ -213,25 +213,35 @@ projects.post("/", requireAuth, async (c) => {
 
     const newId = result.meta.last_row_id;
 
-    // Sync gallery images if provided
+    // Batch gallery images + junction inserts for transactional integrity
+    const batchStmts: ReturnType<typeof c.env.DB.prepare>[] = [];
+
     const galleryUrls = (body as Record<string, unknown>).gallery_urls as string[] | undefined;
     if (galleryUrls && Array.isArray(galleryUrls) && galleryUrls.length > 0) {
       for (let i = 0; i < galleryUrls.length; i++) {
-        await c.env.DB.prepare(
-          "INSERT INTO entity_images (entity_type, entity_id, image_url, sort_order) VALUES ('project', ?, ?, ?)",
-        ).bind(newId, galleryUrls[i], i).run();
+        batchStmts.push(
+          c.env.DB.prepare(
+            "INSERT INTO entity_images (entity_type, entity_id, image_url, sort_order) VALUES ('project', ?, ?, ?)",
+          ).bind(newId, galleryUrls[i], i),
+        );
       }
     }
 
-    // Sync project_products junction table on CREATE (was missing before)
+    // Sync project_products junction table
     try {
       const productIds: number[] = JSON.parse(body.related_products || "[]");
       for (const pid of productIds) {
-        await c.env.DB.prepare(
-          "INSERT OR IGNORE INTO project_products (project_id, product_id) VALUES (?, ?)",
-        ).bind(newId, pid).run();
+        batchStmts.push(
+          c.env.DB.prepare(
+            "INSERT OR IGNORE INTO project_products (project_id, product_id) VALUES (?, ?)",
+          ).bind(newId, pid),
+        );
       }
     } catch { /* ignore parse errors */ }
+
+    if (batchStmts.length > 0) {
+      await c.env.DB.batch(batchStmts);
+    }
 
     logAudit(c.env.DB, 'project', newId as number, 'create', { name: body.title, slug: body.slug });
     return ok({ id: newId });
@@ -313,30 +323,31 @@ projects.put("/:id", requireAuth, async (c) => {
       }
     }
 
-    if (sets.length === 0 && !(body as Record<string, unknown>).gallery_urls) {
-      return err("Không có trường nào để cập nhật", 400);
-    }
+    // Build batch for gallery + junction sync (transactional)
+    const batchStmts: ReturnType<typeof c.env.DB.prepare>[] = [];
 
     if (sets.length > 0) {
       values.push(id);
-      await c.env.DB.prepare(`UPDATE projects SET ${sets.join(", ")} WHERE id = ?`)
-        .bind(...values)
-        .run();
+      batchStmts.push(
+        c.env.DB.prepare(`UPDATE projects SET ${sets.join(", ")} WHERE id = ?`).bind(...values),
+      );
     }
 
     // Sync gallery images if provided
     const galleryUrls = (body as Record<string, unknown>).gallery_urls as string[] | undefined;
     if (galleryUrls !== undefined) {
-      // Delete existing gallery images
-      await c.env.DB.prepare(
-        "DELETE FROM entity_images WHERE entity_type = 'project' AND entity_id = ?",
-      ).bind(id).run();
-      // Insert new ones
+      batchStmts.push(
+        c.env.DB.prepare(
+          "DELETE FROM entity_images WHERE entity_type = 'project' AND entity_id = ?",
+        ).bind(id),
+      );
       if (Array.isArray(galleryUrls)) {
         for (let i = 0; i < galleryUrls.length; i++) {
-          await c.env.DB.prepare(
-            "INSERT INTO entity_images (entity_type, entity_id, image_url, sort_order) VALUES ('project', ?, ?, ?)",
-          ).bind(id, galleryUrls[i], i).run();
+          batchStmts.push(
+            c.env.DB.prepare(
+              "INSERT INTO entity_images (entity_type, entity_id, image_url, sort_order) VALUES ('project', ?, ?, ?)",
+            ).bind(id, galleryUrls[i], i),
+          );
         }
       }
     }
@@ -345,13 +356,21 @@ projects.put("/:id", requireAuth, async (c) => {
     if (body.related_products !== undefined) {
       try {
         const productIds: number[] = JSON.parse(body.related_products || "[]");
-        await c.env.DB.prepare("DELETE FROM project_products WHERE project_id = ?").bind(id).run();
+        batchStmts.push(
+          c.env.DB.prepare("DELETE FROM project_products WHERE project_id = ?").bind(id),
+        );
         for (const pid of productIds) {
-          await c.env.DB.prepare(
-            "INSERT OR IGNORE INTO project_products (project_id, product_id) VALUES (?, ?)",
-          ).bind(id, pid).run();
+          batchStmts.push(
+            c.env.DB.prepare(
+              "INSERT OR IGNORE INTO project_products (project_id, product_id) VALUES (?, ?)",
+            ).bind(id, pid),
+          );
         }
       } catch { /* ignore parse errors */ }
+    }
+
+    if (batchStmts.length > 0) {
+      await c.env.DB.batch(batchStmts);
     }
 
     logAudit(c.env.DB, 'project', id, 'update', body as Record<string, unknown>);

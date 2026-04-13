@@ -369,7 +369,7 @@ products.post("/", requireAuth, async (c) => {
       .first();
     if (existing) return err(`Slug "${body.slug}" đã tồn tại. Vui lòng chọn slug khác.`, 409);
 
-    const result = await c.env.DB.prepare(
+    const insertStmt = c.env.DB.prepare(
       `INSERT INTO products (category_id, brand_id, slug, name, description, brand, model_number, image_url, gallery_urls, spec_sheet_url, specifications, features, inventory_status, warranty, sort_order, is_active, meta_title, meta_description)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
     )
@@ -391,17 +391,20 @@ products.post("/", requireAuth, async (c) => {
         body.sort_order ?? 0,
         body.meta_title ?? null,
         body.meta_description ?? null,
-      )
-      .run();
+      );
+    // Execute INSERT first to get new ID (D1 batch doesn't return last_row_id per-statement)
+    const result = await insertStmt.run();
     const newId = result.meta.last_row_id;
-    // Sync feature assignments if provided
+
+    // Batch feature assignments for transactional integrity
     const featureIds = (body as Record<string, unknown>).feature_ids as number[] | undefined;
     if (featureIds && Array.isArray(featureIds) && featureIds.length > 0) {
-      const placeholders = featureIds.map(() => "(?, ?)").join(", ");
-      const vals = featureIds.flatMap((fid: number) => [newId, fid]);
-      await c.env.DB.prepare(
-        `INSERT INTO product_to_features (product_id, feature_id) VALUES ${placeholders}`,
-      ).bind(...vals).run();
+      const featureStmts = featureIds.map((fid: number) =>
+        c.env.DB.prepare(
+          "INSERT INTO product_to_features (product_id, feature_id) VALUES (?, ?)",
+        ).bind(newId, fid),
+      );
+      await c.env.DB.batch(featureStmts);
     }
     logAudit(c.env.DB, 'product', newId as number, 'create', { name: body.name, slug: body.slug });
     return ok({ id: newId });
@@ -468,22 +471,29 @@ products.put("/:id", requireAuth, async (c) => {
     sets.push("updated_at = datetime('now')");
     values.push(id);
 
-    await c.env.DB.prepare(`UPDATE products SET ${sets.join(", ")} WHERE id = ?`)
-      .bind(...values)
-      .run();
+    // Build batch: UPDATE product + feature sync (transactional)
+    const batchStmts: ReturnType<typeof c.env.DB.prepare>[] = [
+      c.env.DB.prepare(`UPDATE products SET ${sets.join(", ")} WHERE id = ?`).bind(...values),
+    ];
 
     // Sync feature assignments if provided
     if ((body as Record<string, unknown>).feature_ids !== undefined) {
       const featureIds = (body as Record<string, unknown>).feature_ids as number[];
-      await c.env.DB.prepare("DELETE FROM product_to_features WHERE product_id = ?").bind(id).run();
+      batchStmts.push(
+        c.env.DB.prepare("DELETE FROM product_to_features WHERE product_id = ?").bind(id),
+      );
       if (featureIds && featureIds.length > 0) {
-        const placeholders = featureIds.map(() => "(?, ?)").join(", ");
-        const vals = featureIds.flatMap((fid) => [id, fid]);
-        await c.env.DB.prepare(
-          `INSERT INTO product_to_features (product_id, feature_id) VALUES ${placeholders}`,
-        ).bind(...vals).run();
+        for (const fid of featureIds) {
+          batchStmts.push(
+            c.env.DB.prepare(
+              "INSERT INTO product_to_features (product_id, feature_id) VALUES (?, ?)",
+            ).bind(id, fid),
+          );
+        }
       }
     }
+
+    await c.env.DB.batch(batchStmts);
 
     logAudit(c.env.DB, 'product', id, 'update', body as Record<string, unknown>);
     return ok({ id });

@@ -8,6 +8,9 @@ interface OptimizedImageProps {
   height?: number;
   className?: string;
   imgClassName?: string;
+  /** When true, disables lazy loading and sets fetchpriority="high" for LCP-critical images */
+  priority?: boolean;
+  /** @deprecated Use `priority` instead. Kept for backward compatibility. */
   lazy?: boolean;
 }
 
@@ -18,9 +21,10 @@ export function OptimizedImage({
   height,
   className,
   imgClassName,
+  priority = false,
   lazy = true,
 }: OptimizedImageProps) {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(priority); // skip skeleton for priority images
   const [error, setError] = useState(false);
 
   const cdnUrl = import.meta.env.VITE_CDN_URL;
@@ -29,6 +33,8 @@ export function OptimizedImage({
     : cdnUrl
       ? `${cdnUrl}/${src}`
       : src;
+
+  const isEager = priority || !lazy;
 
   if (error) {
     return (
@@ -51,8 +57,9 @@ export function OptimizedImage({
         alt={alt}
         width={width}
         height={height}
-        loading={lazy ? "lazy" : "eager"}
-        decoding="async"
+        loading={isEager ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
+        decoding={priority ? "sync" : "async"}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className={cn(
@@ -64,3 +71,4 @@ export function OptimizedImage({
     </div>
   );
 }
+

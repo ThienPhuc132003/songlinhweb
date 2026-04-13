@@ -62,6 +62,7 @@ export function HeroSlider() {
                     aria-hidden="true"
                     className="absolute inset-0 h-full w-full object-cover"
                     loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : undefined}
                   />
                 )}
 

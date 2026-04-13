@@ -6,7 +6,7 @@ import {
   useEffect,
 } from "react";
 import type { ReactNode } from "react";
-import { hasApiKey, setApiKey, clearApiKey, adminApi } from "@/lib/admin-api";
+import { loginWithKey, logoutSession, checkSession } from "@/lib/admin-api";
 
 interface AuthContext {
   isAuthenticated: boolean;
@@ -26,37 +26,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setAuth] = useState(false);
   const [isLoading, setLoading] = useState(true);
 
-  // Check existing key on mount
+  // Check existing session cookie on mount via /api/admin/me
   useEffect(() => {
-    if (hasApiKey()) {
-      adminApi
-        .verify()
-        .then(() => setAuth(true))
-        .catch(() => {
-          clearApiKey();
-          setAuth(false);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    checkSession()
+      .then((valid) => setAuth(valid))
+      .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (key: string) => {
-    setApiKey(key);
     try {
-      await adminApi.verify();
-      setAuth(true);
-      return true;
+      const success = await loginWithKey(key);
+      setAuth(success);
+      return success;
     } catch {
-      clearApiKey();
       setAuth(false);
       return false;
     }
   }, []);
 
-  const logout = useCallback(() => {
-    clearApiKey();
+  const logout = useCallback(async () => {
+    await logoutSession();
     setAuth(false);
   }, []);
 
@@ -70,3 +59,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   return useContext(AuthCtx);
 }
+

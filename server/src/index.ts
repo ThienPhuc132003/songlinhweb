@@ -33,10 +33,19 @@ app.use("*", async (c, next) => {
       : corsOriginEnv.split(",").map((s: string) => s.trim()),
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "X-API-Key"],
+    credentials: true, // Required for HttpOnly cookie auth
     maxAge: 86400,
   });
 
   return corsMiddleware(c, next);
+});
+
+// Security response headers
+app.use("/api/*", async (c, next) => {
+  await next();
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 });
 
 // Error handler

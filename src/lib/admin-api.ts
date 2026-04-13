@@ -22,18 +22,55 @@ import type {
 } from "@/types";
 export type { ProductCategory };
 
-function getApiKey(): string {
-  return localStorage.getItem("sltech_admin_key") || "";
+/**
+ * Login via backend — sends API key, receives HttpOnly session cookie.
+ * Returns true if login succeeded.
+ */
+export async function loginWithKey(apiKey: string): Promise<boolean> {
+  const res = await fetch(`${API_URL}/admin/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ api_key: apiKey }),
+  });
+  return res.ok;
 }
 
+/**
+ * Logout — clears HttpOnly session cookie on the server.
+ */
+export async function logoutSession(): Promise<void> {
+  await fetch(`${API_URL}/admin/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
+
+/**
+ * Check if session is active by calling /api/admin/me.
+ * Returns true if the HttpOnly cookie is valid.
+ */
+export async function checkSession(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/admin/me`, {
+      credentials: "include",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// Legacy compat — keep these for any remaining code that might reference them
+/** @deprecated Use loginWithKey() instead */
 export function setApiKey(key: string) {
   localStorage.setItem("sltech_admin_key", key);
 }
-
+/** @deprecated Use logoutSession() instead */
 export function clearApiKey() {
   localStorage.removeItem("sltech_admin_key");
 }
-
+/** @deprecated Use checkSession() instead */
 export function hasApiKey(): boolean {
   return !!localStorage.getItem("sltech_admin_key");
 }
@@ -42,18 +79,16 @@ async function adminRequest(
   endpoint: string,
   options?: RequestInit,
 ): Promise<Response> {
-  const apiKey = getApiKey();
   const res = await fetch(`${API_URL}/admin${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
-      "X-API-Key": apiKey,
       ...(options?.headers || {}),
     },
+    credentials: "include", // Send HttpOnly cookie automatically
     ...options,
   });
 
   if (res.status === 401) {
-    clearApiKey();
     window.location.href = "/admin/login";
     throw new Error("Unauthorized");
   }
@@ -98,14 +133,13 @@ async function adminFetchPaginated<T>(
 }
 
 async function adminUpload(file: File, folder?: string) {
-  const apiKey = getApiKey();
   const formData = new FormData();
   formData.append("file", file);
   if (folder) formData.append("folder", folder);
 
   const res = await fetch(`${API_URL}/admin/upload`, {
     method: "POST",
-    headers: { "X-API-Key": apiKey },
+    credentials: "include", // Send HttpOnly cookie
     body: formData,
   });
 
@@ -121,8 +155,8 @@ async function adminUpload(file: File, folder?: string) {
 // ─── Admin API Methods ───────────────────────────────────────────────────────
 
 export const adminApi = {
-  // Auth verify - use a protected route to validate key
-  verify: () => adminFetch<Product[]>("/products/items/all?limit=1"),
+  // Auth — uses /api/admin/me (cookie auto-sent)
+  verify: () => adminFetch<{ authenticated: boolean }>("/me"),
 
   // Upload
   upload: adminUpload,
@@ -442,9 +476,8 @@ export const adminApi = {
         method: "DELETE",
       }),
     downloadExcel: async (id: number): Promise<void> => {
-      const apiKey = getApiKey();
       const res = await fetch(`${API_URL}/admin/quotations/${id}/excel`, {
-        headers: { "X-API-Key": apiKey },
+        credentials: "include",
       });
       if (!res.ok) {
         throw new Error(`Download failed: ${res.status}`);

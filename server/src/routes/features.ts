@@ -142,17 +142,15 @@ features.put("/:id", requireAuth, async (c) => {
 features.delete("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
 
-  // Clean up junction table (hard delete — child relation)
-  await c.env.DB.prepare(
-    "DELETE FROM product_to_features WHERE feature_id = ?",
-  )
-    .bind(id)
-    .run();
-
-  // Soft delete the feature itself
-  await c.env.DB.prepare(
-    "UPDATE product_features SET deleted_at = datetime('now') WHERE id = ?",
-  ).bind(id).run();
+  // Batch: clean junction + soft delete (transactional)
+  await c.env.DB.batch([
+    c.env.DB.prepare(
+      "DELETE FROM product_to_features WHERE feature_id = ?",
+    ).bind(id),
+    c.env.DB.prepare(
+      "UPDATE product_features SET deleted_at = datetime('now') WHERE id = ?",
+    ).bind(id),
+  ]);
 
   return ok({ deleted: true });
 });
@@ -179,23 +177,24 @@ features.put("/assign/:productId", requireAuth, async (c) => {
   const productId = Number(c.req.param("productId"));
   const { feature_ids } = await c.req.json<{ feature_ids: number[] }>();
 
-  // Delete existing assignments
-  await c.env.DB.prepare(
-    "DELETE FROM product_to_features WHERE product_id = ?",
-  )
-    .bind(productId)
-    .run();
+  // Batch: DELETE old + INSERT new assignments (transactional)
+  const stmts: ReturnType<typeof c.env.DB.prepare>[] = [
+    c.env.DB.prepare(
+      "DELETE FROM product_to_features WHERE product_id = ?",
+    ).bind(productId),
+  ];
 
-  // Insert new assignments
   if (feature_ids && feature_ids.length > 0) {
-    const placeholders = feature_ids.map(() => "(?, ?)").join(", ");
-    const values = feature_ids.flatMap((fid) => [productId, fid]);
-    await c.env.DB.prepare(
-      `INSERT INTO product_to_features (product_id, feature_id) VALUES ${placeholders}`,
-    )
-      .bind(...values)
-      .run();
+    for (const fid of feature_ids) {
+      stmts.push(
+        c.env.DB.prepare(
+          "INSERT INTO product_to_features (product_id, feature_id) VALUES (?, ?)",
+        ).bind(productId, fid),
+      );
+    }
   }
+
+  await c.env.DB.batch(stmts);
 
   return ok({ product_id: productId, feature_count: feature_ids?.length ?? 0 });
 });
