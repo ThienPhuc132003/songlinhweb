@@ -20,6 +20,7 @@ import {
 import heroFallback from "@/assets/Image/HomePage/Hero GiaiPhap.webp";
 import heroME from "@/assets/Image/HomePage/Hero M&E.webp";
 import { fadeUp, fadeIn } from "@/lib/animations";
+import DOMPurify from "dompurify";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -266,7 +267,7 @@ Chúng tôi cam kết mang đến giải pháp tối ưu nhất cho mỗi dự �
                   <p
                     key={i}
                     className={i === 0 ? "first-letter:float-left first-letter:mr-3 first-letter:text-[3.5rem] first-letter:font-bold first-letter:leading-[0.85] first-letter:text-[#3C5DAA]" : ""}
-                    dangerouslySetInnerHTML={{ __html: html }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
                   />
                 ))}
               </div>

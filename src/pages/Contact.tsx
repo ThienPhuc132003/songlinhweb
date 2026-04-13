@@ -5,9 +5,7 @@ import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { SITE } from "@/lib/constants";
 import {
-  sendContactEmail,
   isHoneypotTriggered,
-  EmailRateLimitError,
 } from "@/lib/email";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -72,26 +70,17 @@ export default function Contact() {
     }
     setSubmitting(true);
     try {
-      // Primary: save to database via backend API (also sends Resend email)
+      // Save to database via backend API (also sends Resend email notification)
       await api.contact(form);
-
-      // Secondary: fire-and-forget EmailJS notification (non-blocking)
-      sendContactEmail(form).catch(() => {});
 
       toast.success("Gửi yêu cầu thành công!", {
         description: "Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.",
       });
       setForm(initialForm);
-    } catch (err) {
-      if (err instanceof EmailRateLimitError) {
-        toast.error("Gửi quá nhiều yêu cầu", {
-          description: err.message,
-        });
-      } else {
-        toast.error("Gửi yêu cầu thất bại", {
-          description: "Vui lòng thử lại hoặc gọi trực tiếp qua hotline.",
-        });
-      }
+    } catch {
+      toast.error("Gửi yêu cầu thất bại", {
+        description: "Vui lòng thử lại hoặc gọi trực tiếp qua hotline.",
+      });
     } finally {
       setSubmitting(false);
     }

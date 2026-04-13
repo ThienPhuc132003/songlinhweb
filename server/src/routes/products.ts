@@ -49,7 +49,7 @@ products.get("/categories", async (c) => {
     `SELECT pc.*, COUNT(p.id) as product_count
      FROM product_categories pc
      LEFT JOIN products p ON p.category_id = pc.id AND p.is_active = 1 AND p.deleted_at IS NULL
-     WHERE pc.is_active = 1
+     WHERE pc.is_active = 1 AND pc.deleted_at IS NULL
      GROUP BY pc.id
      ORDER BY pc.sort_order ASC`,
   ).all<ProductCategoryRow & { product_count: number }>();
@@ -349,9 +349,9 @@ products.delete("/categories/:id", requireAuth, async (c) => {
     return err(`Không thể xóa danh mục đang có ${count.cnt} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.`, 409);
   }
 
-  await c.env.DB.prepare("DELETE FROM product_categories WHERE id = ?")
-    .bind(id)
-    .run();
+  await c.env.DB.prepare(
+    "UPDATE product_categories SET deleted_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
   logAudit(c.env.DB, 'category', id, 'delete');
   return ok({ deleted: true });
 });

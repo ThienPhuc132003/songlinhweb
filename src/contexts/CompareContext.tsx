@@ -22,9 +22,9 @@ const CompareContext = createContext<CompareContextType | null>(null);
 const MAX_COMPARE = 3;
 const STORAGE_KEY = "sltech-compare";
 
-function loadFromSession(): CompareProduct[] {
+function loadFromStorage(): CompareProduct[] {
   try {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
@@ -32,14 +32,14 @@ function loadFromSession(): CompareProduct[] {
 }
 
 export function CompareProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CompareProduct[]>(loadFromSession);
+  const [items, setItems] = useState<CompareProduct[]>(loadFromStorage);
 
-  // Sync state → sessionStorage
+  // Sync state → localStorage (persists across tabs)
   useEffect(() => {
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
-      /* sessionStorage unavailable (SSR / privacy mode) */
+      /* localStorage unavailable (SSR / privacy mode) */
     }
   }, [items]);
 

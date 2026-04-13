@@ -61,8 +61,10 @@ projects.get("/all", requireAuth, async (c) => {
     "SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC",
   ).all<ProjectRow>();
 
+  const projectIds = rows.results.map((r) => r.id);
+
   // Batch-fetch junction product IDs for ALL projects (single source of truth)
-  let junctionMap = new Map<number, number[]>();
+  const junctionMap = new Map<number, number[]>();
   try {
     const allJunction = await c.env.DB.prepare(
       "SELECT project_id, product_id FROM project_products",
@@ -73,21 +75,30 @@ projects.get("/all", requireAuth, async (c) => {
     }
   } catch { /* table may not exist */ }
 
-  // Attach gallery images + override related_products from junction table
-  const data = await Promise.all(
-    rows.results.map(async (row) => {
-      const imgs = await c.env.DB.prepare(
-        "SELECT image_url FROM entity_images WHERE entity_type = 'project' AND entity_id = ? ORDER BY sort_order",
-      ).bind(row.id).all<{ image_url: string }>();
-      // Junction table is the single source of truth for related products
-      const junctionProducts = junctionMap.get(row.id) || [];
-      return {
-        ...row,
-        related_products: JSON.stringify(junctionProducts),
-        images: imgs.results,
-      };
-    }),
-  );
+  // Batch-fetch ALL project images in a SINGLE query (kills N+1)
+  const imageMap = new Map<number, Array<{ image_url: string }>>();
+  if (projectIds.length > 0) {
+    const placeholders = projectIds.map(() => "?").join(",");
+    const allImages = await c.env.DB.prepare(
+      `SELECT entity_id, image_url FROM entity_images
+       WHERE entity_type = 'project' AND entity_id IN (${placeholders})
+       ORDER BY sort_order`,
+    ).bind(...projectIds).all<{ entity_id: number; image_url: string }>();
+    for (const img of allImages.results) {
+      if (!imageMap.has(img.entity_id)) imageMap.set(img.entity_id, []);
+      imageMap.get(img.entity_id)!.push({ image_url: img.image_url });
+    }
+  }
+
+  // Map results in memory — NO async, NO extra queries
+  const data = rows.results.map((row) => {
+    const junctionProducts = junctionMap.get(row.id) || [];
+    return {
+      ...row,
+      related_products: JSON.stringify(junctionProducts),
+      images: imageMap.get(row.id) || [],
+    };
+  });
 
   return ok(data);
 });

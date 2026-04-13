@@ -186,13 +186,13 @@ posts.post("/", requireAuth, async (c) => {
     // Parse D1 column errors
     const colMatch = msg.match(/has no column named (\w+)/);
     if (colMatch) {
-      return c.json({ ok: false, error: `DB thiếu cột "${colMatch[1]}". Chạy migration mới nhất.` }, 500);
+      return err(`DB thiếu cột "${colMatch[1]}". Chạy migration mới nhất.`, 500);
     }
     const uniqMatch = msg.match(/UNIQUE constraint failed: posts\.(\w+)/);
     if (uniqMatch) {
-      return c.json({ ok: false, error: `Trùng "${uniqMatch[1]}". Slug đã tồn tại.` }, 409);
+      return err(`Trùng "${uniqMatch[1]}". Slug đã tồn tại.`, 409);
     }
-    return c.json({ ok: false, error: msg }, 500);
+    return err(msg, 500);
   }
 });
 
@@ -294,9 +294,9 @@ posts.put("/:id", requireAuth, async (c) => {
     const msg = e instanceof Error ? e.message : String(e);
     const colMatch = msg.match(/has no column named (\w+)/);
     if (colMatch) {
-      return c.json({ ok: false, error: `DB thiếu cột "${colMatch[1]}". Chạy migration mới nhất.` }, 500);
+      return err(`DB thiếu cột "${colMatch[1]}". Chạy migration mới nhất.`, 500);
     }
-    return c.json({ ok: false, error: msg }, 500);
+    return err(msg, 500);
   }
 });
 
