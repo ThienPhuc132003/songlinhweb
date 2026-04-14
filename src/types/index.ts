@@ -346,6 +346,16 @@ export interface DashboardStats {
   featuredProjects: number;
   unreadQuotes: number;
   unreadContacts: number;
+  trends: {
+    quotesThisWeek: number;
+    quotesLastWeek: number;
+    contactsThisWeek: number;
+    contactsLastWeek: number;
+  };
+  dailyQuotesChart: Array<{
+    day: string;
+    cnt: number;
+  }>;
   recentQuotes: Array<{
     id: number;
     customer_name: string;
@@ -353,10 +363,16 @@ export interface DashboardStats {
     status: string;
     created_at: string;
   }>;
-  quotesChart: Array<{
-    month: string;
-    cnt: number;
-  }>;
+  storage: {
+    d1: {
+      products: number;
+      projects: number;
+      contacts: number;
+      quotations: number;
+      posts: number;
+    };
+    r2ObjectCount: number;
+  };
 }
 
 export interface AuditLog {
