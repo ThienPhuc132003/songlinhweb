@@ -3,6 +3,7 @@ import type { Env, ContactRow } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
+import { sendContactAdminEmail } from "../services/email";
 
 const contact = new Hono<{ Bindings: Env }>();
 
@@ -45,7 +46,7 @@ contact.post("/", rateLimit(5, 3600), async (c) => {
   // Send email notification if Resend API key is configured
   if (c.env.RESEND_API_KEY) {
     try {
-      await sendEmailNotification(c.env, body);
+      await sendContactAdminEmail(c.env, body);
     } catch (e) {
       console.error("[Email Error]", e);
       // Don't fail the request if email fails
@@ -106,43 +107,5 @@ contact.delete("/:id", requireAuth, async (c) => {
   return ok({ deleted: true });
 });
 
-/** Escape HTML special characters to prevent XSS */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/** Send email notification via Resend */
-async function sendEmailNotification(
-  env: Env,
-  data: { company_name: string; email: string; phone: string; message: string },
-) {
-  const adminEmail = env.ADMIN_NOTIFICATION_EMAIL || "songlinh@sltech.vn";
-
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Song Linh Technologies <noreply@sltech.vn>",
-      to: [adminEmail],
-      subject: `[Website] Liên hệ mới từ ${escapeHtml(data.company_name)}`,
-      html: `
-        <h2>Yêu cầu liên hệ mới</h2>
-        <table style="border-collapse:collapse;">
-          <tr><td style="padding:8px;font-weight:bold;">Công ty:</td><td style="padding:8px;">${escapeHtml(data.company_name)}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;">Email:</td><td style="padding:8px;">${escapeHtml(data.email)}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;">SĐT:</td><td style="padding:8px;">${escapeHtml(data.phone)}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;">Nội dung:</td><td style="padding:8px;">${escapeHtml(data.message)}</td></tr>
-        </table>
-      `,
-    }),
-  });
-}
-
 export default contact;
+

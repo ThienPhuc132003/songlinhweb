@@ -11,7 +11,7 @@ import {
 import {
   sendQuotationAdminEmail,
   sendQuotationCustomerEmail,
-} from "../services/quotation-email";
+} from "../services/email";
 
 const quotations = new Hono<{ Bindings: Env }>();
 

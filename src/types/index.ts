@@ -343,16 +343,19 @@ export interface QuotationItem {
 
 export interface DashboardStats {
   totalProducts: number;
-  totalBrands: number;
-  totalCategories: number;
-  totalProjects: number;
-  recentProducts: Array<{
+  featuredProjects: number;
+  unreadQuotes: number;
+  unreadContacts: number;
+  recentQuotes: Array<{
     id: number;
-    name: string;
-    slug: string;
-    image_url: string | null;
-    brand_name: string | null;
+    customer_name: string;
+    project_name: string | null;
+    status: string;
     created_at: string;
+  }>;
+  quotesChart: Array<{
+    month: string;
+    cnt: number;
   }>;
 }
 

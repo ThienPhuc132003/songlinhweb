@@ -61,29 +61,37 @@ admin.get("/me", requireAuth, (c) => {
 
 /** GET /api/admin/dashboard/stats — aggregated dashboard stats */
 admin.get("/dashboard/stats", requireAuth, async (c) => {
-  const [productCount, brandCount, categoryCount, projectCount] = await Promise.all([
+  const [productCount, featuredProjectCount, unreadQuotes, unreadContacts] = await Promise.all([
     c.env.DB.prepare("SELECT COUNT(*) as cnt FROM products WHERE deleted_at IS NULL").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM brands").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM product_categories").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM projects").first<{ cnt: number }>(),
+    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM projects WHERE is_featured = 1 AND deleted_at IS NULL").first<{ cnt: number }>(),
+    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE status = 'new' AND deleted_at IS NULL").first<{ cnt: number }>(),
+    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE status = 'new' AND deleted_at IS NULL").first<{ cnt: number }>(),
   ]);
 
-  const recentProducts = await c.env.DB.prepare(
-    `SELECT p.id, p.name, p.slug, p.image_url, p.created_at,
-            b.name as brand_name
-     FROM products p
-     LEFT JOIN brands b ON b.id = p.brand_id
-     WHERE p.deleted_at IS NULL
-     ORDER BY p.created_at DESC
+  const recentQuotes = await c.env.DB.prepare(
+    `SELECT id, customer_name, project_name, status, created_at
+     FROM quotation_requests
+     WHERE deleted_at IS NULL
+     ORDER BY created_at DESC
      LIMIT 5`,
-  ).all<{ id: number; name: string; slug: string; image_url: string | null; created_at: string; brand_name: string | null }>();
+  ).all();
+
+  const quotesChart = await c.env.DB.prepare(
+    `SELECT strftime('%Y-%m', created_at) as month, count(*) as cnt 
+     FROM quotation_requests 
+     WHERE deleted_at IS NULL
+     GROUP BY month 
+     ORDER BY month DESC 
+     LIMIT 6`,
+  ).all();
 
   return ok({
     totalProducts: productCount?.cnt ?? 0,
-    totalBrands: brandCount?.cnt ?? 0,
-    totalCategories: categoryCount?.cnt ?? 0,
-    totalProjects: projectCount?.cnt ?? 0,
-    recentProducts: recentProducts.results,
+    featuredProjects: featuredProjectCount?.cnt ?? 0,
+    unreadQuotes: unreadQuotes?.cnt ?? 0,
+    unreadContacts: unreadContacts?.cnt ?? 0,
+    recentQuotes: recentQuotes.results,
+    quotesChart: quotesChart.results.reverse(), // chronological order
   });
 });
 

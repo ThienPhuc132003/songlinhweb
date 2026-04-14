@@ -2,45 +2,7 @@
  * Unit Tests — admin-api.ts
  * Tests for admin API client auth helpers and type re-exports.
  */
-import { describe, it, expect, beforeEach } from "vitest";
-import { setApiKey, clearApiKey, hasApiKey } from "@/lib/admin-api";
-
-describe("admin-api Auth Helpers", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  describe("setApiKey / hasApiKey / clearApiKey", () => {
-    it("hasApiKey returns false when no key is set", () => {
-      expect(hasApiKey()).toBe(false);
-    });
-
-    it("setApiKey stores the key and hasApiKey returns true", () => {
-      setApiKey("test-key-123");
-      expect(hasApiKey()).toBe(true);
-      expect(localStorage.getItem("sltech_admin_key")).toBe("test-key-123");
-    });
-
-    it("clearApiKey removes the key", () => {
-      setApiKey("test-key-123");
-      expect(hasApiKey()).toBe(true);
-      clearApiKey();
-      expect(hasApiKey()).toBe(false);
-      expect(localStorage.getItem("sltech_admin_key")).toBeNull();
-    });
-
-    it("handles setting key multiple times (overwrite)", () => {
-      setApiKey("key-1");
-      setApiKey("key-2");
-      expect(localStorage.getItem("sltech_admin_key")).toBe("key-2");
-    });
-
-    it("clearApiKey is safe to call when no key exists", () => {
-      expect(() => clearApiKey()).not.toThrow();
-      expect(hasApiKey()).toBe(false);
-    });
-  });
-});
+import { describe, it, expect } from "vitest";
 
 describe("ProductCategory Type Re-export", () => {
   it("admin-api re-exports ProductCategory from @/types", async () => {
@@ -48,7 +10,7 @@ describe("ProductCategory Type Re-export", () => {
     // Verify the module exports the type (runtime check for the re-export mechanism)
     // ProductCategory is a type-only export, so we verify the module is importable
     expect(adminModule).toBeDefined();
-    expect(adminModule.setApiKey).toBeTypeOf("function");
+    expect(adminModule.loginWithKey).toBeTypeOf("function");
   });
 
   it("ProductCategory interface has correct shape", () => {

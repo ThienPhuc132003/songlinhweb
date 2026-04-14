@@ -61,19 +61,6 @@ export async function checkSession(): Promise<boolean> {
   }
 }
 
-// Legacy compat — keep these for any remaining code that might reference them
-/** @deprecated Use loginWithKey() instead */
-export function setApiKey(key: string) {
-  localStorage.setItem("sltech_admin_key", key);
-}
-/** @deprecated Use logoutSession() instead */
-export function clearApiKey() {
-  localStorage.removeItem("sltech_admin_key");
-}
-/** @deprecated Use checkSession() instead */
-export function hasApiKey(): boolean {
-  return !!localStorage.getItem("sltech_admin_key");
-}
 
 async function adminRequest(
   endpoint: string,
