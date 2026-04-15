@@ -87,7 +87,7 @@ solutions.get("/", async (c) => {
 /** GET /api/admin/solutions/all — list ALL solutions (admin, includes inactive/deleted) */
 solutions.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT * FROM solutions ORDER BY sort_order ASC, created_at DESC",
+    "SELECT * FROM solutions WHERE deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC",
   ).all<SolutionRow>();
 
   return ok(rows.results);

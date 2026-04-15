@@ -61,10 +61,11 @@ products.get("/categories/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
     `SELECT pc.id, pc.slug, pc.name, pc.description, pc.image_url, 
             pc.parent_id, pc.sort_order, pc.is_active,
-            (SELECT COUNT(*) FROM products WHERE category_id = pc.id) as product_count,
+            (SELECT COUNT(*) FROM products WHERE category_id = pc.id AND deleted_at IS NULL) as product_count,
             (SELECT name FROM product_categories WHERE id = pc.parent_id) as parent_name,
             (SELECT COUNT(*) FROM product_categories WHERE parent_id = pc.id) as children_count
      FROM product_categories pc
+     WHERE pc.deleted_at IS NULL
      ORDER BY pc.sort_order ASC`,
   ).all<ProductCategoryRow & { product_count: number; parent_name: string | null; children_count: number }>();
   return ok(rows.results);
@@ -147,7 +148,8 @@ products.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
     `SELECT pc.*, COUNT(p.id) as product_count
      FROM product_categories pc
-     LEFT JOIN products p ON p.category_id = pc.id
+     LEFT JOIN products p ON p.category_id = pc.id AND p.deleted_at IS NULL
+     WHERE pc.deleted_at IS NULL
      GROUP BY pc.id
      ORDER BY pc.sort_order ASC`,
   ).all<ProductCategoryRow & { product_count: number }>();
@@ -162,6 +164,7 @@ products.get("/items/all", requireAuth, async (c) => {
      FROM products p
      LEFT JOIN product_categories pc ON pc.id = p.category_id
      LEFT JOIN brands b ON b.id = p.brand_id
+     WHERE p.deleted_at IS NULL
      ORDER BY p.sort_order ASC`,
   ).all<ProductRow & { category_name: string; category_slug: string; brand_name: string | null; brand_slug: string | null; brand_logo: string | null }>();
 

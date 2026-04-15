@@ -73,7 +73,7 @@ posts.get("/", async (c) => {
 /** GET /api/admin/posts/all — list ALL posts including unpublished */
 posts.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT * FROM posts ORDER BY is_featured DESC, published_at DESC, created_at DESC",
+    "SELECT * FROM posts WHERE deleted_at IS NULL ORDER BY is_featured DESC, published_at DESC, created_at DESC",
   ).all<PostRow>();
   const data = rows.results.map((row) => ({
     ...row,

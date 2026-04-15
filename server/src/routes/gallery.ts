@@ -47,6 +47,7 @@ gallery.get("/all", requireAuth, async (c) => {
     `SELECT ga.*, COUNT(gi.id) as image_count
      FROM gallery_albums ga
      LEFT JOIN gallery_images gi ON gi.album_id = ga.id
+     WHERE ga.deleted_at IS NULL
      GROUP BY ga.id
      ORDER BY ga.sort_order ASC`,
   ).all<GalleryAlbumRow & { image_count: number }>();

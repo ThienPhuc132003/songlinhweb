@@ -58,7 +58,7 @@ projects.get("/", async (c) => {
 /** GET /api/admin/projects/all — list ALL projects including inactive */
 projects.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC",
+    "SELECT * FROM projects WHERE deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC",
   ).all<ProjectRow>();
 
   const projectIds = rows.results.map((r) => r.id);

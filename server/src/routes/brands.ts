@@ -19,7 +19,7 @@ brands.get("/", async (c) => {
 /** GET /api/admin/brands/all — list ALL brands including inactive (MUST be before /:slug) */
 brands.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
-    `SELECT * FROM brands ORDER BY sort_order ASC`,
+    `SELECT * FROM brands WHERE deleted_at IS NULL ORDER BY sort_order ASC`,
   ).all<BrandRow>();
   return ok(rows.results);
 });

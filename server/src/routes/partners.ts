@@ -17,7 +17,7 @@ partners.get("/", async (c) => {
 /** GET /api/admin/partners/all — list ALL partners including inactive */
 partners.get("/all", requireAuth, async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT * FROM partners ORDER BY sort_order ASC",
+    "SELECT * FROM partners WHERE deleted_at IS NULL ORDER BY sort_order ASC",
   ).all<PartnerRow>();
   return ok(rows.results);
 });

@@ -40,6 +40,7 @@ features.get("/all", requireAuth, async (c) => {
     `SELECT pf.*,
             (SELECT COUNT(*) FROM product_to_features WHERE feature_id = pf.id) as product_count
      FROM product_features pf
+     WHERE pf.deleted_at IS NULL
      ORDER BY pf.group_name ASC, pf.sort_order ASC`,
   ).all<ProductFeatureRow & { product_count: number }>();
   return ok(rows.results);
