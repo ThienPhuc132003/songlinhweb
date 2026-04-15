@@ -25,7 +25,7 @@ projects.get("/", async (c) => {
   const featured = url.searchParams.get("featured");
   const offset = (page - 1) * limit;
 
-  let where = "WHERE is_active = 1 AND deleted_at IS NULL";
+  let where = "WHERE is_active > 0 AND deleted_at IS NULL";
   const params: unknown[] = [];
 
   if (category) {
@@ -107,7 +107,7 @@ projects.get("/all", requireAuth, async (c) => {
 projects.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
   const row = await c.env.DB.prepare(
-    "SELECT * FROM projects WHERE slug = ? AND is_active = 1 AND deleted_at IS NULL",
+    "SELECT * FROM projects WHERE slug = ? AND is_active > 0 AND deleted_at IS NULL",
   )
     .bind(slug)
     .first<ProjectRow>();

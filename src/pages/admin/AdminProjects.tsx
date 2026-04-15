@@ -13,7 +13,7 @@ import {
   PageHeader,
   ConfirmDelete,
   BulkActionBar,
-  StatusBadge,
+  ProjectStatusBadge,
   type Column,
 } from "@/components/admin/CrudHelpers";
 
@@ -35,8 +35,9 @@ export default function AdminProjects() {
   // Client-side filtering
   const filteredData = data.filter((row) => {
     if (categoryFilter !== "all" && row.category !== categoryFilter) return false;
-    if (statusFilter === "active" && !row.is_active) return false;
-    if (statusFilter === "hidden" && row.is_active) return false;
+    if (statusFilter === "1" && row.is_active !== 1) return false;
+    if (statusFilter === "2" && row.is_active !== 2) return false;
+    if (statusFilter === "0" && row.is_active !== 0) return false;
     return true;
   });
 
@@ -102,6 +103,7 @@ export default function AdminProjects() {
       const ids = Array.from(selectedIds);
       const updates: Record<string, unknown> =
         action === "activate" ? { is_active: 1 }
+        : action === "in-progress" ? { is_active: 2 }
         : action === "deactivate" ? { is_active: 0 }
         : action === "feature" ? { is_featured: 1 }
         : action === "unfeature" ? { is_featured: 0 }
@@ -201,19 +203,21 @@ export default function AdminProjects() {
       ),
     },
     {
-      key: "category", header: "Danh mục", className: "w-28",
+      key: "category", header: "Danh mục", className: "w-32",
       render: (r) => (
-        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium">
-          {r.category || "—"}
-        </span>
+        <div className="flex justify-center">
+          <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-medium whitespace-nowrap">
+            {r.category || "—"}
+          </span>
+        </div>
       ),
     },
     {
-      key: "client_name", header: "Khách hàng", className: "w-32",
-      render: (r) => <span className="text-xs">{r.client_name || "—"}</span>,
+      key: "client_name", header: "Chủ đầu tư", className: "min-w-[160px] max-w-[220px]",
+      render: (r) => <span className="text-xs leading-relaxed">{r.client_name || "—"}</span>,
     },
     {
-      key: "completion_year", header: "Năm", className: "w-20",
+      key: "completion_year", header: "Năm", className: "w-16",
       render: (r) => (
         <span className="text-xs font-mono">
           {r.completion_year || (r.year ? String(r.year) : "—")}
@@ -221,40 +225,44 @@ export default function AdminProjects() {
       ),
     },
     {
-      key: "is_featured", header: "Nổi bật", className: "w-20",
+      key: "is_featured", header: "Nổi bật", className: "w-16",
       render: (r) => (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            quickUpdateMutation.mutate({
-              id: r.id, data: { is_featured: r.is_featured ? 0 : 1 },
-            });
-          }}
-          className={`inline-flex items-center justify-center h-8 w-8 rounded-sm transition-colors ${
-            r.is_featured
-              ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-              : "text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-          }`}
-        >
-          {r.is_featured ? <Star className="h-5 w-5 fill-current" /> : <StarOff className="h-4 w-4" />}
-        </button>
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              quickUpdateMutation.mutate({
+                id: r.id, data: { is_featured: r.is_featured ? 0 : 1 },
+              });
+            }}
+            className={`inline-flex items-center justify-center h-8 w-8 rounded-sm transition-colors ${
+              r.is_featured
+                ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                : "text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
+          >
+            {r.is_featured ? <Star className="h-5 w-5 fill-current" /> : <StarOff className="h-4 w-4" />}
+          </button>
+        </div>
       ),
     },
     {
-      key: "is_active", header: "Trạng thái", className: "w-28",
+      key: "is_active", header: "Trạng thái", className: "w-36",
       render: (r) => (
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            // Cycle: 1 (Hoàn thành) → 2 (Đang triển khai) → 0 (Đóng) → 1
+            const next = r.is_active === 1 ? 2 : r.is_active === 2 ? 0 : 1;
             quickUpdateMutation.mutate({
-              id: r.id, data: { is_active: r.is_active ? 0 : 1 },
+              id: r.id, data: { is_active: next },
             });
           }}
           className="cursor-pointer"
         >
-          <StatusBadge active={r.is_active} />
+          <ProjectStatusBadge status={r.is_active} />
         </button>
       ),
     },
@@ -268,8 +276,9 @@ export default function AdminProjects() {
         onChange={(e) => setStatusFilter(e.target.value)}
       >
         <option value="all">Tất cả trạng thái</option>
-        <option value="active">Công khai</option>
-        <option value="hidden">Chờ duyệt</option>
+        <option value="1">Hoàn thành</option>
+        <option value="2">Đang triển khai</option>
+        <option value="0">Đóng</option>
       </select>
       {categories.length > 0 && (
         <select
@@ -302,13 +311,19 @@ export default function AdminProjects() {
           onClick={() => bulkMutation.mutate({ action: "activate" })}
           className="rounded-sm bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
         >
-          Công khai
+          Hoàn thành
+        </button>
+        <button
+          onClick={() => bulkMutation.mutate({ action: "in-progress" })}
+          className="rounded-sm bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-200"
+        >
+          Đang triển khai
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "deactivate" })}
-          className="rounded-sm bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+          className="rounded-sm bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
         >
-          Chờ duyệt
+          Đóng
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "feature" })}

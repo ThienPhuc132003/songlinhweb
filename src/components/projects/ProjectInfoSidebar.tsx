@@ -38,41 +38,45 @@ export function ProjectInfoSidebar({
   if (!hasSystems && !hasClient) return null;
 
   return (
-    <div className={cn("space-y-5", className)}>
-      {/* ─── Card 1: Systems ─── */}
-      {hasSystems && (
-        <div className="rounded-sm border border-primary/15 bg-white dark:bg-slate-900 shadow-sm p-5">
-          <h3 className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
-            Hệ thống ELV & ICT
-          </h3>
-          <ul className="space-y-2.5">
-            {systemTypes.map((sys) => (
-              <li key={sys} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                <span className="mt-1.5 block h-2 w-2 shrink-0 rounded-sm bg-primary" />
-                {sys}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div className={cn("rounded-lg border border-slate-200 bg-white shadow-sm p-6 dark:border-slate-800 dark:bg-slate-950", className)}>
+      <div className="space-y-6">
+        {/* ─── Block 1: Client ─── */}
+        {hasClient && (
+          <div>
+            <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
+              Chủ Đầu Tư
+            </h3>
+            <p className="text-base font-bold text-slate-900 dark:text-slate-100">{clientName}</p>
+            {clientIndustry && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {INDUSTRY_LABELS[clientIndustry] ?? clientIndustry}
+              </p>
+            )}
+            {location && (
+              <p className="mt-1 text-xs text-muted-foreground">{location}</p>
+            )}
+          </div>
+        )}
 
-      {/* ─── Card 2: Client ─── */}
-      {hasClient && (
-        <div className="rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5">
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
-            Chủ đầu tư
-          </h3>
-          <p className="text-base font-bold text-slate-900 dark:text-slate-100">{clientName}</p>
-          {clientIndustry && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {INDUSTRY_LABELS[clientIndustry] ?? clientIndustry}
-            </p>
-          )}
-          {location && (
-            <p className="mt-1 text-xs text-muted-foreground">{location}</p>
-          )}
-        </div>
-      )}
+        {/* ─── Divider ─── */}
+        {hasSystems && hasClient && <div className="h-px bg-slate-100 dark:bg-slate-800" />}
+
+        {/* ─── Block 2: Systems ─── */}
+        {hasSystems && (
+          <div>
+            <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
+              Hệ Thống Tích Hợp
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {systemTypes.map((sys) => (
+                <span key={sys} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold text-slate-800 bg-slate-50 border-slate-200 dark:text-slate-300 dark:bg-slate-900 dark:border-slate-800">
+                  {sys}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

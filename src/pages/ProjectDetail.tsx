@@ -8,7 +8,6 @@ import { ProjectHero } from "@/components/projects/ProjectHero";
 import { ProjectInfoSidebar } from "@/components/projects/ProjectInfoSidebar";
 import { ProjectGallery } from "@/components/projects/ProjectGallery";
 import { ProjectUsedEquipment } from "@/components/projects/ProjectUsedEquipment";
-import { InfographicStats, buildStatItems } from "@/components/projects/InfographicStats";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 
 /** Safely parse JSON or return fallback */
@@ -110,14 +109,11 @@ export default function ProjectDetail() {
     if (project.outcomes) outcomesList = [project.outcomes];
   }
 
-  // ALL key_metrics for the "Quy mô triển khai" section (no cap, includes text values)
+  // ALL key_metrics for the "Quy mô triển khai" section
   const implementationItems = buildImplementationItems(keyMetrics);
 
-  // Stat items from buildStatItems (for checking if hero bar has items beyond 4)
-  const allStatItems = buildStatItems(keyMetrics, project.area_sqm, project.duration_months);
-  const hasExtraStats = allStatItems.length > 4;
-  // Items 5+ that didn't make it into the hero bar — show in implementation list
-  void hasExtraStats; // used for reference; implementationItems covers all
+  // Project status label for user-facing tag
+  const statusLabel = project.is_active === 2 ? "Đang triển khai" : project.is_active === 1 ? "Hoàn thành" : null;
 
   return (
     <>
@@ -136,13 +132,7 @@ export default function ProjectDetail() {
         clientName={project.client_name}
         location={project.location}
         completionYear={project.completion_year || (project.year ? String(project.year) : null)}
-      />
-
-      {/* ═══ 2. INFOGRAPHIC STATS — White bg, blue numbers, max 4 ═══ */}
-      <InfographicStats
-        metrics={keyMetrics}
-        areaSqm={project.area_sqm}
-        durationMonths={project.duration_months}
+        statusLabel={statusLabel}
       />
 
       {/* ═══ 3. BREADCRUMBS ═══ */}
@@ -166,7 +156,7 @@ export default function ProjectDetail() {
           <div className="grid gap-8 lg:grid-cols-12">
 
             {/* ── LEFT COLUMN (col-span-8) ── */}
-            <div className="min-w-0 space-y-10 lg:col-span-8">
+            <div className="min-w-0 space-y-12 lg:col-span-8">
 
               {/* Section 1: Description */}
               {project.description && (
@@ -292,9 +282,6 @@ export default function ProjectDetail() {
       {/* ═══ 7. CTA — Editorial ═══ */}
       <section className="border-t bg-slate-950 py-16 md:py-20">
         <div className="container-custom max-w-2xl text-center">
-          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-white/40">
-            Tiếp theo
-          </p>
           <h2 className="text-3xl font-extralight tracking-tight text-white md:text-4xl">
             Bạn có dự án <span className="font-semibold">tương tự?</span>
           </h2>
@@ -306,7 +293,7 @@ export default function ProjectDetail() {
             <Button asChild size="lg" className="rounded-none px-8 bg-[#3C5DAA] hover:bg-[#2E4A8A]">
               <Link to="/lien-he">Thảo luận dự án</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-none border-white/20 px-8 text-white hover:bg-white/10 hover:text-white">
+            <Button asChild variant="outline" size="lg" className="rounded-none bg-transparent border-white/20 px-8 text-white hover:bg-white/10 hover:text-white">
               <Link to="/lien-he">Nhận báo giá kỹ thuật</Link>
             </Button>
           </div>

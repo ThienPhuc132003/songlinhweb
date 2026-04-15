@@ -52,6 +52,7 @@ export function buildStatItems(
 
   for (const [key, val] of Object.entries(metrics)) {
     if (val && val !== 0) {
+      if (String(val).length > 20) continue; // Skip long sentences in Hero Stats, they belong in Scope of Work
       const parsed = parseStatValue(val);
       if (parsed) {
         items.push({
@@ -99,7 +100,7 @@ function StatColumn({ value, suffix, label, index, visible }: StatItem & { index
         transform: visible ? "translateY(0)" : "translateY(12px)",
       }}
     >
-      <span className="block font-mono text-5xl font-extralight tabular-nums tracking-tighter text-[#3C5DAA] md:text-6xl lg:text-7xl">
+      <span className="block font-mono text-4xl font-extralight tabular-nums tracking-tighter text-[#3C5DAA] md:text-5xl lg:text-6xl">
         {count.toLocaleString()}{suffix}
       </span>
       <span className="mt-3 block font-mono text-[10px] font-medium uppercase tracking-[0.25em] text-slate-500">

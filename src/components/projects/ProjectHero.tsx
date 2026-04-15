@@ -7,6 +7,7 @@ interface ProjectHeroProps {
   clientName?: string | null;
   location?: string | null;
   completionYear?: string | null;
+  statusLabel?: string | null;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export function ProjectHero({
   clientName,
   location,
   completionYear,
+  statusLabel,
   className,
 }: ProjectHeroProps) {
   const metaRows: Array<{ label: string; value: string }> = [];
@@ -55,12 +57,28 @@ export function ProjectHero({
 
       {/* Content Container positioned at the bottom */}
       <div className="container-custom relative z-10 pb-12 pt-24 md:pb-16 flex flex-col items-start w-full">
-        {/* Category badge */}
-        {category && (
-          <p className="mb-4 inline-flex px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-white">
-            {category}
-          </p>
-        )}
+        {/* Category + Status badges */}
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          {category && (
+            <p className="inline-flex px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-white">
+              {category}
+            </p>
+          )}
+          {statusLabel && (
+            <span className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider backdrop-blur-sm border",
+              statusLabel === "Hoàn thành"
+                ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-200"
+                : "bg-amber-500/20 border-amber-400/30 text-amber-200"
+            )}>
+              <span className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                statusLabel === "Hoàn thành" ? "bg-emerald-400" : "bg-amber-400 animate-pulse"
+              )} />
+              {statusLabel}
+            </span>
+          )}
+        </div>
 
         {/* Title — massive weight */}
         <h1 className="text-3xl font-extralight leading-tight tracking-tight text-white md:text-5xl lg:text-6xl max-w-5xl">

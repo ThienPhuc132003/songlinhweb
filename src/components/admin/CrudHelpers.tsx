@@ -708,3 +708,29 @@ export function StatusBadge({ active }: { active: boolean | number }) {
     </span>
   );
 }
+
+/** Project-specific status badge (3 states: 1=Hoàn thành, 2=Đang triển khai, 0=Đóng) */
+export function ProjectStatusBadge({ status }: { status: number }) {
+  if (status === 2) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+        Đang triển khai
+      </span>
+    );
+  }
+  if (status === 1) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+        Hoàn thành
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+      Đóng
+    </span>
+  );
+}

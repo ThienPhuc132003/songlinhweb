@@ -405,8 +405,9 @@ export function ProjectFormSheet({
                     <select className={selectClass} value={form.is_active ?? 1}
                       onChange={(e) => setForm((f) => ({ ...f, is_active: Number(e.target.value) }))}
                     >
-                      <option value={1}>Công khai</option>
-                      <option value={0}>Chờ duyệt</option>
+                      <option value={1}>Hoàn thành</option>
+                      <option value={2}>Đang triển khai</option>
+                      <option value={0}>Đóng</option>
                     </select>
                   </F>
                 </div>
@@ -414,6 +415,11 @@ export function ProjectFormSheet({
 
               {/* Key Metrics */}
               <SidebarSection title="Key Metrics">
+                <p className="text-[10px] text-muted-foreground -mt-1 leading-relaxed">
+                  Phần mềm sẽ tự động tách nội dung:<br/>
+                  - <b>Ngắn</b> (≤ 20 ký tự, VD: '300+'): Hiện dạng số lớn ở đầu trang.<br/>
+                  - <b>Dài</b>: Tự hiện trong danh sách 'Quy mô triển khai'.
+                </p>
                 <KeyMetricsEditor
                   value={form.key_metrics || "{}"}
                   onChange={(json) => setForm((f) => ({ ...f, key_metrics: json }))}
