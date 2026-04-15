@@ -132,7 +132,7 @@ export default function Blog() {
               <button
                 key={cat.value}
                 onClick={() => handleCategoryChange(cat.value)}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                className={`whitespace-nowrap rounded-sm px-4 py-2 text-sm font-medium transition-all ${
                   activeCategory === cat.value
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
@@ -147,7 +147,7 @@ export default function Blog() {
             <div className="space-y-8">
               {/* Featured skeleton */}
               <div className="grid gap-6 lg:grid-cols-2">
-                <Skeleton className="aspect-video w-full rounded-xl" />
+                <Skeleton className="aspect-video w-full rounded-sm" />
                 <div className="space-y-3 py-4">
                   <Skeleton className="h-5 w-24" />
                   <Skeleton className="h-8 w-3/4" />
@@ -158,8 +158,8 @@ export default function Blog() {
               {/* Grid skeleton */}
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="space-y-3 rounded-lg border p-4">
-                    <Skeleton className="aspect-video w-full rounded-md" />
+                  <div key={i} className="space-y-3 rounded-sm border p-4">
+                    <Skeleton className="aspect-video w-full rounded-sm" />
                     <Skeleton className="h-5 w-2/3" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-3/4" />
@@ -191,7 +191,7 @@ export default function Blog() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-xl transition-shadow"
+                      className="relative overflow-hidden rounded-sm border bg-card shadow-sm hover:shadow-md transition-shadow"
                     >
                       <div className="grid gap-0 lg:grid-cols-2">
                         {/* Image */}
@@ -268,7 +268,7 @@ export default function Blog() {
                           to={`/tin-tuc/${post.slug}`}
                           className="group block h-full"
                         >
-                          <Card className="hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-b-2 border-b-transparent hover:border-b-primary">
+                          <Card className="hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 border-b-2 border-b-transparent hover:border-b-primary">
                             {/* Thumbnail */}
                             <div className="bg-muted aspect-video overflow-hidden relative">
                               {post.thumbnail_url ? (

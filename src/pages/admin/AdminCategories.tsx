@@ -186,7 +186,7 @@ export default function AdminCategories() {
 
         <Field label="Danh mục cha">
           <select
-            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+            className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
             value={form.parent_id ?? ""}
             onChange={(e) =>
               setForm({
@@ -223,7 +223,7 @@ export default function AdminCategories() {
           </Field>
           <Field label="Trạng thái">
             <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+              className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
               value={form.is_active ?? 1}
               onChange={(e) => setForm({ ...form, is_active: Number(e.target.value) })}
             >

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { useGalleryAlbums, useGalleryAlbum } from "@/hooks/useApi";
@@ -134,7 +134,7 @@ export default function Gallery() {
               {isLoading ? (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="aspect-[4/3] w-full rounded-md" />
+                    <Skeleton key={i} className="aspect-[4/3] w-full rounded-sm" />
                   ))}
                 </div>
               ) : filteredAlbums.length === 0 ? (
@@ -146,18 +146,17 @@ export default function Gallery() {
                 </div>
               ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  <AnimatePresence mode="wait">
                     {filteredAlbums.map((album, i) => (
                       <motion.div
                         key={album.slug}
-                        layout
-                        initial={{ opacity: 0, y: 20, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.97 }}
-                        transition={{ duration: 0.35, delay: i * 0.05 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.35, delay: Math.min(i * 0.05, 0.3) }}
+                        className="h-full"
                       >
                         <div
-                          className="group relative cursor-pointer overflow-hidden rounded-md bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all duration-300"
+                          className="group relative cursor-pointer overflow-hidden rounded-sm bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all duration-300 h-full flex flex-col"
                           onClick={() => setSelectedAlbumSlug(album.slug)}
                         >
                           {/* Cover Image */}
@@ -196,7 +195,7 @@ export default function Gallery() {
                           </div>
 
                           {/* Content area — clean white */}
-                          <div className="px-4 py-3.5">
+                          <div className="px-4 py-3.5 flex flex-col flex-1">
                             <h3 className="text-base font-semibold text-slate-900 group-hover:text-[#3C5DAA] transition-colors duration-300 line-clamp-1">
                               {album.title}
                             </h3>
@@ -205,7 +204,7 @@ export default function Gallery() {
                                 {album.description}
                               </p>
                             )}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                            <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100">
                               <span className="text-xs text-slate-400 font-medium">
                                 Xem chi tiết
                               </span>
@@ -217,7 +216,6 @@ export default function Gallery() {
                         </div>
                       </motion.div>
                     ))}
-                  </AnimatePresence>
                 </div>
               )}
             </>
@@ -269,7 +267,7 @@ export default function Gallery() {
                   {Array.from({ length: 9 }).map((_, i) => (
                     <Skeleton
                       key={i}
-                      className="w-full rounded-lg"
+                      className="w-full rounded-sm"
                       style={{ height: `${200 + (i % 3) * 80}px` }}
                     />
                   ))}

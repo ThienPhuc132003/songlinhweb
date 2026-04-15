@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </Button>
             </div>
             {import.meta.env.DEV && this.state.error && (
-              <pre className="bg-muted mt-6 max-w-lg overflow-auto rounded-lg p-4 text-left text-xs">
+              <pre className="bg-muted mt-6 max-w-lg overflow-auto rounded-sm p-4 text-left text-xs">
                 {this.state.error.message}
               </pre>
             )}

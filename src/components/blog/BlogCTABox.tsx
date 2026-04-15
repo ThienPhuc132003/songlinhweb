@@ -10,7 +10,7 @@ export function CTABox() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="mt-14 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border border-primary/20 p-8 md:p-10"
+      className="mt-14 relative overflow-hidden rounded-sm bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border border-primary/20 p-8 md:p-10"
     >
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
@@ -19,7 +19,7 @@ export function CTABox() {
       <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-sm bg-primary/10 flex items-center justify-center">
               <MessageSquare className="h-5 w-5 text-primary" />
             </div>
             <h3 className="text-lg font-bold text-foreground">

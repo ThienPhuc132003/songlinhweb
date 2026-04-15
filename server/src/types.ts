@@ -40,9 +40,12 @@ export interface SolutionRow {
   slug: string;
   title: string;
   description: string;
+  excerpt: string;
   content_md: string | null;
   icon: string;
   hero_image_url: string | null;
+  features: string;       // JSON array: [{icon, title, description}]
+  applications: string;   // JSON array: [string]
   sort_order: number;
   is_active: number;
   meta_title: string | null;

@@ -42,7 +42,7 @@ export function ImagePlaceholder({
 
       {/* Company monogram */}
       <div className="relative flex flex-col items-center gap-1.5">
-        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/10 bg-white/60 shadow-sm backdrop-blur-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-sm border border-primary/10 bg-white/60 shadow-sm backdrop-blur-sm">
           <span className="text-lg font-bold tracking-tight text-primary/30">
             SL
           </span>

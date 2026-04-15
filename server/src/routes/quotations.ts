@@ -110,6 +110,40 @@ quotations.post("/", rateLimit(5, 3600), async (c) => {
 
   await c.env.DB.batch(stmts);
 
+  // ── 2b. Enrich items with model_number + brand_name from products table ──
+  // This avoids threading these fields through the entire cart→frontend→API pipeline
+  const enrichedItems = body.items.map((item) => ({
+    ...item,
+    model_number: null as string | null,
+    brand_name: null as string | null,
+  }));
+
+  if (validProductIds.size > 0) {
+    try {
+      const pIds = [...validProductIds];
+      const ph = pIds.map(() => "?").join(",");
+      const { results } = await c.env.DB.prepare(
+        `SELECT p.id, p.model_number, b.name as brand_name
+         FROM products p
+         LEFT JOIN brands b ON p.brand_id = b.id
+         WHERE p.id IN (${ph})`,
+      )
+        .bind(...pIds)
+        .all<{ id: number; model_number: string | null; brand_name: string | null }>();
+
+      const productMeta = new Map(results.map((r) => [r.id, r]));
+      for (const item of enrichedItems) {
+        if (item.product_id && productMeta.has(item.product_id)) {
+          const meta = productMeta.get(item.product_id)!;
+          item.model_number = meta.model_number;
+          item.brand_name = meta.brand_name;
+        }
+      }
+    } catch {
+      // Don't fail submission if enrichment fails
+    }
+  }
+
   // ── 3. Generate XLSX & upload to R2 (best-effort) ──
   let excelUrl: string | null = null;
   let xlsxBuffer: ArrayBuffer | undefined;
@@ -124,7 +158,7 @@ quotations.post("/", rateLimit(5, 3600), async (c) => {
       phone: body.phone.trim(),
       project_name: body.project_name?.trim() ?? null,
       note: body.note?.trim() ?? null,
-      items: body.items,
+      items: enrichedItems,
       created_at: createdAt,
     };
 
@@ -164,7 +198,7 @@ quotations.post("/", rateLimit(5, 3600), async (c) => {
       phone: body.phone.trim(),
       project_name: body.project_name?.trim() ?? null,
       note: body.note?.trim() ?? null,
-      items: body.items,
+      items: enrichedItems,
       created_at: createdAt,
     };
 

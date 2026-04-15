@@ -197,43 +197,43 @@ export const COMPANY_STATS = [
   { value: 100, suffix: "%", label: "Khách hàng hài lòng" },
 ] as const;
 
-/** Featured projects — static placeholder, will come from API */
+/** Featured projects — static fallback, real data comes from API (is_featured=1) */
 export const FEATURED_PROJECTS = [
   {
-    slug: "saigon-centre",
-    title: "Takashimaya Saigon Centre",
-    category: "Thương mại",
-    image: "/images/projects/saigon-centre.jpg",
+    slug: "toa-nha-lotus-tower",
+    title: "Tòa nhà Lotus Tower",
+    category: "Tòa nhà văn phòng",
+    image: "/images/projects/toa-nha-lotus-tower.jpg",
   },
   {
-    slug: "toa-nha-republic-plaza",
-    title: "Tòa nhà Republic Plaza",
-    category: "Văn phòng",
-    image: "/images/projects/republic-plaza.jpg",
+    slug: "trung-tam-du-lieu-hdbank",
+    title: "Tòa nhà VP – TT Dữ liệu HDBank",
+    category: "Trung tâm dữ liệu",
+    image: "/images/projects/trung-tam-du-lieu-hdbank.jpg",
   },
   {
-    slug: "khach-san-new-world",
-    title: "Khách sạn New World",
-    category: "Khách sạn",
-    image: "/images/projects/new-world.jpg",
+    slug: "toa-nha-viettel-complex",
+    title: "Tòa nhà Viettel Complex",
+    category: "Tòa nhà văn phòng",
+    image: "/images/projects/toa-nha-viettel-complex.jpg",
   },
   {
-    slug: "benh-vien-trieu-an",
-    title: "Bệnh viện Triều An",
-    category: "Y tế",
-    image: "/images/projects/benh-vien-trieu-an.jpg",
+    slug: "truong-wellspring-sai-gon",
+    title: "Trường Wellspring Sài Gòn",
+    category: "Giáo dục",
+    image: "/images/projects/truong-wellspring-sai-gon.jpg",
   },
   {
-    slug: "chung-cu-vinhomes",
-    title: "Chung cư Vinhomes",
-    category: "Dân cư",
-    image: "/images/projects/vinhomes.jpg",
+    slug: "van-phong-trung-uong-dang",
+    title: "Văn phòng Trung Ương Đảng",
+    category: "Cơ quan nhà nước",
+    image: "/images/projects/van-phong-trung-uong-dang.jpg",
   },
   {
-    slug: "nha-may-vsip",
-    title: "Nhà máy VSIP",
-    category: "Công nghiệp",
-    image: "/images/projects/vsip.jpg",
+    slug: "hoa-phat-dung-quat-2",
+    title: "Gang thép Hòa Phát Dung Quất 2",
+    category: "Nhà máy",
+    image: "/images/projects/hoa-phat-dung-quat-2.jpg",
   },
 ] as const;
 

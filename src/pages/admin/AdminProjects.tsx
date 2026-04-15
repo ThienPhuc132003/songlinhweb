@@ -231,7 +231,7 @@ export default function AdminProjects() {
               id: r.id, data: { is_featured: r.is_featured ? 0 : 1 },
             });
           }}
-          className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors ${
+          className={`inline-flex items-center justify-center h-8 w-8 rounded-sm transition-colors ${
             r.is_featured
               ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
               : "text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -263,7 +263,7 @@ export default function AdminProjects() {
   const filterBar = (
     <div className="flex items-center gap-2">
       <select
-        className="border-input bg-background rounded-md border px-2 py-1.5 text-xs"
+        className="border-input bg-background rounded-sm border px-2 py-1.5 text-xs"
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
       >
@@ -273,7 +273,7 @@ export default function AdminProjects() {
       </select>
       {categories.length > 0 && (
         <select
-          className="border-input bg-background rounded-md border px-2 py-1.5 text-xs"
+          className="border-input bg-background rounded-sm border px-2 py-1.5 text-xs"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
@@ -300,19 +300,19 @@ export default function AdminProjects() {
       >
         <button
           onClick={() => bulkMutation.mutate({ action: "activate" })}
-          className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+          className="rounded-sm bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
         >
           Công khai
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "deactivate" })}
-          className="rounded-md bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+          className="rounded-sm bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
         >
           Chờ duyệt
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "feature" })}
-          className="rounded-md bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-200"
+          className="rounded-sm bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-200"
         >
           ⭐ Featured
         </button>
@@ -322,7 +322,7 @@ export default function AdminProjects() {
               bulkMutation.mutate({ action: "delete" });
             }
           }}
-          className="rounded-md bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
+          className="rounded-sm bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
         >
           Xóa
         </button>

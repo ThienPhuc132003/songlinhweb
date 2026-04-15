@@ -204,7 +204,7 @@ export function GalleryLightbox({
               <button
                 onClick={() => handleZoom(-0.5)}
                 disabled={zoom <= 1}
-                className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 transition-colors"
+                className="rounded-sm p-2 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 transition-colors"
                 title="Thu nhỏ (−)"
               >
                 <ZoomOut className="h-4 w-4" />
@@ -215,7 +215,7 @@ export function GalleryLightbox({
               <button
                 onClick={() => handleZoom(0.5)}
                 disabled={zoom >= 4}
-                className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 transition-colors"
+                className="rounded-sm p-2 text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-30 transition-colors"
                 title="Phóng to (+)"
               >
                 <ZoomIn className="h-4 w-4" />
@@ -223,7 +223,7 @@ export function GalleryLightbox({
               <div className="w-px h-4 bg-white/10 mx-1" />
               <button
                 onClick={toggleFullscreen}
-                className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+                className="rounded-sm p-2 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
                 title="Toàn màn hình (F)"
               >
                 {isFullscreen ? (
@@ -234,7 +234,7 @@ export function GalleryLightbox({
               </button>
               <button
                 onClick={onClose}
-                className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white transition-colors ml-1"
+                className="rounded-sm p-2 text-white/70 hover:bg-white/10 hover:text-white transition-colors ml-1"
                 title="Đóng (ESC)"
               >
                 <X className="h-5 w-5" />
@@ -331,7 +331,7 @@ export function GalleryLightbox({
                       setZoom(1);
                       setPan({ x: 0, y: 0 });
                     }}
-                    className={`shrink-0 rounded-md overflow-hidden transition-all duration-200 ${
+                    className={`shrink-0 rounded-sm overflow-hidden transition-all duration-200 ${
                       i === index
                         ? "ring-2 ring-primary w-12 h-9 opacity-100"
                         : "ring-1 ring-white/10 w-10 h-7 opacity-50 hover:opacity-80"

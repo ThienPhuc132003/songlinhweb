@@ -47,7 +47,7 @@ export function EmptyState({
       {/* Illustration */}
       <div className="relative mb-5">
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 blur-2xl scale-150" />
-        <div className="relative flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/60 shadow-sm">
+        <div className="relative flex items-center justify-center h-20 w-20 rounded-sm bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/60 shadow-sm">
           {icon || (
             variant === "search" ? (
               <SearchX className="h-8 w-8 text-slate-400 dark:text-slate-500" />
@@ -257,7 +257,7 @@ export function DataTable<T extends { id: number }>({
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
           <span>{totalItems} mục</span>
           <select
-            className="border-input bg-background rounded-md border px-2 py-1 text-xs"
+            className="border-input bg-background rounded-sm border px-2 py-1 text-xs"
             value={pageSizeState}
             onChange={(e) => {
               setPageSizeState(Number(e.target.value));
@@ -274,7 +274,7 @@ export function DataTable<T extends { id: number }>({
       </div>
 
       {/* ─── Table ─── */}
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-sm border">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -460,7 +460,7 @@ interface BulkActionBarProps {
 export function BulkActionBar({ selectedCount, onClear, children }: BulkActionBarProps) {
   if (selectedCount === 0) return null;
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/10 p-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="flex items-center gap-3 rounded-sm border border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/10 p-3 animate-in slide-in-from-top-2 duration-200">
       <span className="text-sm font-medium text-primary dark:text-primary">
         {selectedCount} đã chọn
       </span>
@@ -700,7 +700,7 @@ export function StatusBadge({ active }: { active: boolean | number }) {
   const isActive = active === true || active === 1;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+      className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${
         isActive ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
       }`}
     >

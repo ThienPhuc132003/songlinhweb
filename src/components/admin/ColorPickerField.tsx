@@ -53,7 +53,7 @@ export function ColorPickerField({ value, onChange }: ColorPickerFieldProps) {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors hover:bg-accent"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border transition-colors hover:bg-accent"
           style={
             isValidHex
               ? { backgroundColor: displayValue, borderColor: displayValue }
@@ -69,7 +69,7 @@ export function ColorPickerField({ value, onChange }: ColorPickerFieldProps) {
       </div>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 rounded-lg border bg-popover p-3 shadow-lg">
+        <div className="absolute right-0 top-full z-50 mt-1 rounded-sm border bg-popover p-3 shadow-lg">
           <div className="grid grid-cols-5 gap-1.5">
             {PRESET_COLORS.map((c) => (
               <button
@@ -79,7 +79,7 @@ export function ColorPickerField({ value, onChange }: ColorPickerFieldProps) {
                   onChange(c);
                   setOpen(false);
                 }}
-                className={`h-7 w-7 rounded-md border-2 transition-transform hover:scale-110 ${
+                className={`h-7 w-7 rounded-sm border-2 transition-transform hover:scale-110 ${
                   displayValue === c
                     ? "border-foreground ring-1 ring-foreground/20"
                     : "border-transparent"
@@ -95,7 +95,7 @@ export function ColorPickerField({ value, onChange }: ColorPickerFieldProps) {
               onChange(null);
               setOpen(false);
             }}
-            className="mt-2 w-full rounded-md border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent"
+            className="mt-2 w-full rounded-sm border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent"
           >
             Xóa màu (mặc định)
           </button>

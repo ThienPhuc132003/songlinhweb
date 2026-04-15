@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { motion } from "framer-motion";
-import { SOLUTIONS } from "@/data/solutions";
+import { useSolutions } from "@/hooks/useApi";
+import { SOLUTION_IMAGES } from "@/lib/solutionImages";
 import { cn } from "@/lib/utils";
 import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { fadeUp } from "@/lib/animations";
+import type { Solution } from "@/types";
 
 interface SolutionCardsProps {
   limit?: number;
   className?: string;
 }
 
-
 export function SolutionCards({ limit, className }: SolutionCardsProps) {
-  const solutions = limit ? SOLUTIONS.slice(0, limit) : SOLUTIONS;
+  const { data, isLoading } = useSolutions();
+  const allSolutions = data?.items ?? [];
+  const solutions = limit ? allSolutions.slice(0, limit) : allSolutions;
 
   return (
     <section className={cn("py-24 md:py-32", className)}>
@@ -32,31 +35,34 @@ export function SolutionCards({ limit, className }: SolutionCardsProps) {
           </p>
         </motion.div>
 
-        <div className="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-          {solutions.map((solution, i) => (
-            <motion.div
-              key={solution.slug}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.5,
-                delay: i * 0.06,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
-            >
-              <SolutionCard
-                slug={solution.slug}
-                title={solution.title}
-                icon={solution.icon}
-                description={solution.description}
-                image={solution.heroImage}
-              />
-            </motion.div>
-          ))}
-        </div>
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-[#3C5DAA]/50" />
+          </div>
+        )}
 
-        {limit && limit < SOLUTIONS.length && (
+        {!isLoading && solutions.length > 0 && (
+          <div className="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            {solutions.map((solution, i) => (
+              <motion.div
+                key={solution.slug}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.5,
+                  delay: i * 0.06,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
+              >
+                <SolutionCard solution={solution} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {limit && limit < allSolutions.length && (
           <motion.div {...fadeUp(0.2)} className="mt-10 text-center">
             <Link
               to="/giai-phap"
@@ -72,36 +78,26 @@ export function SolutionCards({ limit, className }: SolutionCardsProps) {
   );
 }
 
-function SolutionCard({
-  slug,
-  title,
-  icon,
-  description,
-  image,
-}: {
-  slug: string;
-  title: string;
-  icon: string;
-  description?: string;
-  image?: string;
-}) {
+function SolutionCard({ solution }: { solution: Solution }) {
   const [imgError, setImgError] = useState(false);
+  const imageUrl = solution.hero_image_url || SOLUTION_IMAGES[solution.slug];
+  const displayText = solution.excerpt || solution.description;
 
   return (
     <Link
-      to={`/giai-phap/${slug}`}
-      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-lg dark:border-border dark:bg-card"
+      to={`/giai-phap/${solution.slug}`}
+      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-md dark:border-border dark:bg-card"
     >
       {/* Brand accent line — top, visible on hover */}
       <div className="absolute inset-x-0 top-0 z-10 h-0.5 bg-[#3C5DAA] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* Image — fixed aspect, zoom on hover */}
       <div className="relative shrink-0 overflow-hidden">
-        {image && !imgError ? (
+        {imageUrl && !imgError ? (
           <>
             <img
-              src={image}
-              alt={title}
+              src={imageUrl}
+              alt={solution.title}
               className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               onError={() => setImgError(true)}
@@ -112,7 +108,7 @@ function SolutionCard({
           <ImagePlaceholder
             className="aspect-video"
             variant="solution"
-            title={title}
+            title={solution.title}
           />
         )}
       </div>
@@ -120,14 +116,14 @@ function SolutionCard({
       {/* Info */}
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center gap-2">
-          <SolutionIconBadge name={icon} size="sm" />
+          <SolutionIconBadge name={solution.icon} size="sm" />
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight transition-colors group-hover:text-[#3C5DAA]">
-            {title}
+            {solution.title}
           </h3>
         </div>
-        {description && (
+        {displayText && (
           <p className="line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-muted-foreground">
-            {description}
+            {displayText}
           </p>
         )}
         {/* CTA — pinned to bottom */}

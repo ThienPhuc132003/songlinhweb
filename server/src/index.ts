@@ -6,6 +6,7 @@ import products from "./routes/products";
 import images from "./routes/images";
 import brands from "./routes/brands";
 import projects from "./routes/projects";
+import solutions from "./routes/solutions";
 import posts from "./routes/posts";
 import gallery from "./routes/gallery";
 import partners from "./routes/partners";
@@ -68,6 +69,7 @@ app.use("/api/product-features*", async (c, next) => {
 
 // Cache-Control for other public read-only routes (5 min edge, 1 min browser)
 const cachedPublicRoutes = [
+  "/api/solutions*",
   "/api/projects*",
   "/api/posts*",
   "/api/brands*",
@@ -96,6 +98,7 @@ app.get("/", (c) => {
 
 /* ───────── Public API Routes ───────── */
 
+app.route("/api/solutions", solutions);
 app.route("/api/products", products);
 app.route("/api/images", images);
 app.route("/api/brands", brands);
@@ -111,6 +114,7 @@ app.route("/api/product-features", features);
 
 /* ───────── Admin Routes ───────── */
 
+app.route("/api/admin/solutions", solutions);
 app.route("/api/admin/products", products);
 app.route("/api/admin/brands", brands);
 app.route("/api/admin/projects", projects);

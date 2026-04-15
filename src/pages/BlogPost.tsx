@@ -149,7 +149,7 @@ export default function BlogPost() {
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-4 w-20" />
                 </div>
-                <Skeleton className="aspect-video w-full rounded-2xl" />
+                <Skeleton className="aspect-video w-full rounded-sm" />
                 <div className="space-y-4 pt-4">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <Skeleton key={i} className={`h-4 ${i % 3 === 0 ? "w-5/6" : "w-full"}`} />
@@ -157,8 +157,8 @@ export default function BlogPost() {
                 </div>
               </div>
               <div className="hidden lg:block space-y-4">
-                <Skeleton className="h-64 w-full rounded-xl" />
-                <Skeleton className="h-32 w-full rounded-xl" />
+                <Skeleton className="h-64 w-full rounded-sm" />
+                <Skeleton className="h-32 w-full rounded-sm" />
               </div>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function BlogPost() {
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.25, duration: 0.5 }}
-                  className="mb-12 overflow-hidden rounded-2xl shadow-xl ring-1 ring-border/10"
+                  className="mb-12 overflow-hidden rounded-sm shadow-sm ring-1 ring-border/10"
                 >
                   <img src={thumbnail} alt={title} className="w-full object-cover" />
                 </motion.div>
@@ -345,7 +345,7 @@ export default function BlogPost() {
                       prose-ol:my-6
 
                       /* ── Visual elements ── */
-                      prose-img:rounded-2xl
+                      prose-img:rounded-sm
                       prose-img:shadow-lg
                       prose-img:mx-auto
                       prose-img:my-10
@@ -370,7 +370,7 @@ export default function BlogPost() {
 
                       /* ── Code ── */
                       prose-code:bg-muted
-                      prose-code:rounded-md
+                      prose-code:rounded-sm
                       prose-code:px-1.5
                       prose-code:py-0.5
                       prose-code:text-sm
@@ -378,8 +378,8 @@ export default function BlogPost() {
                       prose-code:before:content-none
                       prose-code:after:content-none
                       prose-pre:bg-[#1e1e2e]
-                      prose-pre:rounded-xl
-                      prose-pre:shadow-xl
+                      prose-pre:rounded-sm
+                      prose-pre:shadow-sm
                       prose-pre:my-8
 
                       /* ── Links ── */
@@ -453,7 +453,7 @@ export default function BlogPost() {
                         transition={{ delay: i * 0.1, duration: 0.4 }}
                       >
                         <Link to={`/tin-tuc/${related.slug}`} className="group block">
-                          <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-primary/30 border-b-2 border-b-transparent hover:border-b-primary">
+                          <Card className="h-full overflow-hidden hover:shadow-md transition-all duration-300 hover:border-primary/30 border-b-2 border-b-transparent hover:border-b-primary">
                             {related.thumbnail_url && (
                               <div className="aspect-video overflow-hidden bg-muted">
                                 <img
@@ -496,7 +496,7 @@ export default function BlogPost() {
                 )}
 
                 {/* Author Card */}
-                <div className="rounded-xl border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
+                <div className="rounded-sm border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
                     Chuyên gia phụ trách
                   </p>
@@ -514,7 +514,7 @@ export default function BlogPost() {
                 </div>
 
                 {/* Quick Contact CTA in sidebar */}
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+                <div className="rounded-sm border border-primary/20 bg-primary/5 p-5">
                   <p className="text-xs font-bold text-foreground mb-2">
                     Cần tư vấn kỹ thuật?
                   </p>
@@ -530,7 +530,7 @@ export default function BlogPost() {
                 </div>
 
                 {/* Category list */}
-                <div className="rounded-xl border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
+                <div className="rounded-sm border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
                     Chuyên mục
                   </p>
@@ -539,7 +539,7 @@ export default function BlogPost() {
                       <Link
                         key={key}
                         to={`/tin-tuc?category=${key}`}
-                        className={`block text-sm py-1.5 px-3 rounded-lg transition-colors ${
+                        className={`block text-sm py-1.5 px-3 rounded-sm transition-colors ${
                           category === key
                             ? "text-primary font-semibold bg-primary/5"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

@@ -5,9 +5,12 @@ export interface Solution {
   slug: string;
   title: string;
   description: string;
+  excerpt: string;
   content_md: string | null;
   icon: string;
   hero_image_url: string | null;
+  features: string;        // JSON array string: [{icon, title, description}]
+  applications: string;    // JSON array string: [string]
   sort_order: number;
   is_active: number;
   meta_title: string | null;
@@ -15,6 +18,13 @@ export interface Solution {
   created_at: string;
   updated_at: string;
   images?: EntityImage[];
+}
+
+/** Parsed solution feature — from features JSON column */
+export interface SolutionFeature {
+  icon: string;
+  title: string;
+  description: string;
 }
 
 export interface EntityImage {

@@ -55,7 +55,7 @@ export function ProductSearchBar({ className }: ProductSearchBarProps) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Tìm kiếm theo tên, SKU, thương hiệu..."
-        className="h-10 w-full rounded-lg border bg-background pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/20"
+        className="h-10 w-full rounded-sm border bg-background pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/20"
       />
       {query && (
         <button

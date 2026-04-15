@@ -74,7 +74,7 @@ export function PdfUploader({
     <div className="space-y-2">
       {/* Current file display */}
       {value && (
-        <div className="flex items-center gap-2 rounded-lg border bg-card p-2.5">
+        <div className="flex items-center gap-2 rounded-sm border bg-card p-2.5">
           <FileText className="h-5 w-5 shrink-0 text-red-500" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium truncate">{fileName}</p>
@@ -102,7 +102,7 @@ export function PdfUploader({
       {/* Upload area */}
       {!value && !manualMode && (
         <div
-          className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors hover:border-primary/50 cursor-pointer"
+          className="flex flex-col items-center gap-2 rounded-sm border-2 border-dashed p-4 transition-colors hover:border-primary/50 cursor-pointer"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => inputRef.current?.click()}

@@ -95,7 +95,7 @@ function NavItem({
       end={end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+        `flex items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
           isActive
             ? "bg-primary/10 text-primary"
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -138,7 +138,7 @@ function CollapsibleGroup({
     <div>
       <button
         onClick={onToggle}
-        className={`flex w-full items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+        className={`flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
           isActive
             ? "bg-primary/5 text-primary"
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -171,7 +171,7 @@ function CollapsibleGroup({
               to={to}
               onClick={onItemClick}
               className={({ isActive: itemActive }) =>
-                `flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                `flex items-center gap-2.5 rounded-sm px-3 py-1.5 text-[13px] font-medium transition-colors ${
                   itemActive
                     ? "bg-primary/10 text-primary"
                     : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
@@ -279,7 +279,7 @@ export default function AdminLayout() {
         {/* Header */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-primary/10">
               <LayoutDashboard className="h-4 w-4 text-primary" />
             </div>
             <span className="text-primary text-base font-bold tracking-tight">Song Linh</span>
@@ -365,7 +365,7 @@ export default function AdminLayout() {
         <div className="shrink-0 border-t border-slate-200 p-3">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600"
+            className="flex w-full items-center gap-3 rounded-sm px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             Đăng xuất

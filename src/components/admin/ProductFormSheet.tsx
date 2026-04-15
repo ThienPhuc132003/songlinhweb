@@ -228,7 +228,7 @@ export function ProductFormSheet({
                     <TabsTrigger value="technical" className="gap-1.5 text-xs">
                       <Wrench className="h-3.5 w-3.5" /> Kỹ thuật
                       {(filledSpecCount > 0 || featureCount > 0) && (
-                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                        <span className="ml-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                           {filledSpecCount + featureCount}
                         </span>
                       )}
@@ -236,7 +236,7 @@ export function ProductFormSheet({
                     <TabsTrigger value="assets" className="gap-1.5 text-xs">
                       <ImageIcon className="h-3.5 w-3.5" /> Tài sản
                       {galleryCount > 0 && (
-                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                        <span className="ml-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                           {galleryCount}
                         </span>
                       )}
@@ -244,7 +244,7 @@ export function ProductFormSheet({
                     <TabsTrigger value="seo" className="gap-1.5 text-xs">
                       <Search className="h-3.5 w-3.5" /> SEO
                       {seoFilled > 0 && (
-                        <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                        <span className="ml-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                           {seoFilled}/2
                         </span>
                       )}
@@ -283,7 +283,7 @@ export function ProductFormSheet({
                     <F label="Thương hiệu">
                       <div className="space-y-1.5">
                         <select
-                          className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+                          className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
                           value={form.brand_id ?? ""}
                           onChange={(e) => {
                             const brandId = Number(e.target.value) || null;
@@ -329,7 +329,7 @@ export function ProductFormSheet({
                     </F>
                     <F label="Danh mục" required error={validationErrors.category_id}>
                       <select
-                        className={`border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm ${validationErrors.category_id ? "border-destructive" : ""}`}
+                        className={`border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm ${validationErrors.category_id ? "border-destructive" : ""}`}
                         value={form.category_id ?? ""}
                         onChange={(e) =>
                           setForm((f) => ({
@@ -373,7 +373,7 @@ export function ProductFormSheet({
                   </F>
 
                   {/* ─── B2B Fields: Inventory + Warranty ─── */}
-                  <div className="rounded-lg border p-4 space-y-4">
+                  <div className="rounded-sm border p-4 space-y-4">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
                       Thông tin B2B
                     </p>
@@ -383,7 +383,7 @@ export function ProductFormSheet({
                           {INVENTORY_OPTIONS.map((opt) => (
                             <label
                               key={opt.value}
-                              className={`flex-1 cursor-pointer rounded-md border px-2.5 py-2 text-center text-[11px] font-medium transition-colors ${
+                              className={`flex-1 cursor-pointer rounded-sm border px-2.5 py-2 text-center text-[11px] font-medium transition-colors ${
                                 form.inventory_status === opt.value
                                   ? opt.color
                                   : "border-input text-muted-foreground hover:border-primary/30"
@@ -424,7 +424,7 @@ export function ProductFormSheet({
                 {/* ─── TAB 2: Technical (Specs + Features merged) ─── */}
                 <TabsContent value="technical" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
                   {/* Specs Editor */}
-                  <div className="rounded-lg border p-4 space-y-3">
+                  <div className="rounded-sm border p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Thông số kỹ thuật
@@ -493,7 +493,7 @@ export function ProductFormSheet({
                   </div>
 
                   {/* Features / Tags */}
-                  <div className="rounded-lg border p-4 space-y-3">
+                  <div className="rounded-sm border p-4 space-y-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Tính năng & Tags
                     </p>
@@ -544,7 +544,7 @@ export function ProductFormSheet({
 
                 {/* ─── TAB 4: SEO ─── */}
                 <TabsContent value="seo" className="flex-1 overflow-y-auto p-5 mt-0 space-y-6">
-                  <div className="rounded-lg border p-4 space-y-4">
+                  <div className="rounded-sm border p-4 space-y-4">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b pb-1.5">
                       SEO & Meta Tags
                     </p>
@@ -603,7 +603,7 @@ export function ProductFormSheet({
                   </div>
 
                   {/* Google Preview */}
-                  <div className="rounded-lg border p-4 bg-background space-y-1.5">
+                  <div className="rounded-sm border p-4 bg-background space-y-1.5">
                     <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                       Google Search Preview
                     </p>
@@ -641,7 +641,7 @@ export function ProductFormSheet({
                   </F>
                   <F label="Trạng thái">
                     <select
-                      className="border-input bg-background flex h-8 w-full rounded-md border px-2 py-1 text-xs"
+                      className="border-input bg-background flex h-8 w-full rounded-sm border px-2 py-1 text-xs"
                       value={form.is_active ?? 1}
                       onChange={(e) =>
                         setForm((f) => ({
@@ -659,7 +659,7 @@ export function ProductFormSheet({
 
               {/* Quick Summary */}
               <SidebarSection title="Tổng quan" icon={Globe}>
-                <div className="rounded-lg border bg-background p-3 space-y-2">
+                <div className="rounded-sm border bg-background p-3 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Danh mục</span>
                     <span className="font-medium">

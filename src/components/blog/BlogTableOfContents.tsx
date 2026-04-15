@@ -39,10 +39,10 @@ export function TableOfContents({
   if (items.length === 0) return null;
 
   return (
-    <div className="rounded-xl border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
+    <div className="rounded-sm border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
       <nav>
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
-          <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-sm bg-primary/10 flex items-center justify-center">
             <List className="h-3.5 w-3.5 text-primary" />
           </div>
           <span className="text-xs font-bold uppercase tracking-wider text-foreground/70">
@@ -61,7 +61,7 @@ export function TableOfContents({
                   block: "start",
                 });
               }}
-              className={`block py-2 px-3 text-[13px] leading-snug transition-all duration-200 rounded-lg ${
+              className={`block py-2 px-3 text-[13px] leading-snug transition-all duration-200 rounded-sm ${
                 item.level === 3 ? "ml-4" : ""
               } ${
                 activeId === item.id

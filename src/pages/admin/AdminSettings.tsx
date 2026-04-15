@@ -90,7 +90,7 @@ const TAB3_FIELDS: FieldDef[] = [
 /* ═══════════════════════════════════════════════════
 /* ─── Section Helper (outside component to preserve identity across renders) ─── */
 const SectionCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50">
+  <div className="rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50">
     <div className="border-b border-slate-100 dark:border-slate-800 px-5 py-3">
       <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{title}</h3>
     </div>
@@ -219,7 +219,7 @@ export default function AdminSettings() {
 
     if (field.type === "switch") {
       return (
-        <div key={field.key} className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+        <div key={field.key} className="flex items-center justify-between rounded-sm border border-slate-200 dark:border-slate-800 p-4">
           <div className="space-y-0.5">
             <Label className="text-sm font-medium flex items-center gap-2">
               {field.icon}
@@ -344,7 +344,7 @@ export default function AdminSettings() {
 
       {/* Dirty indicator — always rendered, visibility toggled via CSS to prevent focus loss */}
       <div
-        className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 transition-all duration-200 ${
+        className={`flex items-center gap-2 rounded-sm border px-4 py-2.5 transition-all duration-200 ${
           dirty
             ? "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 opacity-100 h-auto"
             : "border-transparent bg-transparent opacity-0 h-0 overflow-hidden py-0"
@@ -438,7 +438,7 @@ export default function AdminSettings() {
               {TAB2_SEO.map(renderField)}
             </div>
             {/* Live SEO Preview */}
-            <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/50">
+            <div className="mt-4 rounded-sm border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/50">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Xem trước kết quả Google</p>
               <div className="space-y-0.5">
                 <p className="text-lg text-primary font-medium truncate">
@@ -471,7 +471,7 @@ export default function AdminSettings() {
             <div className="space-y-4">
               {TAB2_TRACKING.map(renderField)}
             </div>
-            <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/30 p-3">
+            <div className="mt-3 flex items-start gap-2.5 rounded-sm bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/30 p-3">
               <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <p className="text-xs text-primary dark:text-primary">
                 Các mã tracking được mã hóa khi hiển thị. Nhấn biểu tượng 👁 để xem giá trị thực.
@@ -492,7 +492,7 @@ export default function AdminSettings() {
         {/* ════ Tab 4: System ════ */}
         <TabsContent value="system" className="mt-6 space-y-6">
           <SectionCard title="Chế độ hoạt động">
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between rounded-sm border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/50">
               <div className="space-y-1">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Settings className="h-4 w-4 text-amber-500" />
@@ -508,7 +508,7 @@ export default function AdminSettings() {
               />
             </div>
             {formData.maintenance_mode === "true" && (
-              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30 px-4 py-3">
+              <div className="flex items-center gap-2 rounded-sm border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30 px-4 py-3">
                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-sm font-medium text-red-700 dark:text-red-400">
                   ⚠️ Website đang ở chế độ bảo trì — khách truy cập sẽ không thấy nội dung.
@@ -537,7 +537,7 @@ export default function AdminSettings() {
           </SectionCard>
 
           <SectionCard title="Cache & Performance">
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between rounded-sm border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/50">
               <div className="space-y-1">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Trash2 className="h-4 w-4 text-red-500" />

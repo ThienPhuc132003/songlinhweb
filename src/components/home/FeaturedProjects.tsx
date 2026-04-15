@@ -25,7 +25,7 @@ function ProjectCard({
   return (
     <Link
       to={`/du-an/${slug}`}
-      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-lg dark:border-border dark:bg-card"
+      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-md dark:border-border dark:bg-card"
     >
       {/* Image — consistent aspect-video */}
       <div className="relative shrink-0 overflow-hidden">

@@ -75,7 +75,7 @@ export const FeatureBadge = memo(function FeatureBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full font-medium transition-colors",
+        "inline-flex items-center rounded-sm font-medium transition-colors",
         sizeClasses[size],
         !hasColor && "bg-primary/10 text-primary",
         className,

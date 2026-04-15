@@ -53,7 +53,7 @@ export function ReferenceSection({ references }: { references: ReferenceItem[] }
     >
       {/* Section Header */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+        <div className="h-10 w-10 rounded-sm bg-primary/10 flex items-center justify-center">
           <BookOpen className="h-5 w-5 text-primary" />
         </div>
         <div>
@@ -75,14 +75,14 @@ export function ReferenceSection({ references }: { references: ReferenceItem[] }
             <div
               key={idx}
               id={`ref-${idx + 1}`}
-              className={`flex items-start gap-4 p-4 rounded-xl border ${config.border} ${config.bg} transition-all duration-200 hover:shadow-sm scroll-mt-24`}
+              className={`flex items-start gap-4 p-4 rounded-sm border ${config.border} ${config.bg} transition-all duration-200 hover:shadow-sm scroll-mt-24`}
             >
               {/* Number + Icon */}
               <div className="flex items-center gap-2.5 shrink-0 pt-0.5">
                 <span className="text-xs font-bold text-muted-foreground w-6 text-center">
                   [{idx + 1}]
                 </span>
-                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${config.bg} border ${config.border}`}>
+                <div className={`h-8 w-8 rounded-sm flex items-center justify-center ${config.bg} border ${config.border}`}>
                   <IconComp className={`h-4 w-4 ${config.color}`} />
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function ReferenceSection({ references }: { references: ReferenceItem[] }
                       href={ref.url}
                       target="_blank"
                       rel="nofollow noopener noreferrer"
-                      className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors rounded-lg px-3 py-1.5 bg-background border border-border hover:border-primary/30"
+                      className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors rounded-sm px-3 py-1.5 bg-background border border-border hover:border-primary/30"
                     >
                       <ExternalLink className="h-3 w-3" />
                       <span className="hidden sm:inline">Xem nguồn</span>

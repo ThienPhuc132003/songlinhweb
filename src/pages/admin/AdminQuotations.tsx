@@ -39,7 +39,7 @@ function StatusBadge({ status }: { status: QuoteStatus }) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.new;
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${config.bg} ${config.color}`}
+      className={`inline-flex items-center rounded-sm border px-2.5 py-0.5 text-xs font-semibold ${config.bg} ${config.color}`}
     >
       {config.label}
     </span>
@@ -188,7 +188,7 @@ export default function AdminQuotations() {
               setFilterStatus(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="">Tất cả trạng thái</option>
             {ALL_STATUSES.map((s) => (
@@ -201,7 +201,7 @@ export default function AdminQuotations() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -319,7 +319,7 @@ function QuoteRow({
           </span>
         </td>
         <td className="px-4 py-3 text-center">
-          <span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-bold text-slate-700">
+          <span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded-sm bg-slate-100 px-2 text-xs font-bold text-slate-700">
             {quote.item_count ?? "?"}
           </span>
         </td>
@@ -416,7 +416,7 @@ function QuoteRow({
                     </p>
                   </div>
                   {detail.note && (
-                    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                    <div className="mt-2 rounded-sm border border-amber-200 bg-amber-50 p-3">
                       <p className="text-xs font-semibold text-amber-700">📝 Ghi chú</p>
                       <p className="mt-1 text-sm text-amber-800">{detail.note}</p>
                     </div>
@@ -430,7 +430,7 @@ function QuoteRow({
                     Sản phẩm ({detail.items?.length ?? 0})
                   </h4>
                   {detail.items && detail.items.length > 0 ? (
-                    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <div className="overflow-hidden rounded-sm border border-slate-200 bg-white">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-slate-50">
@@ -533,7 +533,7 @@ function QuoteRow({
                             key={s}
                             onClick={() => onStatusChange(detail.id, s)}
                             disabled={detail.status === s}
-                            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                            className={`rounded-sm border px-3 py-1 text-xs font-medium transition-colors ${
                               detail.status === s
                                 ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} cursor-default`
                                 : "border-slate-200 bg-white text-slate-500 hover:bg-slate-100"

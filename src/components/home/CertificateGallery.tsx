@@ -66,7 +66,7 @@ function CertLightbox({
         <img
           src={cert.src}
           alt={cert.title}
-          className="max-h-[80vh] rounded-sm object-contain shadow-2xl"
+          className="max-h-[80vh] rounded-sm object-contain shadow-sm"
         />
 
         {/* Caption */}
@@ -151,9 +151,6 @@ export function CertificateGallery({ className }: { className?: string }) {
             transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
             className="mb-16 text-center"
           >
-            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-              Uy tín được chứng nhận
-            </p>
             <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
               Chứng nhận &{" "}
               <span className="font-semibold">Giải thưởng</span>
@@ -178,7 +175,7 @@ export function CertificateGallery({ className }: { className?: string }) {
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
                 onClick={() => setLightbox(i)}
-                className="group relative overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/40 hover:shadow-xl dark:border-border dark:bg-card"
+                className="group relative overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/40 hover:shadow-md dark:border-border dark:bg-card"
               >
                 <img
                   src={cert.src}

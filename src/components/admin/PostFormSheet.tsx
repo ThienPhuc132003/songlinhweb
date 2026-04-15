@@ -242,7 +242,7 @@ export function PostFormSheet({
   loading,
 }: PostFormSheetProps) {
   const selectClass =
-    "border-input bg-background flex h-9 w-full rounded-md border px-2.5 py-1.5 text-xs";
+    "border-input bg-background flex h-9 w-full rounded-sm border px-2.5 py-1.5 text-xs";
 
   // Live preview of markdown content
   const previewHtml = useMarkdown(form.content_md ?? null);
@@ -461,10 +461,10 @@ export function PostFormSheet({
                     prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2
                     prose-p:leading-[1.75] prose-p:mb-4
                     prose-li:leading-[1.7]
-                    prose-img:rounded-xl prose-img:shadow-md prose-img:mx-auto
+                    prose-img:rounded-sm prose-img:shadow-md prose-img:mx-auto
                     prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:rounded-r-lg prose-blockquote:py-2 prose-blockquote:px-4
                     prose-code:bg-muted prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm
-                    prose-pre:bg-[#1e1e2e] prose-pre:rounded-xl
+                    prose-pre:bg-[#1e1e2e] prose-pre:rounded-sm
                     prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
                     <h1>{form.title || "Tiêu đề tin tức"}</h1>
                     {form.excerpt && (
@@ -543,7 +543,7 @@ export function PostFormSheet({
                           is_featured: f.is_featured ? 0 : 1,
                         }))
                       }
-                      className={`flex items-center gap-1.5 h-9 px-3 rounded-md border text-xs font-medium transition-colors ${
+                      className={`flex items-center gap-1.5 h-9 px-3 rounded-sm border text-xs font-medium transition-colors ${
                         form.is_featured
                           ? "border-yellow-400 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
                           : "border-input text-muted-foreground hover:border-yellow-300"
@@ -612,7 +612,7 @@ export function PostFormSheet({
                     const typeConfig = REFERENCE_TYPES.find(t => t.value === ref.type);
                     const TypeIcon = typeConfig?.icon || Cog;
                     return (
-                      <div key={idx} className="rounded-lg border p-3 bg-background space-y-2 relative group">
+                      <div key={idx} className="rounded-sm border p-3 bg-background space-y-2 relative group">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-muted-foreground">
                             [{idx + 1}]
@@ -699,7 +699,7 @@ export function PostFormSheet({
                     </p>
                   </F>
                   {/* Google Preview */}
-                  <div className="rounded-lg border p-3 bg-background">
+                  <div className="rounded-sm border p-3 bg-background">
                     <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
                       Google Preview
                     </p>

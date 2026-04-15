@@ -41,7 +41,7 @@ export function ProjectInfoSidebar({
     <div className={cn("space-y-5", className)}>
       {/* ─── Card 1: Systems ─── */}
       {hasSystems && (
-        <div className="rounded-xl border border-primary/15 bg-white dark:bg-slate-900 shadow-sm p-5">
+        <div className="rounded-sm border border-primary/15 bg-white dark:bg-slate-900 shadow-sm p-5">
           <h3 className="mb-4 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
             Hệ thống ELV & ICT
           </h3>
@@ -58,7 +58,7 @@ export function ProjectInfoSidebar({
 
       {/* ─── Card 2: Client ─── */}
       {hasClient && (
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5">
+        <div className="rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm p-5">
           <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
             Chủ đầu tư
           </h3>

@@ -20,7 +20,7 @@ export default function FloatingBar() {
         rel="noopener noreferrer"
         aria-label="Hồ sơ năng lực"
         title="Hồ sơ năng lực"
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#3C5DAA] shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:bg-[#3C5DAA]/90"
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#3C5DAA] shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-md hover:bg-[#3C5DAA]/90"
       >
         <FileText className="h-7 w-7 text-white transition-transform duration-300 group-hover:scale-110" />
       </a>
@@ -31,7 +31,7 @@ export default function FloatingBar() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat Zalo"
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-110 hover:shadow-md"
       >
         <img
           src={LogoZalo}
@@ -46,7 +46,7 @@ export default function FloatingBar() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Facebook"
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-110 hover:shadow-md"
       >
         <img
           src={LogoFacebook}

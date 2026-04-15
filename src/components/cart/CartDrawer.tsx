@@ -29,7 +29,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
               <ShoppingCart className="h-5 w-5" />
               Giỏ yêu cầu báo giá
               {itemCount > 0 && (
-                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-bold">
+                <span className="bg-primary text-primary-foreground rounded-sm px-2 py-0.5 text-xs font-bold">
                   {itemCount}
                 </span>
               )}
@@ -63,10 +63,10 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 {items.map((item) => (
                   <div
                     key={item.productId}
-                    className="bg-card flex gap-3 rounded-lg border p-3"
+                    className="bg-card flex gap-3 rounded-sm border p-3"
                   >
                     {/* Thumbnail */}
-                    <div className="bg-muted flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-md">
+                    <div className="bg-muted flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm">
                       {item.imageUrl ? (
                         <img
                           src={item.imageUrl}
@@ -97,7 +97,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
 
                       {/* Quantity controls */}
                       <div className="mt-1.5 flex items-center gap-2">
-                        <div className="flex items-center rounded-md border">
+                        <div className="flex items-center rounded-sm border">
                           <Button
                             variant="ghost"
                             size="icon"

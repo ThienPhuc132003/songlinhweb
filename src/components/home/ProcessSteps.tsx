@@ -20,7 +20,7 @@ const STEPS = [
     icon: HeadsetIcon,
     title: "Bảo trì & Đào tạo",
     description:
-      "Đào tạo vận hành, bảo trì bảo dưỡng định kỳ, hỗ trợ kỹ thuật 24/7 trong suốt thời gian bảo hành.",
+      "Đào tạo vận hành, bảo trì bảo dưỡng định kỳ, hỗ trợ kỹ thuật tối đa trong suốt thời gian bảo hành.",
   },
 ];
 

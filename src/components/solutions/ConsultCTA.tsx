@@ -6,7 +6,7 @@ export function ConsultCTA() {
   return (
     <aside className="space-y-6 lg:sticky lg:top-24">
       {/* Primary CTA */}
-      <div className="rounded-xl bg-primary p-6 text-white shadow-lg">
+      <div className="rounded-sm bg-primary p-6 text-white shadow-lg">
         <h3 className="mb-2 text-lg font-semibold">
           Tư vấn chuyên gia
         </h3>
@@ -26,7 +26,7 @@ export function ConsultCTA() {
       </div>
 
       {/* Secondary CTA */}
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-sm border bg-card p-6">
         <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Tài liệu kỹ thuật
         </h3>
@@ -46,7 +46,7 @@ export function ConsultCTA() {
       </div>
 
       {/* Hotline */}
-      <div className="rounded-xl border bg-slate-50 p-4 text-center dark:bg-slate-900">
+      <div className="rounded-sm border bg-slate-50 p-4 text-center dark:bg-slate-900">
         <p className="text-xs text-muted-foreground">Hotline tư vấn</p>
         <a
           href="tel:0968811911"
@@ -62,7 +62,7 @@ export function ConsultCTA() {
 /** Full-width inline CTA — used in the editorial full-width template */
 export function ConsultCTAInline() {
   return (
-    <section className="rounded-2xl bg-gradient-to-r from-[#3C5DAA] to-[#2d4a8a] p-8 text-white shadow-xl md:p-12">
+    <section className="rounded-sm bg-gradient-to-r from-[#3C5DAA] to-[#2d4a8a] p-8 text-white shadow-sm md:p-12">
       <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
         <div className="flex-1">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/60">

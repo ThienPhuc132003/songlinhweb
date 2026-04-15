@@ -21,6 +21,8 @@ interface XlsxQuotationData {
     product_name: string;
     product_image?: string | null;
     category_name?: string | null;
+    model_number?: string | null;
+    brand_name?: string | null;
     quantity: number;
     notes?: string | null;
   }>;
@@ -69,6 +71,8 @@ export async function generateQuotationXlsx(
     cells: [
       { v: "STT", s: "header" },
       { v: "Sản phẩm", s: "header" },
+      { v: "Mã hiệu/Model", s: "header" },
+      { v: "Hãng", s: "header" },
       { v: "Danh mục", s: "header" },
       { v: "Số lượng", s: "header" },
       { v: "Đơn giá", s: "header" },
@@ -84,6 +88,8 @@ export async function generateQuotationXlsx(
       cells: [
         { v: String(i + 1), s: "normal" },
         { v: item.product_name, s: "normal" },
+        { v: item.model_number ?? "—", s: "normal" },
+        { v: item.brand_name ?? "—", s: "normal" },
         { v: item.category_name ?? "—", s: "normal" },
         { v: String(item.quantity), s: "number" },
         { v: "", s: "normal" }, // empty - for admin to fill
@@ -96,6 +102,8 @@ export async function generateQuotationXlsx(
   // Total row
   rows.push({
     cells: [
+      { v: "", s: "normal" },
+      { v: "", s: "normal" },
       { v: "", s: "normal" },
       { v: "", s: "normal" },
       { v: "Tổng cộng:", s: "label" },
@@ -141,7 +149,7 @@ interface SheetRow {
  */
 async function buildXlsx(rows: SheetRow[], _sheetName: string): Promise<ArrayBuffer> {
   // Column widths (approximate characters)
-  const colWidths = [6, 40, 15, 10, 15, 15, 20];
+  const colWidths = [6, 35, 18, 14, 14, 10, 15, 15, 20];
 
   // Build shared strings
   const sharedStrings = new Map<string, number>();

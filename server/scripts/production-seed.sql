@@ -9,8 +9,8 @@
 -- Delete dummy products
 DELETE FROM products WHERE name LIKE '%Test%' OR name LIKE '%TestSp%' OR slug LIKE '%test%';
 
--- Delete dummy projects ('hdbank test')
-DELETE FROM projects WHERE title LIKE '%test%' OR title LIKE '%hdbank%' OR client_name LIKE '%hdbank%';
+-- Delete dummy projects (test/demo only, NOT real portfolio data)
+DELETE FROM projects WHERE title LIKE '%test%' OR slug LIKE '%test%';
 
 -- Delete dummy contacts (Tester 'Ng')
 DELETE FROM contacts WHERE name = 'Ng' OR name LIKE '%test%' OR email LIKE '%test@%';

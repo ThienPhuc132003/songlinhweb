@@ -37,7 +37,7 @@ export function ProjectUsedEquipment({
           <Link
             key={product.id}
             to={`/san-pham/${product.slug}`}
-            className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5"
+            className="group flex flex-col overflow-hidden rounded-sm border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5"
           >
             {/* Product image */}
             <div className="aspect-square overflow-hidden bg-muted">

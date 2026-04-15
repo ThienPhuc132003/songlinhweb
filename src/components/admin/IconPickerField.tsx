@@ -90,7 +90,7 @@ export function IconPickerField({ value, onChange }: IconPickerFieldProps) {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors hover:bg-accent"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border transition-colors hover:bg-accent"
         >
           {CurrentIcon ? (
             <CurrentIcon className="h-4 w-4" />
@@ -101,7 +101,7 @@ export function IconPickerField({ value, onChange }: IconPickerFieldProps) {
       </div>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border bg-popover p-3 shadow-lg">
+        <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-sm border bg-popover p-3 shadow-lg">
           {/* Search */}
           <div className="relative mb-2">
             <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -140,7 +140,7 @@ export function IconPickerField({ value, onChange }: IconPickerFieldProps) {
                     onChange(name);
                     setOpen(false);
                   }}
-                  className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-sm transition-colors ${
                     isSelected
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-accent"
@@ -160,7 +160,7 @@ export function IconPickerField({ value, onChange }: IconPickerFieldProps) {
               onChange(null);
               setOpen(false);
             }}
-            className="mt-2 w-full rounded-md border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent"
+            className="mt-2 w-full rounded-sm border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent"
           >
             Xóa icon (mặc định)
           </button>

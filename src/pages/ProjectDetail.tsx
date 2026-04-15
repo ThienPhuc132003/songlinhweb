@@ -54,17 +54,17 @@ export default function ProjectDetail() {
         </div>
         <div className="bg-white py-14 border-b">
           <div className="container-custom grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-sm" />)}
           </div>
         </div>
         <section className="section-padding">
           <div className="container-custom max-w-7xl mx-auto grid gap-8 lg:grid-cols-12">
             <div className="lg:col-span-8 space-y-4">
-              <Skeleton className="h-28 w-full rounded-xl" />
+              <Skeleton className="h-28 w-full rounded-sm" />
               <Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" />
             </div>
             <div className="lg:col-span-4">
-              <Skeleton className="h-72 w-full rounded-xl" />
+              <Skeleton className="h-72 w-full rounded-sm" />
             </div>
           </div>
         </section>
@@ -223,7 +223,7 @@ export default function ProjectDetail() {
 
               {/* Challenges callout */}
               {project.challenges && (
-                <div className="rounded-xl border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/10 p-5">
+                <div className="rounded-sm border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/10 p-5">
                   <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
                     Thách thức
                   </h3>
@@ -235,7 +235,7 @@ export default function ProjectDetail() {
               {videoEmbed && (
                 <div className="space-y-2">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Video dự án</h3>
-                  <div className="relative overflow-hidden rounded-xl border" style={{ paddingBottom: "56.25%" }}>
+                  <div className="relative overflow-hidden rounded-sm border" style={{ paddingBottom: "56.25%" }}>
                     <iframe
                       src={videoEmbed}
                       title="Project video"

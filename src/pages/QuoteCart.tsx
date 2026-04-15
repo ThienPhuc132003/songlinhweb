@@ -107,7 +107,7 @@ export default function QuoteCart() {
 
         {/* RFQ ID Badge */}
         {quoteId && (
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-sm border border-primary/20 bg-primary/5 px-4 py-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
             <span className="text-sm font-semibold text-primary">
               Mã yêu cầu: SLTECH_RFQ_{quoteId}
@@ -116,7 +116,7 @@ export default function QuoteCart() {
         )}
 
         <div className="mx-auto mb-8 max-w-md space-y-3">
-          <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-left">
+          <div className="flex items-start gap-3 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-left">
             <Mail className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
             <div>
               <p className="text-sm font-medium text-emerald-800">Email xác nhận đã được gửi</p>
@@ -192,7 +192,7 @@ export default function QuoteCart() {
       <div className="grid gap-8 lg:grid-cols-5">
         {/* Product Table — 3 cols */}
         <div className="lg:col-span-3">
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -211,10 +211,10 @@ export default function QuoteCart() {
                             <img
                               src={item.imageUrl}
                               alt={item.name}
-                              className="h-12 w-12 rounded-lg border border-slate-200 object-cover"
+                              className="h-12 w-12 rounded-sm border border-slate-200 object-cover"
                             />
                           ) : (
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-slate-100">
                               <Package className="h-5 w-5 text-slate-400" />
                             </div>
                           )}
@@ -235,7 +235,7 @@ export default function QuoteCart() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                            className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100"
+                            className="flex h-7 w-7 items-center justify-center rounded-sm border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -247,11 +247,11 @@ export default function QuoteCart() {
                               const val = parseInt(e.target.value, 10);
                               if (!isNaN(val) && val > 0) updateQuantity(item.productId, val);
                             }}
-                            className="h-7 w-12 rounded-md border border-slate-300 text-center text-sm font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            className="h-7 w-12 rounded-sm border border-slate-300 text-center text-sm font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                           />
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100"
+                            className="flex h-7 w-7 items-center justify-center rounded-sm border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -288,7 +288,7 @@ export default function QuoteCart() {
 
         {/* Customer Form — 2 cols */}
         <div className="lg:col-span-2">
-          <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="sticky top-24 rounded-sm border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="mb-4 text-lg font-bold text-slate-900">
               📝 Thông tin liên hệ
             </h2>
@@ -410,7 +410,7 @@ export default function QuoteCart() {
             </form>
 
             {/* Process info */}
-            <div className="mt-4 rounded-lg bg-blue-50 p-3">
+            <div className="mt-4 rounded-sm bg-blue-50 p-3">
               <p className="text-xs font-semibold text-primary">ℹ️ Quy trình</p>
               <ol className="mt-1.5 space-y-0.5 text-xs text-primary/80">
                 <li>1. Chọn sản phẩm & gửi yêu cầu</li>

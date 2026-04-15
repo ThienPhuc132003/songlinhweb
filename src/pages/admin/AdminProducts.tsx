@@ -295,7 +295,7 @@ export default function AdminProducts() {
   const inventoryBadge = (status: string) => {
     const opt = INVENTORY_OPTIONS.find((o) => o.value === status);
     return opt ? (
-      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${opt.color}`}>
+      <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${opt.color}`}>
         {opt.label}
       </span>
     ) : (
@@ -386,13 +386,13 @@ export default function AdminProducts() {
       >
         <button
           onClick={() => bulkMutation.mutate({ action: "update-status", value: "active" })}
-          className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+          className="rounded-sm bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
         >
           Kích hoạt
         </button>
         <button
           onClick={() => bulkMutation.mutate({ action: "update-status", value: "draft" })}
-          className="rounded-md bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+          className="rounded-sm bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-200"
         >
           Ẩn
         </button>
@@ -403,7 +403,7 @@ export default function AdminProducts() {
               e.target.value = "";
             }
           }}
-          className="rounded-md border border-slate-300 bg-white dark:bg-slate-800 px-3 py-1 text-xs"
+          className="rounded-sm border border-slate-300 bg-white dark:bg-slate-800 px-3 py-1 text-xs"
           defaultValue=""
         >
           <option value="" disabled>Đổi danh mục...</option>
@@ -417,7 +417,7 @@ export default function AdminProducts() {
               bulkMutation.mutate({ action: "delete" });
             }
           }}
-          className="rounded-md bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
+          className="rounded-sm bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
         >
           Xóa
         </button>

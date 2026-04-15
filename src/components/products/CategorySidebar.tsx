@@ -87,7 +87,7 @@ export function CategorySidebar({ className, hideTitle }: CategorySidebarProps) 
       <Link
         to="/san-pham"
         className={cn(
-          "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent",
+          "flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors hover:bg-accent",
           !activeCategory && "bg-primary/10 text-primary",
         )}
       >
@@ -146,7 +146,7 @@ function CategoryItem({
         <Link
           to={`/san-pham?category=${node.slug}`}
           className={cn(
-            "flex flex-1 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+            "flex flex-1 items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent",
             isActive && "bg-primary/10 text-primary font-medium",
             !hasChildren && "ml-5",
           )}

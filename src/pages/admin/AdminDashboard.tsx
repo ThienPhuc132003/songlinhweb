@@ -113,7 +113,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   const parts = label?.split("-");
   const formatted = parts ? `${parts[2]}/${parts[1]}` : label;
   return (
-    <div className="rounded-lg border bg-background px-3 py-2 shadow-md">
+    <div className="rounded-sm border bg-background px-3 py-2 shadow-md">
       <p className="text-xs text-muted-foreground">{formatted}</p>
       <p className="text-sm font-semibold">
         {payload[0].value} yêu cầu
@@ -270,7 +270,7 @@ export default function AdminDashboard() {
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   {s.label}
                 </CardTitle>
-                <div className={`rounded-lg p-2.5 ${s.color}`}>
+                <div className={`rounded-sm p-2.5 ${s.color}`}>
                   <s.icon className="h-4 w-4" />
                 </div>
               </CardHeader>
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
               </span>
             </div>
           ) : chartData.length === 0 ? (
-            <div className="h-[280px] flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+            <div className="h-[280px] flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-sm border border-dashed border-slate-200">
               <Activity className="h-8 w-8 text-slate-300 mb-2" />
               <p className="text-sm font-medium text-slate-600">
                 Chưa có dữ liệu
@@ -472,7 +472,7 @@ export default function AdminDashboard() {
                 </table>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+              <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50/50 rounded-sm border border-dashed border-slate-200">
                 <FileText className="h-8 w-8 text-slate-300 mb-2" />
                 <p className="text-sm font-medium text-slate-600">
                   Chưa có dữ liệu

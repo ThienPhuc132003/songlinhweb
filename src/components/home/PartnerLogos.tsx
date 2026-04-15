@@ -100,7 +100,7 @@ function MarqueeRow({
         {doubled.map((partner, i) => (
           <div
             key={`${partner.name}-${i}`}
-            className="bg-background flex h-20 min-w-[160px] items-center justify-center rounded-lg border px-5 shadow-sm transition-shadow hover:shadow-md"
+            className="bg-background flex h-20 min-w-[160px] items-center justify-center rounded-sm border px-5 shadow-sm transition-shadow hover:shadow-md"
           >
             <img
               src={partner.src}
@@ -120,9 +120,6 @@ export function PartnerLogos({ className }: { className?: string }) {
     <section className={cn("py-24 md:py-32", className)}>
       <div className="container-custom">
         <motion.div {...fadeUp()} className="mb-16 text-center">
-          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-            Hệ sinh thái
-          </p>
           <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
             Đối tác <span className="font-semibold">chiến lược</span>
           </h2>

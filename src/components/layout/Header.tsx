@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router";
 import { Menu, X, ChevronDown, Camera, ShieldCheck, Flame, Network, Volume2, Cpu, Package, Phone } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/constants";
-import { SOLUTIONS } from "@/data/solutions";
+import { useSolutions } from "@/hooks/useApi";
 import { SolutionIcon, SolutionIconBadge } from "@/components/ui/SolutionIcon";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -86,7 +86,7 @@ function MobileAccordionItem({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "hover:bg-accent flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors",
+          "hover:bg-accent flex w-full items-center justify-between rounded-sm px-4 py-3 text-sm font-medium transition-colors",
           isActive && "bg-primary/10 text-primary font-semibold"
         )}
       >
@@ -150,7 +150,7 @@ export default function Header() {
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    "text-foreground/70 hover:text-primary whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                    "text-foreground/70 hover:text-primary whitespace-nowrap rounded-sm px-3 py-2 text-sm font-medium transition-colors duration-150",
                     location.pathname.startsWith(link.href) &&
                       "text-primary bg-primary/5 font-semibold",
                   )}
@@ -203,6 +203,8 @@ function SolutionsDropdown() {
   const location = useLocation();
   const { isOpen, setIsOpen, handleEnter, handleLeave } = useHoverMenu();
   const isActive = location.pathname.startsWith("/giai-phap");
+  const { data } = useSolutions();
+  const solutions = data?.items ?? [];
 
   return (
     <div
@@ -214,7 +216,7 @@ function SolutionsDropdown() {
       <Link
         to="/giai-phap"
         className={cn(
-          "text-foreground/70 hover:text-primary inline-flex items-center gap-1 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+          "text-foreground/70 hover:text-primary inline-flex items-center gap-1 whitespace-nowrap rounded-sm px-3 py-2 text-sm font-medium transition-colors duration-150",
           isActive && "text-primary bg-primary/5 font-semibold",
         )}
       >
@@ -236,7 +238,7 @@ function SolutionsDropdown() {
             : "pointer-events-none -translate-y-2 opacity-0",
         )}
       >
-        <div className="mega-menu-animated w-[600px] rounded-xl border border-slate-200 bg-white/95 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
+        <div className="mega-menu-animated w-[600px] rounded-sm border border-slate-200 bg-white/95 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
             <p className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
@@ -253,12 +255,12 @@ function SolutionsDropdown() {
 
           {/* 2-column grid */}
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-            {SOLUTIONS.map((solution) => (
+            {solutions.map((solution) => (
               <Link
                 key={solution.slug}
                 to={`/giai-phap/${solution.slug}`}
                 onClick={() => setIsOpen(false)}
-                className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                className="flex items-start gap-3 rounded-sm p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
               >
                 <SolutionIcon
                   name={solution.icon}
@@ -270,7 +272,7 @@ function SolutionsDropdown() {
                     {solution.title}
                   </p>
                   <p className="mt-0.5 line-clamp-1 text-xs leading-tight text-slate-500 dark:text-slate-400">
-                    {solution.subtitle.split("—")[0].trim()}
+                    {solution.excerpt || solution.description}
                   </p>
                 </div>
               </Link>
@@ -298,7 +300,7 @@ function ProductsDropdown() {
       <Link
         to="/san-pham"
         className={cn(
-          "text-foreground/70 hover:text-primary inline-flex items-center gap-1 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+          "text-foreground/70 hover:text-primary inline-flex items-center gap-1 whitespace-nowrap rounded-sm px-3 py-2 text-sm font-medium transition-colors duration-150",
           isActive && "text-primary bg-primary/5 font-semibold",
         )}
       >
@@ -319,7 +321,7 @@ function ProductsDropdown() {
             : "pointer-events-none -translate-y-2 opacity-0",
         )}
       >
-        <div className="mega-menu-animated w-[720px] rounded-xl border border-slate-200 bg-white/95 p-6 shadow-2xl backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
+        <div className="mega-menu-animated w-[720px] rounded-sm border border-slate-200 bg-white/95 p-6 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
             <p className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
@@ -350,7 +352,7 @@ function ProductsDropdown() {
                       key={item.slug}
                       to={`/san-pham?category=${item.slug}`}
                       onClick={() => setIsOpen(false)}
-                      className="block rounded-md px-2 py-1.5 text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#3C5DAA] dark:text-slate-400 dark:hover:bg-slate-800/50"
+                      className="block rounded-sm px-2 py-1.5 text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#3C5DAA] dark:text-slate-400 dark:hover:bg-slate-800/50"
                     >
                       {item.label}
                     </Link>
@@ -369,6 +371,8 @@ function ProductsDropdown() {
 
 function MobileNav({ onClose }: { onClose: () => void }) {
   const location = useLocation();
+  const { data } = useSolutions();
+  const solutions = data?.items ?? [];
 
   return (
     <nav className="mt-8 flex flex-col gap-1">
@@ -382,16 +386,16 @@ function MobileNav({ onClose }: { onClose: () => void }) {
             <Link
               to="/giai-phap"
               onClick={onClose}
-              className="rounded-md px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
+              className="rounded-sm px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
             >
               Tất cả giải pháp
             </Link>
-            {SOLUTIONS.map((s) => (
+            {solutions.map((s) => (
               <Link
                 key={s.slug}
                 to={`/giai-phap/${s.slug}`}
                 onClick={onClose}
-                className="rounded-md px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
+                className="rounded-sm px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
               >
                 {s.title}
               </Link>
@@ -406,7 +410,7 @@ function MobileNav({ onClose }: { onClose: () => void }) {
             <Link
               to="/san-pham"
               onClick={onClose}
-              className="rounded-md px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
+              className="rounded-sm px-3 py-2 text-xs font-medium text-primary hover:bg-accent"
             >
               Tất cả sản phẩm
             </Link>
@@ -416,7 +420,7 @@ function MobileNav({ onClose }: { onClose: () => void }) {
                   key={item.slug}
                   to={`/san-pham?category=${item.slug}`}
                   onClick={onClose}
-                  className="rounded-md px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
+                  className="rounded-sm px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
                 >
                   {item.label}
                 </Link>
@@ -429,7 +433,7 @@ function MobileNav({ onClose }: { onClose: () => void }) {
             to={link.href}
             onClick={onClose}
             className={cn(
-              "hover:bg-accent rounded-md px-4 py-3 text-sm font-medium transition-colors",
+              "hover:bg-accent rounded-sm px-4 py-3 text-sm font-medium transition-colors",
               location.pathname.startsWith(link.href) &&
                 "bg-primary/10 text-primary font-semibold",
             )}
@@ -442,7 +446,7 @@ function MobileNav({ onClose }: { onClose: () => void }) {
         to="/lien-he"
         onClick={onClose}
         className={cn(
-          "hover:bg-accent rounded-md px-4 py-3 text-sm font-medium transition-colors",
+          "hover:bg-accent rounded-sm px-4 py-3 text-sm font-medium transition-colors",
           location.pathname.startsWith("/lien-he") &&
             "bg-primary/10 text-primary font-semibold",
         )}

@@ -121,7 +121,7 @@ export default function Footer() {
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.05em] text-white">
               Vị trí
             </p>
-            <div className="aspect-square w-full overflow-hidden rounded-lg border-2 border-[#3C5DAA]/40">
+            <div className="aspect-square w-full overflow-hidden rounded-sm border-2 border-[#3C5DAA]/40">
               <iframe
                 src={SITE.mapEmbedUrl}
                 width="100%"

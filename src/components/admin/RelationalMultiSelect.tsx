@@ -112,7 +112,7 @@ export function RelationalMultiSelect({
           {selectedOptions.map((opt) => (
             <span
               key={opt.id}
-              className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary"
+              className="inline-flex items-center gap-1 rounded-sm border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary"
             >
               {opt.image && (
                 <img
@@ -139,7 +139,7 @@ export function RelationalMultiSelect({
         type="button"
         onClick={handleOpen}
         className={cn(
-          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-1 text-sm transition-colors",
+          "flex h-9 w-full items-center justify-between rounded-sm border border-input bg-background px-3 py-1 text-sm transition-colors",
           isOpen && "ring-2 ring-primary/30 border-primary",
         )}
       >
@@ -153,7 +153,7 @@ export function RelationalMultiSelect({
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div className="relative z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+        <div className="relative z-50 mt-1 w-full rounded-sm border bg-popover shadow-lg">
           {/* Search input */}
           <div className="flex items-center border-b px-3 py-2">
             <Search className="mr-2 h-4 w-4 text-muted-foreground" />

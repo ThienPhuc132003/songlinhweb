@@ -90,7 +90,7 @@ export default function AdminContacts() {
         const s = statusLabels[r.status] || statusLabels.new;
         return (
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}
+            className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${s.color}`}
           >
             {s.label}
           </span>
@@ -181,7 +181,7 @@ export default function AdminContacts() {
 
               <div>
                 <span className="text-muted-foreground text-sm">Nội dung:</span>
-                <p className="mt-1 rounded-lg bg-slate-50 p-3 text-sm whitespace-pre-wrap">
+                <p className="mt-1 rounded-sm bg-slate-50 p-3 text-sm whitespace-pre-wrap">
                   {selectedContact.message}
                 </p>
               </div>

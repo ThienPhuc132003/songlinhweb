@@ -92,7 +92,7 @@ export function CompareTable({ onClose }: { onClose: () => void }) {
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative mt-8 mb-24 w-full max-w-5xl rounded-2xl border bg-background shadow-2xl"
+        className="relative mt-8 mb-24 w-full max-w-5xl rounded-sm border bg-background shadow-sm"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
@@ -131,10 +131,10 @@ export function CompareTable({ onClose }: { onClose: () => void }) {
                           <img
                             src={p.image_url}
                             alt={p.name}
-                            className="mx-auto h-28 w-28 rounded-lg object-contain bg-muted/30 p-2"
+                            className="mx-auto h-28 w-28 rounded-sm object-contain bg-muted/30 p-2"
                           />
                         ) : (
-                          <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-lg bg-muted/30">
+                          <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-sm bg-muted/30">
                             <Package className="h-10 w-10 text-muted-foreground/40" />
                           </div>
                         )}
@@ -214,7 +214,7 @@ export function CompareTable({ onClose }: { onClose: () => void }) {
                     <td key={p.id} className="px-4 py-4 text-center">
                       <Link
                         to={`/san-pham/${p.slug}`}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+                        className="inline-flex items-center gap-1.5 rounded-sm bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
                       >
                         Xem chi tiết
                         <ExternalLink className="h-3 w-3" />

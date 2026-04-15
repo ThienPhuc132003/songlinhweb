@@ -73,7 +73,7 @@ export function SearchableFeatureSelect({
   };
 
   return (
-    <div className="rounded-lg border p-4 space-y-3" ref={ref}>
+    <div className="rounded-sm border p-4 space-y-3" ref={ref}>
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Tính năng
@@ -112,7 +112,7 @@ export function SearchableFeatureSelect({
               key={f.id}
               type="button"
               onClick={() => toggleFeature(f.id)}
-              className="group inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary transition-colors hover:bg-destructive/10 hover:text-destructive"
+              className="group inline-flex items-center gap-1 rounded-sm bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary transition-colors hover:bg-destructive/10 hover:text-destructive"
             >
               <FeatureBadge name={f.name} color={f.color} icon={f.icon} size="sm" />
               <X className="h-2.5 w-2.5 opacity-50 group-hover:opacity-100" />
@@ -123,7 +123,7 @@ export function SearchableFeatureSelect({
 
       {/* Grouped feature list */}
       {(open || search) && (
-        <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border bg-muted/10 p-2">
+        <div className="max-h-64 space-y-2 overflow-y-auto rounded-sm border bg-muted/10 p-2">
           {Object.keys(featureGroups).length === 0 ? (
             <p className="py-3 text-center text-xs text-muted-foreground">
               {search ? `Không tìm thấy "${search}"` : "Chưa có tính năng nào"}
@@ -157,7 +157,7 @@ export function SearchableFeatureSelect({
                             key={f.id}
                             type="button"
                             onClick={() => toggleFeature(f.id)}
-                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                            className={`inline-flex items-center gap-1 rounded-sm px-2.5 py-1 text-xs font-medium transition-all ${
                               isSelected
                                 ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20"
                                 : "bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary"
@@ -192,7 +192,7 @@ export function SearchableFeatureSelect({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
+          className="w-full rounded-sm border border-dashed px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent"
         >
           Nhấn để chọn tính năng...
         </button>

@@ -80,7 +80,7 @@ export function Lightbox({
         <img
           src={images[index]}
           alt=""
-          className="max-h-[80vh] rounded-lg object-contain shadow-2xl"
+          className="max-h-[80vh] rounded-sm object-contain shadow-sm"
         />
         {images.length > 1 && (
           <p className="mt-3 text-center text-sm text-white/70">

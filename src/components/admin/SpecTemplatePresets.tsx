@@ -73,7 +73,7 @@ export function SpecTemplatePresets({
             className="fixed inset-0 z-40"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-1 z-50 w-72 rounded-lg border bg-popover p-2 shadow-xl animate-in fade-in-0 zoom-in-95">
+          <div className="absolute right-0 top-full mt-1 z-50 w-72 rounded-sm border bg-popover p-2 shadow-sm animate-in fade-in-0 zoom-in-95">
             <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Chọn mẫu thông số
             </p>
@@ -84,7 +84,7 @@ export function SpecTemplatePresets({
               return (
                 <div
                   key={key}
-                  className={`rounded-md px-2 py-1.5 ${isSuggested ? "bg-primary/5 border border-primary/20" : ""}`}
+                  className={`rounded-sm px-2 py-1.5 ${isSuggested ? "bg-primary/5 border border-primary/20" : ""}`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium capitalize">

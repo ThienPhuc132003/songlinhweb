@@ -13,6 +13,8 @@ export interface QuotationEmailData {
     product_name: string;
     product_image?: string | null;
     category_name?: string | null;
+    model_number?: string | null;
+    brand_name?: string | null;
     quantity: number;
     notes?: string | null;
   }>;
@@ -208,12 +210,20 @@ export async function sendQuotationAdminEmail(
   // Product table (striped rows, compact)
   const itemsHtml = data.items
     .map(
-      (item, i) => `
+      (item, i) => {
+        const meta: string[] = [];
+        if (item.model_number) meta.push(escapeHtml(item.model_number));
+        if (item.brand_name) meta.push(escapeHtml(item.brand_name));
+        const metaLine = meta.length > 0
+          ? `<br/><span style="font-size:11px;color:#64748b;font-weight:400;">${meta.join(" · ")}</span>`
+          : "";
+        return `
       <tr style="${i % 2 === 0 ? "background:#f8fafc;" : "background:#ffffff;"}">
         <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:13px;text-align:center;font-family:'Courier New',monospace;">${i + 1}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:500;color:#1e293b;font-size:13px;">${escapeHtml(item.product_name)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:500;color:#1e293b;font-size:13px;">${escapeHtml(item.product_name)}${metaLine}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:600;color:#0f172a;font-size:13px;font-family:'Courier New',monospace;">${item.quantity}</td>
-      </tr>`,
+      </tr>`;
+      },
     )
     .join("");
 

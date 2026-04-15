@@ -1,4 +1,5 @@
 import type {
+  Solution,
   Product,
   ProductCategory,
   ProductFeature,
@@ -60,6 +61,17 @@ async function fetchPaginated<T>(
 }
 
 export const api = {
+  solutions: {
+    list: (opts?: { page?: number; limit?: number }) => {
+      const params = new URLSearchParams();
+      if (opts?.page) params.set("page", String(opts.page));
+      if (opts?.limit) params.set("limit", String(opts.limit));
+      const qs = params.toString();
+      return fetchPaginated<Solution>(`/solutions${qs ? `?${qs}` : ""}`);
+    },
+    listAll: () => fetchApi<Solution[]>("/solutions?limit=100"),
+    get: (slug: string) => fetchApi<Solution>(`/solutions/${slug}`),
+  },
   products: {
     list: (opts?: { category?: string; brand?: string; search?: string; page?: number; limit?: number; tags?: string[] }) => {
       const params = new URLSearchParams();

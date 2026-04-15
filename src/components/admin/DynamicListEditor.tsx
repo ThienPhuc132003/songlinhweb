@@ -110,7 +110,7 @@ export function DynamicListEditor<T extends Record<string, string | number>>({
       </div>
 
       {items.length === 0 && (
-        <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <div className="rounded-sm border border-dashed p-6 text-center text-sm text-muted-foreground">
           Chưa có mục nào. Nhấn "Thêm" để bắt đầu.
         </div>
       )}
@@ -119,7 +119,7 @@ export function DynamicListEditor<T extends Record<string, string | number>>({
         {items.map((item, idx) => (
           <div
             key={idx}
-            className="group flex items-start gap-2 rounded-lg border bg-slate-50 dark:bg-slate-900/50 p-3 transition-colors hover:border-primary/30"
+            className="group flex items-start gap-2 rounded-sm border bg-slate-50 dark:bg-slate-900/50 p-3 transition-colors hover:border-primary/30"
           >
             {/* Reorder buttons */}
             <div className="flex flex-col gap-0.5 pt-1">
@@ -154,7 +154,7 @@ export function DynamicListEditor<T extends Record<string, string | number>>({
                     <select
                       value={String(item[field.key] ?? "")}
                       onChange={(e) => updateItem(idx, field.key, e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      className="flex h-9 w-full rounded-sm border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
                       <option value="">— Chọn icon —</option>
                       {ICON_OPTIONS.map((icon) => (

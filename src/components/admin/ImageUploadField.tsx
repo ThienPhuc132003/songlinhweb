@@ -208,7 +208,7 @@ export function ImageUploadField({
         {images.map((img, i) => (
           <div
             key={img.url}
-            className="group relative h-24 w-24 overflow-hidden rounded-lg border bg-muted"
+            className="group relative h-24 w-24 overflow-hidden rounded-sm border bg-muted"
           >
             {brokenUrls.has(img.url) ? (
               /* Broken image fallback — rendered in React, not DOM manipulation */
@@ -264,7 +264,7 @@ export function ImageUploadField({
             type="button"
             onClick={() => inputRef.current?.click()}
             className={cn(
-              "flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground transition-colors",
+              "flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-sm border-2 border-dashed text-muted-foreground transition-colors",
               isDragging
                 ? "border-primary bg-primary/5 text-primary"
                 : "border-muted-foreground/25 hover:border-primary hover:text-primary",
@@ -287,7 +287,7 @@ export function ImageUploadField({
 
       {/* Drag overlay for empty state */}
       {isDragging && images.length === 0 && (
-        <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-primary/5 p-6">
+        <div className="flex items-center justify-center rounded-sm border-2 border-dashed border-primary bg-primary/5 p-6">
           <div className="text-center">
             <Upload className="mx-auto h-8 w-8 text-primary" />
             <p className="mt-1 text-sm font-medium text-primary">Thả ảnh vào đây</p>

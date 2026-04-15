@@ -25,7 +25,7 @@ export function MasonryGrid({ images, onImageClick }: MasonryGridProps) {
           className="gallery-masonry-item mb-3 break-inside-avoid"
         >
           <div
-            className="group/card relative cursor-pointer overflow-hidden rounded-lg bg-slate-50 border border-slate-200 transition-all duration-300 hover:shadow-lg hover:border-slate-300"
+            className="group/card relative cursor-pointer overflow-hidden rounded-sm bg-slate-50 border border-slate-200 transition-all duration-300 hover:shadow-md hover:border-slate-300"
             onClick={() => onImageClick(i)}
           >
             <img

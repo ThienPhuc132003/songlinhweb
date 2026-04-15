@@ -211,7 +211,7 @@ export function QuoteForm({ open, onOpenChange }: QuoteFormProps) {
           </div>
 
           {/* Items summary */}
-          <div className="bg-muted/50 rounded-lg p-3">
+          <div className="bg-muted/50 rounded-sm p-3">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide">
               Sản phẩm yêu cầu ({items.length})
             </p>

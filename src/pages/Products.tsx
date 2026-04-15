@@ -227,8 +227,8 @@ export default function Products() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {isLoading
                   ? Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="space-y-3 rounded-xl border p-4 animate-pulse">
-                        <div className="aspect-square w-full rounded-lg bg-muted" />
+                      <div key={i} className="space-y-3 rounded-sm border p-4 animate-pulse">
+                        <div className="aspect-square w-full rounded-sm bg-muted" />
                         <div className="h-3 w-2/5 rounded bg-muted" />
                         <div className="h-4 w-3/4 rounded bg-muted" />
                         <div className="h-3 w-full rounded bg-muted" />
@@ -377,7 +377,7 @@ function ProductCard({
         to={`/san-pham/${product.slug}`}
         className="block h-full"
       >
-        <div className="flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5">
+        <div className="flex h-full flex-col overflow-hidden rounded-sm border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5">
           {/* Image */}
           <div className="relative shrink-0 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-muted dark:to-muted/50">
             {imageUrl && !imgError ? (
@@ -397,7 +397,7 @@ function ProductCard({
             )}
             {/* Brand logo chip (top-left) */}
             {brandName && (
-              <span className="absolute left-3 top-3 flex items-center gap-1 rounded-md bg-background/90 px-2 py-1 shadow-sm backdrop-blur-sm">
+              <span className="absolute left-3 top-3 flex items-center gap-1 rounded-sm bg-background/90 px-2 py-1 shadow-sm backdrop-blur-sm">
                 {product.brand_logo && (
                   <img
                     src={product.brand_logo}
@@ -412,7 +412,7 @@ function ProductCard({
             )}
             {/* Inventory status badge (top-right) */}
             {product.inventory_status === "contact" && (
-              <span className="absolute right-3 top-3 rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm">
+              <span className="absolute right-3 top-3 rounded-sm bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm">
                 Liên hệ báo giá
               </span>
             )}

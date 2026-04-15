@@ -208,7 +208,7 @@ export function ProjectFormSheet({
     }));
   };
 
-  const selectClass = "border-input bg-background flex h-8 w-full rounded-md border px-2 py-1 text-xs";
+  const selectClass = "border-input bg-background flex h-8 w-full rounded-sm border px-2 py-1 text-xs";
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -427,7 +427,7 @@ export function ProjectFormSheet({
                   <div className="flex flex-wrap gap-1.5">
                     {SYSTEM_OPTIONS.map((sys) => (
                       <label key={sys}
-                        className={`cursor-pointer rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                        className={`cursor-pointer rounded-sm border px-2 py-0.5 text-[10px] font-medium transition-colors ${
                           selectedSystems.includes(sys)
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-input text-muted-foreground hover:border-primary/50"
@@ -445,7 +445,7 @@ export function ProjectFormSheet({
                   <div className="flex flex-wrap gap-1.5">
                     {BRAND_OPTIONS.map((brand) => (
                       <label key={brand}
-                        className={`cursor-pointer rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                        className={`cursor-pointer rounded-sm border px-2 py-0.5 text-[10px] font-medium transition-colors ${
                           selectedBrands.includes(brand)
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-input text-muted-foreground hover:border-primary/50"
@@ -503,7 +503,7 @@ export function ProjectFormSheet({
                   <p className="text-[10px] text-muted-foreground">{(form.meta_description || form.description || "").length}/160</p>
                 </F>
                 {/* Google Preview */}
-                <div className="rounded-lg border p-3 bg-background">
+                <div className="rounded-sm border p-3 bg-background">
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Preview</p>
                   <p className="text-[#1a0dab] text-xs font-medium truncate">
                     {form.meta_title || form.title || "Tiêu đề"} — Song Linh Technologies

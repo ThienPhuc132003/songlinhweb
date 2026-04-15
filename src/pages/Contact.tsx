@@ -290,7 +290,7 @@ export default function Contact() {
                 <CardContent className="space-y-5">
                   {contactInfo.map((item) => (
                     <div key={item.label} className="flex items-start gap-3">
-                      <div className="bg-primary/10 flex-shrink-0 rounded-lg p-2">
+                      <div className="bg-primary/10 flex-shrink-0 rounded-sm p-2">
                         <item.icon className="text-primary h-4 w-4" />
                       </div>
                       <div>
@@ -314,7 +314,7 @@ export default function Contact() {
               </Card>
 
               {/* Map */}
-              <div className="aspect-video overflow-hidden rounded-xl border">
+              <div className="aspect-video overflow-hidden rounded-sm border">
                 <iframe
                   src={SITE.mapEmbedUrl}
                   width="100%"

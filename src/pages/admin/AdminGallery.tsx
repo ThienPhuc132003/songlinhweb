@@ -252,7 +252,7 @@ export default function AdminGallery() {
       header: "Danh mục",
       className: "w-36",
       render: (r) => (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${categoryColor(r.category)}`}>
+        <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${categoryColor(r.category)}`}>
           {categoryLabel(r.category)}
         </span>
       ),
@@ -340,14 +340,14 @@ export default function AdminGallery() {
               <textarea
                 value={form.description || ""}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm min-h-[80px] resize-y"
+                className="border-input bg-background flex w-full rounded-sm border px-3 py-2 text-sm min-h-[80px] resize-y"
                 placeholder="Mô tả ngắn về album..."
               />
             </Field>
 
             <Field label="Danh mục">
               <select
-                className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+                className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
                 value={form.category ?? "general"}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
               >
@@ -371,7 +371,7 @@ export default function AdminGallery() {
               </Field>
               <Field label="Trạng thái">
                 <select
-                  className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+                  className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
                   value={form.is_active ?? 1}
                   onChange={(e) =>
                     setForm({ ...form, is_active: Number(e.target.value) })
@@ -389,7 +389,7 @@ export default function AdminGallery() {
                 Ảnh bìa
               </h4>
               {form.cover_url ? (
-                <div className="relative rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                <div className="relative rounded-sm overflow-hidden border border-slate-200 dark:border-slate-700">
                   <img
                     src={form.cover_url}
                     alt="Cover"
@@ -400,7 +400,7 @@ export default function AdminGallery() {
                   </Badge>
                 </div>
               ) : (
-                <div className="flex items-center justify-center aspect-video rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+                <div className="flex items-center justify-center aspect-video rounded-sm border-2 border-dashed border-slate-300 dark:border-slate-700">
                   <div className="text-center">
                     <ImageIcon className="h-6 w-6 text-slate-400 mx-auto mb-1" />
                     <p className="text-xs text-slate-500">

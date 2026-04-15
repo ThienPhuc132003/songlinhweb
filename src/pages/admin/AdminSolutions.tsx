@@ -1,38 +1,26 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi, type Solution } from "@/lib/admin-api";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   DataTable,
   PageHeader,
   ConfirmDelete,
-  FormDialog,
-  Field,
   StatusBadge,
   type Column,
 } from "@/components/admin/CrudHelpers";
-import { ImageUploadField } from "@/components/admin/ImageUploadField";
-
-const defaultForm: Partial<Solution> = {
-  slug: "",
-  title: "",
-  description: "",
-  content_md: "",
-  icon: "FileCheck",
-  hero_image_url: null,
-  sort_order: 0,
-  is_active: 1,
-  meta_title: null,
-  meta_description: null,
-};
+import {
+  SolutionFormSheet,
+  defaultSolutionForm,
+  type SolutionFormData,
+} from "@/components/admin/SolutionFormSheet";
+import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
 
 export default function AdminSolutions() {
   const qc = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Solution | null>(null);
-  const [form, setForm] = useState<Partial<Solution>>(defaultForm);
+  const [form, setForm] = useState<SolutionFormData>(defaultSolutionForm);
   const [editId, setEditId] = useState<number | null>(null);
 
   const { data = [], isLoading } = useQuery({
@@ -65,19 +53,33 @@ export default function AdminSolutions() {
 
   const openCreate = () => {
     setEditId(null);
-    setForm(defaultForm);
+    setForm(defaultSolutionForm);
     setFormOpen(true);
   };
 
   const openEdit = (row: Solution) => {
     setEditId(row.id);
-    setForm({ ...row });
+    setForm({
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      excerpt: row.excerpt ?? "",
+      content_md: row.content_md,
+      icon: row.icon,
+      hero_image_url: row.hero_image_url,
+      features: row.features ?? "[]",
+      applications: row.applications ?? "[]",
+      sort_order: row.sort_order,
+      is_active: row.is_active,
+      meta_title: row.meta_title,
+      meta_description: row.meta_description,
+    });
     setFormOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveMutation.mutate(form);
+    saveMutation.mutate(form as Partial<Solution>);
   };
 
   const columns: Column<Solution>[] = [
@@ -86,13 +88,24 @@ export default function AdminSolutions() {
       key: "title",
       header: "Tiêu đề",
       render: (r) => (
-        <div>
-          <p className="font-medium">{r.title}</p>
-          <p className="text-muted-foreground text-xs">{r.slug}</p>
+        <div className="flex items-center gap-2.5">
+          <SolutionIconBadge name={r.icon} size="sm" />
+          <div>
+            <p className="font-medium">{r.title}</p>
+            <p className="text-muted-foreground text-xs">{r.slug}</p>
+          </div>
         </div>
       ),
     },
-    { key: "icon", header: "Icon", className: "w-24" },
+    {
+      key: "excerpt",
+      header: "Tóm tắt",
+      render: (r) => (
+        <p className="text-xs text-muted-foreground line-clamp-2 max-w-xs">
+          {r.excerpt || r.description || "—"}
+        </p>
+      ),
+    },
     { key: "sort_order", header: "Thứ tự", className: "w-20" },
     {
       key: "is_active",
@@ -106,7 +119,7 @@ export default function AdminSolutions() {
     <div className="space-y-6">
       <PageHeader
         title="Giải pháp"
-        description="Quản lý các giải pháp công nghệ"
+        description="Quản lý các giải pháp công nghệ — CMS động"
         onAdd={openCreate}
       />
 
@@ -119,104 +132,16 @@ export default function AdminSolutions() {
         onDelete={setDeleteTarget}
       />
 
-      {/* Form Dialog */}
-      <FormDialog
+      {/* Form Sheet — Wide tabbed editor */}
+      <SolutionFormSheet
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editId ? "Sửa giải pháp" : "Thêm giải pháp"}
+        editId={editId}
+        form={form}
+        setForm={setForm}
         onSubmit={handleSubmit}
         loading={saveMutation.isPending}
-      >
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Tiêu đề" required>
-            <Input
-              value={form.title || ""}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              required
-            />
-          </Field>
-          <Field label="Slug" required>
-            <Input
-              value={form.slug || ""}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
-              required
-            />
-          </Field>
-        </div>
-        <Field label="Mô tả">
-          <Textarea
-            value={form.description || ""}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            rows={3}
-          />
-        </Field>
-        <Field label="Nội dung (Markdown)">
-          <Textarea
-            value={form.content_md || ""}
-            onChange={(e) => setForm({ ...form, content_md: e.target.value })}
-            rows={8}
-            className="font-mono text-sm"
-          />
-        </Field>
-        <div className="grid grid-cols-3 gap-4">
-          <Field label="Icon">
-            <Input
-              value={form.icon || ""}
-              onChange={(e) => setForm({ ...form, icon: e.target.value })}
-            />
-          </Field>
-          <Field label="Thứ tự">
-            <Input
-              type="number"
-              value={form.sort_order ?? 0}
-              onChange={(e) =>
-                setForm({ ...form, sort_order: Number(e.target.value) })
-              }
-            />
-          </Field>
-          <Field label="Trạng thái">
-            <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
-              value={form.is_active ?? 1}
-              onChange={(e) =>
-                setForm({ ...form, is_active: Number(e.target.value) })
-              }
-            >
-              <option value={1}>Công khai</option>
-              <option value={0}>Chờ duyệt</option>
-            </select>
-          </Field>
-        </div>
-
-        {/* Hero Image */}
-        <ImageUploadField
-          label="Ảnh Hero"
-          value={form.hero_image_url ? [form.hero_image_url] : []}
-          onChange={(urls) => setForm({ ...form, hero_image_url: urls[0] || null })}
-          folder="solutions"
-          single
-        />
-
-        {/* SEO Meta */}
-        <div className="rounded-lg border p-4 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SEO Metadata</p>
-          <Field label="Meta Title">
-            <Input
-              value={form.meta_title || ""}
-              onChange={(e) => setForm({ ...form, meta_title: e.target.value || null })}
-              placeholder={form.title || "Sử dụng tiêu đề"}
-            />
-          </Field>
-          <Field label="Meta Description">
-            <Textarea
-              value={form.meta_description || ""}
-              onChange={(e) => setForm({ ...form, meta_description: e.target.value || null })}
-              rows={2}
-              placeholder={form.description || "Sử dụng mô tả"}
-            />
-          </Field>
-        </div>
-      </FormDialog>
+      />
 
       {/* Delete confirm */}
       <ConfirmDelete

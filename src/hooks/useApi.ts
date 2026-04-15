@@ -1,6 +1,23 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+// ===== Solutions =====
+export function useSolutions() {
+  return useQuery({
+    queryKey: ["solutions"],
+    queryFn: () => api.solutions.list({ limit: 100 }),
+    staleTime: 5 * 60 * 1000, // 5 min — solutions rarely change
+  });
+}
+
+export function useSolution(slug: string) {
+  return useQuery({
+    queryKey: ["solution", slug],
+    queryFn: () => api.solutions.get(slug),
+    enabled: !!slug,
+  });
+}
+
 // ===== Products =====
 export function useProductCategories() {
   return useQuery({

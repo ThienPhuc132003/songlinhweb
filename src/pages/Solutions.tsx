@@ -2,14 +2,19 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
-import { SOLUTIONS } from "@/data/solutions";
+import { useSolutions } from "@/hooks/useApi";
 import { SolutionIconBadge } from "@/components/ui/SolutionIcon";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
-import { ArrowRight } from "lucide-react";
+import { SOLUTION_IMAGES } from "@/lib/solutionImages";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/animations";
+import type { Solution } from "@/types";
 
 export default function Solutions() {
+  const { data, isLoading } = useSolutions();
+  const solutions = data?.items ?? [];
+
   return (
     <>
       <SEO
@@ -26,11 +31,8 @@ export default function Solutions() {
 
       <section className="py-24 md:py-32">
         <div className="container-custom">
-          {/* Editorial heading — matches homepage */}
+          {/* Editorial heading */}
           <motion.div {...fadeUp()} className="mb-16 text-center">
-            <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.3em] text-[#3C5DAA]">
-              Năng lực giải pháp
-            </p>
             <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
               Tất cả{" "}
               <span className="font-semibold">giải pháp</span>
@@ -41,29 +43,40 @@ export default function Solutions() {
             </p>
           </motion.div>
 
-          <div className="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            {SOLUTIONS.map((solution, i) => (
-              <motion.div
-                key={solution.slug}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.5,
-                  delay: i * 0.06,
-                  ease: [0.25, 0.1, 0.25, 1],
-                }}
-              >
-                <SolutionCard
-                  slug={solution.slug}
-                  title={solution.title}
-                  icon={solution.icon}
-                  description={solution.description}
-                  image={solution.heroImage}
-                />
-              </motion.div>
-            ))}
-          </div>
+          {/* Loading skeleton */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-[#3C5DAA]/60" />
+            </div>
+          )}
+
+          {/* Solutions grid */}
+          {!isLoading && solutions.length > 0 && (
+            <div className="grid gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              {solutions.map((solution, i) => (
+                <motion.div
+                  key={solution.slug}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{
+                    duration: 0.5,
+                    delay: i * 0.06,
+                    ease: [0.25, 0.1, 0.25, 1],
+                  }}
+                >
+                  <SolutionCard solution={solution} />
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!isLoading && solutions.length === 0 && (
+            <div className="py-20 text-center text-muted-foreground">
+              <p>Chưa có giải pháp nào.</p>
+            </div>
+          )}
         </div>
       </section>
     </>
@@ -71,39 +84,30 @@ export default function Solutions() {
 }
 
 /**
- * Unified SolutionCard — identical to the homepage card in SolutionCards.tsx
- * to keep visual consistency across the site.
+ * SolutionCard — Uses API data with solutionImages.ts as fallback for cover images
  */
-function SolutionCard({
-  slug,
-  title,
-  icon,
-  description,
-  image,
-}: {
-  slug: string;
-  title: string;
-  icon: string;
-  description?: string;
-  image?: string;
-}) {
+function SolutionCard({ solution }: { solution: Solution }) {
   const [imgError, setImgError] = useState(false);
+
+  // Priority: API hero_image_url → static fallback by slug
+  const imageUrl = solution.hero_image_url || SOLUTION_IMAGES[solution.slug];
+  const displayText = solution.excerpt || solution.description;
 
   return (
     <Link
-      to={`/giai-phap/${slug}`}
-      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-lg dark:border-border dark:bg-card"
+      to={`/giai-phap/${solution.slug}`}
+      className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all duration-300 hover:border-[#3C5DAA]/50 hover:shadow-md dark:border-border dark:bg-card"
     >
       {/* Brand accent line — top, visible on hover */}
       <div className="absolute inset-x-0 top-0 z-10 h-0.5 bg-[#3C5DAA] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* Image — fixed aspect, zoom on hover */}
       <div className="relative shrink-0 overflow-hidden">
-        {image && !imgError ? (
+        {imageUrl && !imgError ? (
           <>
             <img
-              src={image}
-              alt={title}
+              src={imageUrl}
+              alt={solution.title}
               className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               onError={() => setImgError(true)}
@@ -114,7 +118,7 @@ function SolutionCard({
           <ImagePlaceholder
             className="aspect-video"
             variant="solution"
-            title={title}
+            title={solution.title}
           />
         )}
       </div>
@@ -122,14 +126,14 @@ function SolutionCard({
       {/* Info */}
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center gap-2">
-          <SolutionIconBadge name={icon} size="sm" />
+          <SolutionIconBadge name={solution.icon} size="sm" />
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight transition-colors group-hover:text-[#3C5DAA]">
-            {title}
+            {solution.title}
           </h3>
         </div>
-        {description && (
+        {displayText && (
           <p className="line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-muted-foreground">
-            {description}
+            {displayText}
           </p>
         )}
         {/* CTA — pinned to bottom */}

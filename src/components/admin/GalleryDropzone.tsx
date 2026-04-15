@@ -135,7 +135,7 @@ export function GalleryDropzone({ albumId, onUploadComplete, disabled }: Gallery
     <div className="space-y-3">
       {/* Drop Zone */}
       <div
-        className={`relative rounded-lg border-2 border-dashed transition-all duration-300 ${
+        className={`relative rounded-sm border-2 border-dashed transition-all duration-300 ${
           isDragOver
             ? "border-[#3C5DAA] bg-[#3C5DAA]/5 scale-[1.01]"
             : disabled
@@ -197,7 +197,7 @@ export function GalleryDropzone({ albumId, onUploadComplete, disabled }: Gallery
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group relative aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700"
+                className="group relative aspect-square rounded-sm overflow-hidden bg-slate-800 border border-slate-700"
               >
                 <img
                   src={item.previewUrl}

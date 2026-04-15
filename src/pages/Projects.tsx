@@ -75,7 +75,7 @@ export default function Projects() {
           >
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="overflow-hidden rounded-xl border">
+                  <div key={i} className="overflow-hidden rounded-sm border">
                     <Skeleton className="aspect-video w-full" />
                     <div className="space-y-2 p-5">
                       <Skeleton className="h-3 w-16" />
@@ -131,7 +131,7 @@ function ProjectCard({
     <motion.div variants={fadeInUp}>
       <Link
         to={`/du-an/${slug}`}
-        className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-0.5"
+        className="group flex h-full flex-col overflow-hidden rounded-sm border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5"
       >
         {/* Image — shrunk from aspect-4/3 → aspect-video */}
         <div className="relative shrink-0 overflow-hidden">

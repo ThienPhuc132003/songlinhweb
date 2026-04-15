@@ -50,7 +50,7 @@ export function BrandFilter({ className, hideTitle }: BrandFilterProps) {
             key={brand.slug}
             onClick={() => handleBrandClick(brand.slug)}
             className={cn(
-              "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent",
+              "flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm transition-colors hover:bg-accent",
               activeBrand === brand.slug &&
                 "bg-primary/10 font-medium text-primary",
             )}

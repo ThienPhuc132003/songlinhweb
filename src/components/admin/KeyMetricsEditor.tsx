@@ -103,7 +103,7 @@ export function KeyMetricsEditor({
               <Sparkles className="h-3 w-3" />
               Mẫu có sẵn
             </Button>
-            <div className="absolute right-0 top-full z-50 mt-1 hidden w-48 rounded-md border bg-popover py-1 shadow-lg group-hover:block">
+            <div className="absolute right-0 top-full z-50 mt-1 hidden w-48 rounded-sm border bg-popover py-1 shadow-lg group-hover:block">
               {METRIC_PRESETS.map((preset) => {
                 const exists = rows.some((r) => r.key === preset.key);
                 return (

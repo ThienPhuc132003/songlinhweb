@@ -159,7 +159,7 @@ export function GalleryImageGrid({
               onDragStart={(e) => handleDragStart(e, index)}
               onDragEnd={handleDragEnd}
               onDragOver={(e) => handleDragOver(e, index)}
-              className={`group relative aspect-square rounded-lg overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 ${
+              className={`group relative aspect-square rounded-sm overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 ${
                 isDragTarget
                   ? "ring-2 ring-cyan-400 scale-105"
                   : isSelected

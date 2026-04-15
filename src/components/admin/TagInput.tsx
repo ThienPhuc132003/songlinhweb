@@ -75,7 +75,7 @@ export function TagInput({
       )}
 
       {/* Tag pills */}
-      <div className="flex flex-wrap items-center gap-1.5 rounded-md border bg-background p-1.5 min-h-[36px] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1">
+      <div className="flex flex-wrap items-center gap-1.5 rounded-sm border bg-background p-1.5 min-h-[36px] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1">
         {safeValue.map((tag) => (
           <span
             key={tag}
@@ -110,7 +110,7 @@ export function TagInput({
 
       {/* Suggestions dropdown */}
       {showSuggestions && filteredSuggestions.length > 0 && (
-        <div className="rounded-md border bg-popover p-1 shadow-md">
+        <div className="rounded-sm border bg-popover p-1 shadow-md">
           <p className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase">
             Gợi ý
           </p>
@@ -120,7 +120,7 @@ export function TagInput({
                 key={s}
                 type="button"
                 onClick={() => addTag(s)}
-                className="rounded-full border border-input px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+                className="rounded-sm border border-input px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
               >
                 + {s}
               </button>

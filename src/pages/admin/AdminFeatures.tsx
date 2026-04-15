@@ -150,7 +150,7 @@ export default function AdminFeatures() {
       className: "w-36",
       render: (r) =>
         r.group_name ? (
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+          <span className="inline-flex items-center rounded-sm bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
             {r.group_name}
           </span>
         ) : (
@@ -163,7 +163,7 @@ export default function AdminFeatures() {
       className: "w-20",
       render: (r) =>
         r.is_priority ? (
-          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+          <span className="inline-flex items-center rounded-sm bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
             ★
           </span>
         ) : (
@@ -258,7 +258,7 @@ export default function AdminFeatures() {
         </div>
 
         {/* ═══════ Visual Fields ═══════ */}
-        <div className="rounded-lg border p-4 space-y-4">
+        <div className="rounded-sm border p-4 space-y-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Giao diện badge
           </p>
@@ -280,7 +280,7 @@ export default function AdminFeatures() {
 
           {/* Live Preview */}
           <Field label="Xem trước">
-            <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-sm border bg-muted/30 px-4 py-3">
               <FeatureBadge
                 name={form.name || "Tên tính năng"}
                 color={form.color}
@@ -300,7 +300,7 @@ export default function AdminFeatures() {
         <div className="grid grid-cols-2 gap-4">
           <Field label="Ưu tiên">
             <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+              className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
               value={form.is_priority ?? 0}
               onChange={(e) =>
                 setForm({ ...form, is_priority: Number(e.target.value) })
@@ -312,7 +312,7 @@ export default function AdminFeatures() {
           </Field>
           <Field label="Trạng thái">
             <select
-              className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm"
+              className="border-input bg-background flex h-9 w-full rounded-sm border px-3 py-1 text-sm"
               value={form.is_active ?? 1}
               onChange={(e) =>
                 setForm({ ...form, is_active: Number(e.target.value) })

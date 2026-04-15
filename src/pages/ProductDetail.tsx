@@ -101,7 +101,7 @@ export default function ProductDetail() {
             <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
               <div className="space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
-                  <Skeleton className="aspect-square w-full rounded-xl" />
+                  <Skeleton className="aspect-square w-full rounded-sm" />
                   <div className="space-y-4">
                     <Skeleton className="h-6 w-1/3" />
                     <Skeleton className="h-8 w-2/3" />
@@ -111,7 +111,7 @@ export default function ProductDetail() {
                   </div>
                 </div>
               </div>
-              <Skeleton className="h-80 rounded-xl" />
+              <Skeleton className="h-80 rounded-sm" />
             </div>
           </div>
         </section>
@@ -197,7 +197,7 @@ export default function ProductDetail() {
               <div className="grid gap-8 md:grid-cols-2">
                 {/* Image + Gallery */}
                 <div className="space-y-3">
-                  <div className="group/img flex items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br from-muted to-muted/30 cursor-zoom-in">
+                  <div className="group/img flex items-center justify-center overflow-hidden rounded-sm border bg-gradient-to-br from-muted to-muted/30 cursor-zoom-in">
                     {imgError || !displayImage ? (
                       <div className="flex flex-col items-center justify-center gap-2 p-12">
                         <Package className="h-24 w-24 text-muted-foreground/20" />
@@ -221,7 +221,7 @@ export default function ProductDetail() {
                         <button
                           type="button"
                           onClick={() => setMainImage(product.image_url)}
-                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-sm border-2 transition-all duration-200 ${
                             displayImage === product.image_url
                               ? "border-primary ring-2 ring-primary/20"
                               : "border-transparent hover:border-primary/50"
@@ -239,7 +239,7 @@ export default function ProductDetail() {
                           key={img.id}
                           type="button"
                           onClick={() => setMainImage(img.url)}
-                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-sm border-2 transition-all duration-200 ${
                             displayImage === img.url
                               ? "border-primary ring-2 ring-primary/20"
                               : "border-transparent hover:border-primary/50"
@@ -282,7 +282,7 @@ export default function ProductDetail() {
                     )}
                     {/* Inventory Status Badge */}
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${inventoryInfo.className}`}
+                      className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 text-xs font-medium ${inventoryInfo.className}`}
                     >
                       <InventoryIcon className="h-3 w-3" />
                       {inventoryInfo.label}
@@ -351,11 +351,11 @@ export default function ProductDetail() {
                       <Cpu className="h-5 w-5 text-primary" />
                       <h2 className="text-xl font-semibold">Thông số kỹ thuật</h2>
                     </div>
-                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                    <span className="rounded-sm bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                       {specEntries.length} thông số
                     </span>
                   </div>
-                  <div className="overflow-x-auto -mx-1 px-1 rounded-xl border">
+                  <div className="overflow-x-auto -mx-1 px-1 rounded-sm border">
                     <table className="w-full min-w-[480px]">
                       <thead>
                         <tr className="bg-muted/70">
@@ -405,16 +405,16 @@ export default function ProductDetail() {
                       <Link
                         key={proj.slug}
                         to={`/du-an/${proj.slug}`}
-                        className="group flex items-center gap-3 rounded-xl border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
+                        className="group flex items-center gap-3 rounded-sm border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md"
                       >
                         {proj.thumbnail_url ? (
                           <img
                             src={proj.thumbnail_url}
                             alt={proj.title}
-                            className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                            className="h-14 w-14 shrink-0 rounded-sm object-cover"
                           />
                         ) : (
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/5">
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-sm bg-primary/5">
                             <MapPin className="h-6 w-6 text-primary/40" />
                           </div>
                         )}
@@ -460,7 +460,7 @@ export default function ProductDetail() {
                       <Link
                         key={rp.slug}
                         to={`/san-pham/${rp.slug}`}
-                        className="group overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/30 hover:shadow-lg"
+                        className="group overflow-hidden rounded-sm border bg-card transition-all hover:border-primary/30 hover:shadow-md"
                       >
                         <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-muted to-muted/50 p-4">
                           {rp.image_url ? (
@@ -501,7 +501,7 @@ export default function ProductDetail() {
               className="lg:sticky lg:top-24 lg:self-start space-y-4"
             >
               {/* Quick Specs Card */}
-              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+              <div className="rounded-sm border bg-card shadow-sm overflow-hidden">
                 <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-5 py-3 border-b">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
                     <Cpu className="h-4 w-4" />
@@ -549,7 +549,7 @@ export default function ProductDetail() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Tình trạng</span>
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${inventoryInfo.className}`}
+                      className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 text-xs font-medium ${inventoryInfo.className}`}
                     >
                       <InventoryIcon className="h-3 w-3" />
                       {inventoryInfo.label}
@@ -560,7 +560,7 @@ export default function ProductDetail() {
               </div>
 
               {/* ─── B2B CTA Section ─── */}
-              <div className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
+              <div className="rounded-sm border bg-card shadow-sm p-5 space-y-3">
                 <p className="text-sm font-bold text-foreground">
                   Liên hệ báo giá dự án
                 </p>

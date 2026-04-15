@@ -25,7 +25,7 @@ export function RelatedProjects({ projectSlugs }: RelatedProjectsProps) {
         <h2 className="mb-6 text-2xl font-bold">Dự án liên quan</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
+            <Skeleton key={i} className="h-32 rounded-sm" />
           ))}
         </div>
       </section>
@@ -45,17 +45,17 @@ export function RelatedProjects({ projectSlugs }: RelatedProjectsProps) {
           <Link
             key={project.slug}
             to={`/du-an/${project.slug}`}
-            className="group flex items-center gap-4 rounded-xl border bg-card p-4 transition-shadow hover:shadow-md"
+            className="group flex items-center gap-4 rounded-sm border bg-card p-4 transition-shadow hover:shadow-md"
           >
             {project.thumbnail_url ? (
               <img
                 src={project.thumbnail_url}
                 alt={project.title}
-                className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                className="h-16 w-16 shrink-0 rounded-sm object-cover"
                 loading="lazy"
               />
             ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-sm bg-primary/10">
                 <Building2 className="h-6 w-6 text-primary" />
               </div>
             )}

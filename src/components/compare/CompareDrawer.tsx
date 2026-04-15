@@ -17,7 +17,7 @@ export function CompareDrawer() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 px-4 py-3 shadow-2xl backdrop-blur-lg"
+          className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 px-4 py-3 shadow-sm backdrop-blur-lg"
         >
           <div className="container-custom flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
@@ -29,7 +29,7 @@ export function CompareDrawer() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex shrink-0 items-center gap-2 rounded-lg border bg-card px-3 py-1.5"
+                  className="flex shrink-0 items-center gap-2 rounded-sm border bg-card px-3 py-1.5"
                 >
                   {item.image_url ? (
                     <img
@@ -58,14 +58,14 @@ export function CompareDrawer() {
             <div className="flex shrink-0 items-center gap-2">
               <button
                 onClick={clear}
-                className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+                className="rounded-sm px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
               >
                 Xóa tất cả
               </button>
               <button
                 onClick={() => setShowTable(true)}
                 disabled={items.length < 2}
-                className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-sm bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 So sánh ngay
               </button>

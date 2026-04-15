@@ -80,7 +80,7 @@ export function ProjectGallery({
               key={img.id}
               type="button"
               onClick={() => openLightbox(index)}
-              className="group relative mb-3 block w-full overflow-hidden rounded-lg border bg-muted break-inside-avoid focus:outline-none focus:ring-2 focus:ring-primary"
+              className="group relative mb-3 block w-full overflow-hidden rounded-sm border bg-muted break-inside-avoid focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <img
                 src={img.image_url}
@@ -139,7 +139,7 @@ export function ProjectGallery({
           <img
             src={images[lightboxIndex].image_url}
             alt={images[lightboxIndex].caption ?? `${projectTitle} - ${lightboxIndex + 1}`}
-            className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
+            className="max-h-[85vh] max-w-[90vw] rounded-sm object-contain"
             onClick={(e) => e.stopPropagation()}
           />
 
@@ -154,7 +154,7 @@ export function ProjectGallery({
           )}
 
           {images[lightboxIndex].caption && (
-            <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-lg bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm">
+            <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-sm bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm">
               {images[lightboxIndex].caption}
             </div>
           )}
