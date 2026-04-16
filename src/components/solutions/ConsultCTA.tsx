@@ -90,10 +90,10 @@ export function ConsultCTAInline() {
             asChild
             size="lg"
             variant="outline"
-            className="border-white/30 text-white hover:bg-white/10"
+            className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
           >
             <a href="tel:0968811911">
-              <FileText className="mr-2 h-4 w-4" />
+              <Phone className="mr-2 h-4 w-4" />
               0968.811.911
             </a>
           </Button>

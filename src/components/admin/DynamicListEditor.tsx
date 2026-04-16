@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { IconPickerField } from "@/components/admin/IconPickerField";
 import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -34,15 +35,6 @@ export interface DynamicListEditorProps<T extends Record<string, string | number
   maxItems?: number;
 }
 
-// ─── Common Lucide icon options for the picker ────────────────────────────────
-
-const ICON_OPTIONS = [
-  "Shield", "Users", "Award", "Heart", "Star", "Zap",
-  "GraduationCap", "HeadsetIcon", "Layers", "ShieldCheck",
-  "Calendar", "FolderCheck", "Handshake", "Building2",
-  "Target", "Eye", "CheckCircle2", "Cpu", "Wifi",
-  "Lock", "Settings", "Wrench", "Clock", "Globe",
-];
 
 // ─── Generic Object-List Editor ───────────────────────────────────────────────
 
@@ -151,18 +143,10 @@ export function DynamicListEditor<T extends Record<string, string | number>>({
                 >
                   <Label className="text-xs text-muted-foreground">{field.label}</Label>
                   {field.type === "icon" ? (
-                    <select
-                      value={String(item[field.key] ?? "")}
-                      onChange={(e) => updateItem(idx, field.key, e.target.value)}
-                      className="flex h-9 w-full rounded-sm border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    >
-                      <option value="">— Chọn icon —</option>
-                      {ICON_OPTIONS.map((icon) => (
-                        <option key={icon} value={icon}>
-                          {icon}
-                        </option>
-                      ))}
-                    </select>
+                    <IconPickerField
+                      value={String(item[field.key] ?? "") || null}
+                      onChange={(icon) => updateItem(idx, field.key, icon ?? "")}
+                    />
                   ) : field.type === "textarea" ? (
                     <Textarea
                       value={String(item[field.key] ?? "")}

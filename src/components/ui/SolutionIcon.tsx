@@ -1,35 +1,31 @@
-import {
-  Camera,
-  Flame,
-  Volume2,
-  Network,
-  Zap,
-  Phone,
-  ShieldCheck,
-  Bell,
-  Server,
-  Building2,
-  FileCheck,
-  type LucideIcon,
-} from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { FileCheck, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  Camera,
-  Flame,
-  Volume2,
-  Network,
-  Zap,
-  Phone,
-  ShieldCheck,
-  Bell,
-  Server,
-  Building2,
-  FileCheck,
-};
+/** Convert kebab-case to PascalCase for Lucide lookup */
+function toPascalCase(name: string): string {
+  return name
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+}
+
+/** Resolve a Lucide icon by name (supports both kebab-case and PascalCase) */
+function resolveIcon(name: string): LucideIcon {
+  // Try direct lookup first (PascalCase)
+  const direct = (LucideIcons as Record<string, unknown>)[name];
+  if (typeof direct === "function") return direct as LucideIcon;
+
+  // Try converting kebab-case → PascalCase
+  const pascal = toPascalCase(name);
+  const converted = (LucideIcons as Record<string, unknown>)[pascal];
+  if (typeof converted === "function") return converted as LucideIcon;
+
+  return FileCheck;
+}
 
 interface SolutionIconProps {
-  /** Icon name from SOLUTIONS_DATA (e.g. "Camera", "Flame") */
+  /** Icon name (e.g. "camera", "scan-face", "Camera", "ShieldCheck") */
   name: string;
   className?: string;
   /** Size variant */
@@ -38,10 +34,11 @@ interface SolutionIconProps {
 
 /**
  * Renders a Lucide icon from a string name.
+ * Supports both kebab-case ("scan-face") and PascalCase ("ScanFace").
  * Falls back to FileCheck if the name isn't recognized.
  */
 export function SolutionIcon({ name, className, size = "md" }: SolutionIconProps) {
-  const Icon = ICON_MAP[name] ?? FileCheck;
+  const Icon = resolveIcon(name);
 
   const sizeClasses = {
     sm: "h-4 w-4",
@@ -76,3 +73,4 @@ export function SolutionIconBadge({
     </div>
   );
 }
+

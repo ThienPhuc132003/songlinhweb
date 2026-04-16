@@ -23,27 +23,50 @@ const features = new Hono<{ Bindings: Env }>();
 
 /** GET /api/product-features — list active features (for frontend filter) */
 features.get("/", async (c) => {
-  const rows = await c.env.DB.prepare(
-    `SELECT id, name, slug, group_name, sort_order, color, icon, is_priority
-     FROM product_features
-     WHERE is_active = 1
-     ORDER BY group_name ASC, is_priority DESC, sort_order ASC`,
-  ).all<ProductFeatureRow>();
-  return ok(rows.results);
+  try {
+    const rows = await c.env.DB.prepare(
+      `SELECT id, name, slug, group_name, sort_order, color, icon, is_priority
+       FROM product_features
+       WHERE is_active = 1
+       ORDER BY group_name ASC, is_priority DESC, sort_order ASC`,
+    ).all<ProductFeatureRow>();
+    return ok(rows.results);
+  } catch (e) {
+    console.warn("[product-features] Table or columns missing. Run migrations 0012, 0013, 0035.", e);
+    return ok([]);
+  }
 });
 
 /* ───────── Admin ───────── */
 
 /** GET /api/admin/product-features/all — list ALL features */
 features.get("/all", requireAuth, async (c) => {
-  const rows = await c.env.DB.prepare(
-    `SELECT pf.*,
-            (SELECT COUNT(*) FROM product_to_features WHERE feature_id = pf.id) as product_count
-     FROM product_features pf
-     WHERE pf.deleted_at IS NULL
-     ORDER BY pf.group_name ASC, pf.sort_order ASC`,
-  ).all<ProductFeatureRow & { product_count: number }>();
-  return ok(rows.results);
+  try {
+    const rows = await c.env.DB.prepare(
+      `SELECT pf.*,
+              (SELECT COUNT(*) FROM product_to_features WHERE feature_id = pf.id) as product_count
+       FROM product_features pf
+       WHERE pf.deleted_at IS NULL
+       ORDER BY pf.group_name ASC, pf.sort_order ASC`,
+    ).all<ProductFeatureRow & { product_count: number }>();
+    return ok(rows.results);
+  } catch {
+    // Fallback: try without deleted_at column (migration 0035 not yet applied)
+    try {
+      console.warn("[product-features] Fallback: deleted_at column missing. Run migration 0035.");
+      const rows = await c.env.DB.prepare(
+        `SELECT pf.*,
+                (SELECT COUNT(*) FROM product_to_features WHERE feature_id = pf.id) as product_count
+         FROM product_features pf
+         WHERE pf.is_active >= 0
+         ORDER BY pf.group_name ASC, pf.sort_order ASC`,
+      ).all<ProductFeatureRow & { product_count: number }>();
+      return ok(rows.results);
+    } catch (e2) {
+      console.warn("[product-features] Table missing. Run migration 0012.", e2);
+      return ok([]);
+    }
+  }
 });
 
 /** POST /api/admin/product-features — create feature */
