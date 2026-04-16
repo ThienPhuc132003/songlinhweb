@@ -11,7 +11,7 @@ import { ArrowRight } from "lucide-react";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 
-const CATEGORIES = ["Tất cả", "Thương mại", "Văn phòng", "Khách sạn", "Y tế", "Dân cư", "Công nghiệp", "Giáo dục", "Công trình"];
+const CATEGORIES = ["Tất cả", "Tòa nhà văn phòng", "Chung cư cao cấp", "Khách sạn", "Trung tâm dữ liệu", "Y tế", "Giáo dục", "Nhà máy", "Ngân hàng", "Cơ quan nhà nước"];
 
 export default function Projects() {
   const [category, setCategory] = useState<string>();

@@ -61,90 +61,124 @@ admin.get("/me", requireAuth, (c) => {
 
 /** GET /api/admin/dashboard/stats — aggregated dashboard stats */
 admin.get("/dashboard/stats", requireAuth, async (c) => {
-  // ── Core stats + Trend queries (all in parallel) ──
-  const [
-    productCount,
-    featuredProjectCount,
-    unreadQuotes,
-    unreadContacts,
-    quotesThisWeek,
-    quotesLastWeek,
-    contactsThisWeek,
-    contactsLastWeek,
-  ] = await Promise.all([
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM products WHERE deleted_at IS NULL").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM projects WHERE is_featured = 1 AND deleted_at IS NULL").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE status = 'new' AND deleted_at IS NULL").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE status = 'new' AND deleted_at IS NULL").first<{ cnt: number }>(),
-    // Trends: quotes
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE deleted_at IS NULL AND created_at >= date('now', '-7 days')").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE deleted_at IS NULL AND created_at >= date('now', '-14 days') AND created_at < date('now', '-7 days')").first<{ cnt: number }>(),
-    // Trends: contacts
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE deleted_at IS NULL AND created_at >= date('now', '-7 days')").first<{ cnt: number }>(),
-    c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE deleted_at IS NULL AND created_at >= date('now', '-14 days') AND created_at < date('now', '-7 days')").first<{ cnt: number }>(),
-  ]);
-
-  // ── Recent quotes + Daily chart + D1 storage (second parallel batch) ──
-  const [recentQuotes, dailyChart, d1Storage] = await Promise.all([
-    c.env.DB.prepare(
-      `SELECT id, customer_name, project_name, status, created_at
-       FROM quotation_requests
-       WHERE deleted_at IS NULL
-       ORDER BY created_at DESC
-       LIMIT 5`,
-    ).all(),
-    c.env.DB.prepare(
-      `SELECT strftime('%Y-%m-%d', created_at) as day, COUNT(*) as cnt
-       FROM quotation_requests
-       WHERE deleted_at IS NULL
-         AND created_at >= date('now', '-30 days')
-       GROUP BY day
-       ORDER BY day ASC`,
-    ).all(),
-    c.env.DB.prepare(
-      `SELECT
-         (SELECT COUNT(*) FROM products WHERE deleted_at IS NULL) as products,
-         (SELECT COUNT(*) FROM projects WHERE deleted_at IS NULL) as projects,
-         (SELECT COUNT(*) FROM contacts WHERE deleted_at IS NULL) as contacts,
-         (SELECT COUNT(*) FROM quotation_requests WHERE deleted_at IS NULL) as quotations,
-         (SELECT COUNT(*) FROM posts WHERE deleted_at IS NULL) as posts`,
-    ).first<{ products: number; projects: number; contacts: number; quotations: number; posts: number }>(),
-  ]);
-
-  // ── R2 storage monitoring (best-effort) ──
-  let r2ObjectCount = 0;
   try {
-    const r2List = await c.env.IMAGES.list();
-    r2ObjectCount = r2List.objects.length;
-    if (r2List.truncated) r2ObjectCount = 1000; // indicate "1000+" to frontend
-  } catch {
-    // R2 list may fail in dev — don't break dashboard
-  }
+    // ── Core stats + Trend queries (all in parallel) ──
+    const [
+      productCount,
+      featuredProjectCount,
+      unreadQuotes,
+      unreadContacts,
+      quotesThisWeek,
+      quotesLastWeek,
+      contactsThisWeek,
+      contactsLastWeek,
+    ] = await Promise.all([
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM products WHERE deleted_at IS NULL").first<{ cnt: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM projects WHERE is_featured = 1 AND deleted_at IS NULL").first<{ cnt: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE status = 'new' AND deleted_at IS NULL").first<{ cnt: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE status = 'new' AND deleted_at IS NULL").first<{ cnt: number }>(),
+      // Trends: quotes
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE deleted_at IS NULL AND created_at >= date('now', '-7 days')").first<{ cnt: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE deleted_at IS NULL AND created_at >= date('now', '-14 days') AND created_at < date('now', '-7 days')").first<{ cnt: number }>(),
+      // Trends: contacts
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE deleted_at IS NULL AND created_at >= date('now', '-7 days')").first<{ cnt: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE deleted_at IS NULL AND created_at >= date('now', '-14 days') AND created_at < date('now', '-7 days')").first<{ cnt: number }>(),
+    ]);
 
-  return ok({
-    totalProducts: productCount?.cnt ?? 0,
-    featuredProjects: featuredProjectCount?.cnt ?? 0,
-    unreadQuotes: unreadQuotes?.cnt ?? 0,
-    unreadContacts: unreadContacts?.cnt ?? 0,
-    trends: {
-      quotesThisWeek: quotesThisWeek?.cnt ?? 0,
-      quotesLastWeek: quotesLastWeek?.cnt ?? 0,
-      contactsThisWeek: contactsThisWeek?.cnt ?? 0,
-      contactsLastWeek: contactsLastWeek?.cnt ?? 0,
-    },
-    dailyQuotesChart: dailyChart.results,
-    recentQuotes: recentQuotes.results,
-    storage: {
-      d1: {
-        products: d1Storage?.products ?? 0,
-        projects: d1Storage?.projects ?? 0,
-        contacts: d1Storage?.contacts ?? 0,
-        quotations: d1Storage?.quotations ?? 0,
-        posts: d1Storage?.posts ?? 0,
+    // ── Recent quotes + Daily chart + D1 storage (second parallel batch) ──
+    const [recentQuotes, dailyChart, d1Storage] = await Promise.all([
+      c.env.DB.prepare(
+        `SELECT id, customer_name, project_name, status, created_at
+         FROM quotation_requests
+         WHERE deleted_at IS NULL
+         ORDER BY created_at DESC
+         LIMIT 5`,
+      ).all(),
+      c.env.DB.prepare(
+        `SELECT strftime('%Y-%m-%d', created_at) as day, COUNT(*) as cnt
+         FROM quotation_requests
+         WHERE deleted_at IS NULL
+           AND created_at >= date('now', '-30 days')
+         GROUP BY day
+         ORDER BY day ASC`,
+      ).all(),
+      c.env.DB.prepare(
+        `SELECT
+           (SELECT COUNT(*) FROM products WHERE deleted_at IS NULL) as products,
+           (SELECT COUNT(*) FROM projects WHERE deleted_at IS NULL) as projects,
+           (SELECT COUNT(*) FROM contacts WHERE deleted_at IS NULL) as contacts,
+           (SELECT COUNT(*) FROM quotation_requests WHERE deleted_at IS NULL) as quotations,
+           (SELECT COUNT(*) FROM posts WHERE deleted_at IS NULL) as posts`,
+      ).first<{ products: number; projects: number; contacts: number; quotations: number; posts: number }>(),
+    ]);
+
+    // ── R2 storage monitoring (best-effort) ──
+    let r2ObjectCount = 0;
+    try {
+      const r2List = await c.env.IMAGES.list();
+      r2ObjectCount = r2List.objects.length;
+      if (r2List.truncated) r2ObjectCount = 1000; // indicate "1000+" to frontend
+    } catch {
+      // R2 list may fail in dev — don't break dashboard
+    }
+
+    return ok({
+      totalProducts: productCount?.cnt ?? 0,
+      featuredProjects: featuredProjectCount?.cnt ?? 0,
+      unreadQuotes: unreadQuotes?.cnt ?? 0,
+      unreadContacts: unreadContacts?.cnt ?? 0,
+      trends: {
+        quotesThisWeek: quotesThisWeek?.cnt ?? 0,
+        quotesLastWeek: quotesLastWeek?.cnt ?? 0,
+        contactsThisWeek: contactsThisWeek?.cnt ?? 0,
+        contactsLastWeek: contactsLastWeek?.cnt ?? 0,
       },
-      r2ObjectCount,
-    },
-  });
+      dailyQuotesChart: dailyChart.results,
+      recentQuotes: recentQuotes.results,
+      storage: {
+        d1: {
+          products: d1Storage?.products ?? 0,
+          projects: d1Storage?.projects ?? 0,
+          contacts: d1Storage?.contacts ?? 0,
+          quotations: d1Storage?.quotations ?? 0,
+          posts: d1Storage?.posts ?? 0,
+        },
+        r2ObjectCount,
+      },
+    });
+  } catch (e) {
+    // Fallback: deleted_at column may not exist on contacts/quotation_requests (migration 0036 not applied)
+    console.warn("[dashboard/stats] Fallback: some tables missing deleted_at. Run migration 0036.", e);
+    try {
+      const [productCount, featuredProjectCount, unreadQuotes, unreadContacts] = await Promise.all([
+        c.env.DB.prepare("SELECT COUNT(*) as cnt FROM products WHERE deleted_at IS NULL").first<{ cnt: number }>(),
+        c.env.DB.prepare("SELECT COUNT(*) as cnt FROM projects WHERE is_featured = 1 AND deleted_at IS NULL").first<{ cnt: number }>(),
+        c.env.DB.prepare("SELECT COUNT(*) as cnt FROM quotation_requests WHERE status = 'new'").first<{ cnt: number }>(),
+        c.env.DB.prepare("SELECT COUNT(*) as cnt FROM contacts WHERE status = 'new'").first<{ cnt: number }>(),
+      ]);
+      const recentQuotes = await c.env.DB.prepare(
+        "SELECT id, customer_name, project_name, status, created_at FROM quotation_requests ORDER BY created_at DESC LIMIT 5",
+      ).all();
+      return ok({
+        totalProducts: productCount?.cnt ?? 0,
+        featuredProjects: featuredProjectCount?.cnt ?? 0,
+        unreadQuotes: unreadQuotes?.cnt ?? 0,
+        unreadContacts: unreadContacts?.cnt ?? 0,
+        trends: { quotesThisWeek: 0, quotesLastWeek: 0, contactsThisWeek: 0, contactsLastWeek: 0 },
+        dailyQuotesChart: [],
+        recentQuotes: recentQuotes.results,
+        storage: { d1: { products: 0, projects: 0, contacts: 0, quotations: 0, posts: 0 }, r2ObjectCount: 0 },
+      });
+    } catch (e2) {
+      console.error("[dashboard/stats] Critical fallback also failed.", e2);
+      return ok({
+        totalProducts: 0, featuredProjects: 0, unreadQuotes: 0, unreadContacts: 0,
+        trends: { quotesThisWeek: 0, quotesLastWeek: 0, contactsThisWeek: 0, contactsLastWeek: 0 },
+        dailyQuotesChart: [], recentQuotes: [],
+        storage: { d1: { products: 0, projects: 0, contacts: 0, quotations: 0, posts: 0 }, r2ObjectCount: 0 },
+      });
+    }
+  }
 });
 
 /* ───────── Audit Logs ───────── */

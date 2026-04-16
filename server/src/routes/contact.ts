@@ -65,21 +65,23 @@ contact.get("/", requireAuth, async (c) => {
   const url = new URL(c.req.url);
   const status = url.searchParams.get("status");
 
-  let query = "SELECT * FROM contacts WHERE deleted_at IS NULL";
-  const params: unknown[] = [];
-
-  if (status) {
-    query += " AND status = ?";
-    params.push(status);
+  // Try with soft-delete filter first, fallback if column missing (migration 0036)
+  try {
+    let query = "SELECT * FROM contacts WHERE deleted_at IS NULL";
+    const params: unknown[] = [];
+    if (status) { query += " AND status = ?"; params.push(status); }
+    query += " ORDER BY created_at DESC";
+    const rows = await c.env.DB.prepare(query).bind(...params).all<ContactRow>();
+    return ok(rows.results);
+  } catch {
+    console.warn("[contacts] Fallback: deleted_at column missing. Run migration 0036.");
+    let query = "SELECT * FROM contacts WHERE 1=1";
+    const params: unknown[] = [];
+    if (status) { query += " AND status = ?"; params.push(status); }
+    query += " ORDER BY created_at DESC";
+    const rows = await c.env.DB.prepare(query).bind(...params).all<ContactRow>();
+    return ok(rows.results);
   }
-
-  query += " ORDER BY created_at DESC";
-
-  const rows = await c.env.DB.prepare(query)
-    .bind(...params)
-    .all<ContactRow>();
-
-  return ok(rows.results);
 });
 
 /** PUT /api/admin/contacts/:id/status — update contact status (admin) */

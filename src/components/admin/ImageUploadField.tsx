@@ -30,6 +30,8 @@ interface ImageUploadFieldProps {
   single?: boolean;
   /** Label */
   label?: string;
+  /** Fallback image URL when empty */
+  fallbackUrl?: string;
   className?: string;
 }
 
@@ -44,6 +46,7 @@ export function ImageUploadField({
   maxImages = 10,
   single = false,
   label = "Hình ảnh",
+  fallbackUrl,
   className,
 }: ImageUploadFieldProps) {
   // Defensive: ensure value is always an array
@@ -257,6 +260,16 @@ export function ImageUploadField({
             </button>
           </div>
         ))}
+
+        {/* Fallback image when no image is uploaded */}
+        {images.length === 0 && fallbackUrl && (
+          <div className="group relative h-24 w-24 overflow-hidden rounded-sm border border-dashed border-slate-300 bg-muted/50 opacity-70">
+            <img src={fallbackUrl} alt="Mặc định" className="h-full w-full object-cover grayscale-[30%]" />
+            <div className="absolute inset-x-0 bottom-0 bg-black/60 py-0.5 text-center text-[9px] font-medium text-white tracking-widest uppercase">
+              Mặc định
+            </div>
+          </div>
+        )}
 
         {/* Add button / Drop zone */}
         {canAdd && (

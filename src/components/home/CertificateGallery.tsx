@@ -152,8 +152,8 @@ export function CertificateGallery({ className }: { className?: string }) {
             className="mb-16 text-center"
           >
             <h2 className="text-3xl font-extralight tracking-tight md:text-4xl">
-              Chứng nhận &{" "}
-              <span className="font-semibold">Giải thưởng</span>
+              Chứng chỉ &{" "}
+              <span className="font-semibold">Ủy quyền</span>
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-500 dark:text-muted-foreground">
               Đối tác được ủy quyền chính thức từ các thương hiệu công nghệ

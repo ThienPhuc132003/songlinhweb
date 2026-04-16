@@ -26,6 +26,7 @@ import {
 } from "@/components/admin/DynamicListEditor";
 import { useMarkdown } from "@/hooks/useMarkdown";
 import type { Solution, SolutionFeature } from "@/types";
+import { SOLUTION_IMAGES } from "@/lib/solutionImages";
 import {
   FileText,
   Database,
@@ -206,6 +207,7 @@ export function SolutionFormSheet({
       <ImageUploadField
         label="Ảnh bìa (Cover)"
         value={form.hero_image_url ? [form.hero_image_url] : []}
+        fallbackUrl={form.slug ? SOLUTION_IMAGES[form.slug] : undefined}
         onChange={(urls) =>
           setForm((f) => ({ ...f, hero_image_url: urls[0] || null }))
         }

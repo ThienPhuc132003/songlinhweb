@@ -1,5 +1,5 @@
 export const SITE = {
-  name: "CÔNG TY TNHH TM CÔNG NGHỆ SONG LINH",
+  name: "Công ty trách nhiệm hữu hạn thương mại công nghệ Song Linh",
   shortName: "Song Linh Technologies",
   displayName: "Song Linh Technologies",
   tagline: "Giải pháp tối ưu – Chất lượng vượt trội",
@@ -159,7 +159,7 @@ export { default as heroME } from "@/assets/Image/HomePage/Hero M&E.webp";
 export const HERO_SLIDES = [
   {
     id: 1,
-    title: "Giải pháp Công nghệ Tối ưu",
+    title: "Giải pháp Công nghệ",
     subtitle:
       "Chuyên tư vấn, thiết kế, cung cấp và thi công lắp đặt các hệ thống công nghệ thông tin",
     cta: { label: "Xem giải pháp", href: "/giai-phap" },
