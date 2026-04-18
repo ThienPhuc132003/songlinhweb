@@ -3,6 +3,7 @@ import type { Env, BrandRow } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { logAudit } from "../lib/audit";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 const brands = new Hono<{ Bindings: Env }>();
 
@@ -68,25 +69,9 @@ brands.put("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<BrandRow>>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
-
-  const fields: Array<[keyof BrandRow, string]> = [
-    ["name", "name"],
-    ["slug", "slug"],
-    ["logo_url", "logo_url"],
-    ["description", "description"],
-    ["website_url", "website_url"],
-    ["sort_order", "sort_order"],
-    ["is_active", "is_active"],
-  ];
-
-  for (const [key, col] of fields) {
-    if ((body as Record<string, unknown>)[key] !== undefined) {
-      sets.push(`${col} = ?`);
-      values.push((body as Record<string, unknown>)[key]);
-    }
-  }
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "name", "slug", "logo_url", "description", "website_url", "sort_order", "is_active",
+  ]);
 
   if (sets.length === 0) return err("No fields to update");
   values.push(id);

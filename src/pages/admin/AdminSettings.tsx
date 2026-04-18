@@ -54,7 +54,6 @@ const TAB1_COMPANY: FieldDef[] = [
   { key: "company_name", label: "Tên công ty", type: "text", icon: <Building2 className="h-4 w-4" />, placeholder: "CÔNG TY TNHH TM CÔNG NGHỆ SONG LINH" },
   { key: "company_slogan", label: "Slogan", type: "text", icon: <Globe className="h-4 w-4" />, placeholder: "Giải pháp tối ưu – Chất lượng vượt trội" },
   { key: "company_hotline", label: "Hotline", type: "text", icon: <Phone className="h-4 w-4" />, placeholder: "0968.811.911" },
-  { key: "company_phone", label: "Số điện thoại", type: "text", icon: <Phone className="h-4 w-4" />, placeholder: "0968811911" },
   { key: "company_email", label: "Email", type: "text", icon: <Mail className="h-4 w-4" />, placeholder: "songlinh@sltech.vn" },
   { key: "company_address", label: "Địa chỉ", type: "textarea", icon: <MapPin className="h-4 w-4" />, placeholder: "19 Linh Đông, Khu phố 7, P. Hiệp Bình, TP.HCM" },
   { key: "company_hours", label: "Giờ làm việc", type: "text", icon: <Clock className="h-4 w-4" />, placeholder: "08:00 - 17:00" },

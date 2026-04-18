@@ -3,6 +3,8 @@ import type { Env, ProductCategoryRow, ProductRow } from "../types";
 import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { logAudit } from "../lib/audit";
+import { ProductJSONValidator } from "../lib/validators";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 /* ───────── Shared Helper ───────── */
 
@@ -43,7 +45,7 @@ const products = new Hono<{ Bindings: Env }>();
 
 /* ───────── Categories ───────── */
 
-/** GET /api/product-categories — list active categories */
+/** GET /api/products/categories — list active categories */
 products.get("/categories", async (c) => {
   const rows = await c.env.DB.prepare(
     `SELECT pc.*, COUNT(p.id) as product_count
@@ -54,6 +56,43 @@ products.get("/categories", async (c) => {
      ORDER BY pc.sort_order ASC`,
   ).all<ProductCategoryRow & { product_count: number }>();
   return ok(rows.results);
+});
+
+/** GET /api/products/categories/tree — get category tree for mega menu */
+products.get("/categories/tree", async (c) => {
+  const rows = await c.env.DB.prepare(
+    `SELECT id, slug, name, parent_id, sort_order
+     FROM product_categories
+     WHERE is_active = 1 AND deleted_at IS NULL
+     ORDER BY parent_id ASC, sort_order ASC`,
+  ).all<{ id: number; slug: string; name: string; parent_id: number | null; sort_order: number }>();
+
+  // Build tree
+  const map = new Map<number, any>();
+  const tree: any[] = [];
+  
+  for (const row of rows.results) {
+    map.set(row.id, { ...row, children: [] });
+  }
+  
+  for (const row of rows.results) {
+    const node = map.get(row.id);
+    if (row.parent_id === null) {
+      tree.push(node);
+    } else {
+      const parent = map.get(row.parent_id);
+      if (parent) {
+        parent.children.push(node);
+      } else {
+        tree.push(node); // Fallback if parent missing
+      }
+    }
+  }
+
+  // Define response headers with cache edge explicitly 1h
+  c.header("Cache-Control", "public, s-maxage=3600, max-age=60");
+
+  return ok(tree);
 });
 
 /** GET /api/admin/products/categories/all — list ALL categories (admin) */
@@ -296,37 +335,9 @@ products.put("/categories/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<ProductCategoryRow>>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
-
-  if (body.name !== undefined) {
-    sets.push("name = ?");
-    values.push(body.name);
-  }
-  if (body.slug !== undefined) {
-    sets.push("slug = ?");
-    values.push(body.slug);
-  }
-  if (body.description !== undefined) {
-    sets.push("description = ?");
-    values.push(body.description);
-  }
-  if (body.image_url !== undefined) {
-    sets.push("image_url = ?");
-    values.push(body.image_url);
-  }
-  if (body.sort_order !== undefined) {
-    sets.push("sort_order = ?");
-    values.push(body.sort_order);
-  }
-  if (body.is_active !== undefined) {
-    sets.push("is_active = ?");
-    values.push(body.is_active);
-  }
-  if (body.parent_id !== undefined) {
-    sets.push("parent_id = ?");
-    values.push(body.parent_id);
-  }
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "name", "slug", "description", "image_url", "sort_order", "is_active", "parent_id",
+  ]);
 
   if (sets.length === 0) return err("No fields to update");
   values.push(id);
@@ -360,7 +371,7 @@ products.delete("/categories/:id", requireAuth, async (c) => {
 });
 
 /** POST /api/admin/products */
-products.post("/", requireAuth, async (c) => {
+products.post("/", requireAuth, ProductJSONValidator, async (c) => {
   try {
     const body = await c.req.json<Partial<ProductRow>>();
     if (!body.slug || !body.name || !body.category_id)
@@ -418,7 +429,7 @@ products.post("/", requireAuth, async (c) => {
 });
 
 /** PUT /api/admin/products/:id */
-products.put("/:id", requireAuth, async (c) => {
+products.put("/:id", requireAuth, ProductJSONValidator, async (c) => {
   try {
     const id = Number(c.req.param("id"));
     if (!id || isNaN(id)) return err("ID sản phẩm không hợp lệ", 400);
@@ -439,36 +450,12 @@ products.put("/:id", requireAuth, async (c) => {
       if (slugCheck) return err(`Slug "${body.slug}" đã được sử dụng bởi sản phẩm khác.`, 409);
     }
 
-    const sets: string[] = [];
-    const values: unknown[] = [];
-
-    const fields: Array<[keyof ProductRow, string]> = [
-      ["name", "name"],
-      ["slug", "slug"],
-      ["description", "description"],
-      ["brand", "brand"],
-      ["brand_id", "brand_id"],
-      ["model_number", "model_number"],
-      ["image_url", "image_url"],
-      ["gallery_urls", "gallery_urls"],
-      ["spec_sheet_url", "spec_sheet_url"],
-      ["specifications", "specifications"],
-      ["features", "features"],
-      ["inventory_status", "inventory_status"],
-      ["warranty", "warranty"],
-      ["category_id", "category_id"],
-      ["sort_order", "sort_order"],
-      ["is_active", "is_active"],
-      ["meta_title", "meta_title"],
-      ["meta_description", "meta_description"],
-    ];
-
-    for (const [key, col] of fields) {
-      if ((body as Record<string, unknown>)[key] !== undefined) {
-        sets.push(`${col} = ?`);
-        values.push((body as Record<string, unknown>)[key]);
-      }
-    }
+    const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+      "name", "slug", "description", "brand", "brand_id", "model_number",
+      "image_url", "gallery_urls", "spec_sheet_url", "specifications",
+      "features", "inventory_status", "warranty", "category_id",
+      "sort_order", "is_active", "meta_title", "meta_description",
+    ]);
 
     if (sets.length === 0) return err("Không có trường nào để cập nhật", 400);
     sets.push("updated_at = datetime('now')");

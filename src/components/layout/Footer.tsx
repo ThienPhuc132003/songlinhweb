@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { SITE, NAV_LINKS, SOLUTIONS_DATA } from "@/lib/constants";
+import { SITE, NAV_LINKS } from "@/lib/constants";
+import { useSiteConfig, useSolutions } from "@/hooks/useApi";
 import { Phone, Mail, MapPin, Clock, ArrowUpRight, LucideIcon } from "lucide-react";
 
 const FooterLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
@@ -42,6 +43,21 @@ const ContactItem = ({
 };
 
 export default function Footer() {
+  const { data: config } = useSiteConfig();
+  const { data: solutionsData } = useSolutions();
+  const solutions = solutionsData?.items ?? [];
+  const c = config || {};
+  
+  const displayName = c.company_name || SITE.displayName;
+  const tagline = c.company_slogan || SITE.tagline;
+  const phone = c.company_hotline || SITE.phone;
+  const email = c.company_email || SITE.email;
+  const address = c.company_address || SITE.address;
+  const workingHours = c.company_hours || SITE.workingHours;
+  const mapEmbedUrl = c.map_embed_url || SITE.mapEmbedUrl;
+  const taxId = c.company_tax_id || SITE.taxId;
+  const copyRight = c.footer_copyright || `© ${new Date().getFullYear()} ${displayName}. Bản quyền thuộc Công ty TNHH TM CÔNG NGHỆ SONG LINH.`;
+
   return (
     <footer className="footer-editorial relative bg-[#1E3A6E]">
       {/* Brand accent line — sharp top edge */}
@@ -59,24 +75,24 @@ export default function Footer() {
                 className="h-10 w-auto brightness-200"
               />
               <span className="text-lg font-semibold tracking-tight text-white">
-                {SITE.displayName}
+                {displayName}
               </span>
             </Link>
             <p className="text-sm leading-relaxed text-[#94A3B8]">
-              {SITE.tagline}
+              {tagline}
             </p>
             <div className="space-y-3 text-sm">
-              <ContactItem href={`tel:${SITE.phoneRaw}`} icon={Phone}>
-                Hotline: {SITE.phone}
+              <ContactItem href={`tel:${phone.replace(/\D/g, '')}`} icon={Phone}>
+                Hotline: {phone}
               </ContactItem>
-              <ContactItem href={`mailto:${SITE.email}`} icon={Mail}>
-                {SITE.email}
+              <ContactItem href={`mailto:${email}`} icon={Mail}>
+                {email}
               </ContactItem>
               <ContactItem icon={MapPin} align="start" iconClassName="text-[#3C5DAA]/70">
-                {SITE.address}
+                {address}
               </ContactItem>
               <ContactItem icon={Clock} iconClassName="text-[#3C5DAA]/70">
-                Thứ 2 – Thứ 7: {SITE.workingHours}
+                Thứ 2 – Thứ 7: {workingHours}
               </ContactItem>
             </div>
           </div>
@@ -103,7 +119,7 @@ export default function Footer() {
               Giải pháp
             </p>
             <nav className="space-y-2.5">
-              {SOLUTIONS_DATA.slice(0, 6).map((solution) => (
+              {solutions.slice(0, 6).map((solution) => (
                 <Link
                   key={solution.slug}
                   to={`/giai-phap/${solution.slug}`}
@@ -123,7 +139,7 @@ export default function Footer() {
             </p>
             <div className="aspect-square w-full overflow-hidden rounded-sm border-2 border-[#3C5DAA]/40">
               <iframe
-                src={SITE.mapEmbedUrl}
+                src={mapEmbedUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 ,filter: 'brightness(0.85) contrast(0.95)'}}
@@ -141,11 +157,10 @@ export default function Footer() {
       <div className="border-t border-white/[0.12]">
         <div className="container-custom flex flex-col items-center justify-between gap-2 py-5 md:flex-row">
           <p className="text-xs text-[#94A3B8]">
-            &copy; {new Date().getFullYear()} {SITE.displayName}. Bản quyền
-            thuộc {SITE.name}.
+            {copyRight}
           </p>
           <p className="font-mono text-[10px] tracking-wider text-[#64748B]">
-            MST: {SITE.taxId}
+            MST: {taxId}
           </p>
         </div>
       </div>

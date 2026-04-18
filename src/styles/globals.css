@@ -26,6 +26,11 @@
     @apply bg-background text-foreground;
   }
 
+  p, .prose p {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
@@ -191,7 +196,7 @@
 
 :root {
   --radius:
-      0.625rem;
+      0rem;
   /* ═══ Song Linh Brand Identity ═══
      Primary Blue: #3C5DAA (rgba(60, 93, 170, 1))
      OKLCH exact:  oklch(0.4935 0.129 264.7)

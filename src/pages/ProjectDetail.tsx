@@ -95,6 +95,7 @@ export default function ProjectDetail() {
   // ─── Parse data ──────────────────────────────────────────────────────────────
   const systemTypes = parseJson<string[]>(project.system_types, []);
   const brandsUsed = parseJson<string[]>(project.brands_used, []);
+  const complianceStandards = parseJson<string[]>(project.compliance_standards, []);
   const keyMetrics = parseJson<Record<string, string | number>>(project.key_metrics, {});
   const galleryImages = project.images ?? [];
   const linkedProducts = project.linked_products ?? [];
@@ -211,16 +212,6 @@ export default function ProjectDetail() {
                 </div>
               )}
 
-              {/* Challenges callout */}
-              {project.challenges && (
-                <div className="rounded-sm border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/10 p-5">
-                  <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                    Thách thức
-                  </h3>
-                  <p className="text-sm leading-relaxed text-foreground/80">{project.challenges}</p>
-                </div>
-              )}
-
               {/* Video embed */}
               {videoEmbed && (
                 <div className="space-y-2">
@@ -246,6 +237,8 @@ export default function ProjectDetail() {
                   location={project.location}
                   clientIndustry={project.client_industry}
                   systemTypes={systemTypes}
+                  brandsUsed={brandsUsed}
+                  complianceStandards={complianceStandards}
                 />
                 <div className="space-y-3">
                   <Button asChild className="w-full bg-[#3C5DAA] hover:bg-[#2E4A8A]">

@@ -52,37 +52,19 @@ app.use("/api/*", async (c, next) => {
 // Error handler
 app.use("*", errorHandler);
 
-// Cache-Control for public API endpoints
-app.use("/api/products*", async (c, next) => {
+// Cache-Control for public read-only routes (5 min edge, 1 min browser)
+const publicCacheControl = async (c: Parameters<typeof app.use>[1] extends (c: infer C, ...args: unknown[]) => unknown ? C : never, next: () => Promise<void>) => {
   await next();
-  // Only set cache headers on GET, non-admin requests
   if (c.req.method === "GET" && !c.req.url.includes("/admin/")) {
     c.header("Cache-Control", "public, s-maxage=300, max-age=60");
   }
-});
-app.use("/api/product-features*", async (c, next) => {
-  await next();
-  if (c.req.method === "GET" && !c.req.url.includes("/admin/")) {
-    c.header("Cache-Control", "public, s-maxage=3600, max-age=300");
-  }
-});
+};
 
-// Cache-Control for other public read-only routes (5 min edge, 1 min browser)
-const cachedPublicRoutes = [
-  "/api/solutions*",
-  "/api/projects*",
-  "/api/posts*",
-  "/api/brands*",
-  "/api/partners*",
-  "/api/gallery*",
-];
-for (const pattern of cachedPublicRoutes) {
-  app.use(pattern, async (c, next) => {
-    await next();
-    if (c.req.method === "GET" && !c.req.url.includes("/admin/")) {
-      c.header("Cache-Control", "public, s-maxage=300, max-age=60");
-    }
-  });
+for (const pattern of [
+  "/api/products*", "/api/product-features*", "/api/solutions*",
+  "/api/projects*", "/api/posts*", "/api/brands*", "/api/partners*", "/api/gallery*",
+]) {
+  app.use(pattern, publicCacheControl as Parameters<typeof app.use>[1]);
 }
 
 /* ───────── Health Check ───────── */
@@ -138,15 +120,24 @@ app.notFound((c) => {
   return c.json({ success: false, error: "Not found" }, 404);
 });
 
+import { backupD1ToR2 } from "./services/db-backup";
+
 /* ───────── Worker Export ───────── */
 
 export default {
   fetch: app.fetch,
   async scheduled(
-    _event: ScheduledEvent,
+    event: ScheduledEvent,
     env: Env,
     ctx: ExecutionContext,
   ) {
+    // 1. Routine cleanup
     ctx.waitUntil(cleanupOldXlsxFiles(env));
+    
+    // 2. Automated DB Backup (Runs on Sundays if Cron is configured '0 2 * * 0')
+    const date = new Date(event.scheduledTime);
+    if (date.getDay() === 0) {
+      ctx.waitUntil(backupD1ToR2(env));
+    }
   },
 };

@@ -10,42 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   ArrowRight,
-  CheckCircle2,
-  Clock,
-  Download,
-  FileText,
-  GitCompareArrows,
-  Mail,
   MapPin,
   Package,
-  Phone,
   Shield,
-  Cpu,
-  Send,
 } from "lucide-react";
 import { FeatureBadge } from "@/components/ui/FeatureBadge";
-import { useCompare } from "@/contexts/CompareContext";
-import { useCart } from "@/contexts/CartContext";
+import { useProductActions } from "@/hooks/useProductActions";
 import { safeJson } from "@/lib/utils";
+import { ProductImageGallery } from "@/components/products/ProductImageGallery";
+import { ProductSpecTable } from "@/components/products/ProductSpecTable";
+import { ProductSidebar } from "@/components/products/ProductSidebar";
 
-/** Inventory status display config */
-const INVENTORY_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; className: string }> = {
-  "in-stock": {
-    label: "Còn hàng",
-    icon: CheckCircle2,
-    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  },
-  "pre-order": {
-    label: "Đặt trước",
-    icon: Clock,
-    className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  },
-  "contact": {
-    label: "Liên hệ",
-    icon: Phone,
-    className: "bg-slate-500/10 text-slate-600 border-slate-500/20",
-  },
-};
+/** Inventory status display config — moved to ProductSidebar component */
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -63,17 +39,21 @@ export default function ProductDetail() {
   const brandLogo = product?.brand_logo;
   const warranty = product?.warranty || "";
   const inventoryStatus = product?.inventory_status || "contact";
-  const inventoryInfo = INVENTORY_CONFIG[inventoryStatus] || INVENTORY_CONFIG["contact"];
-  const InventoryIcon = inventoryInfo.icon;
 
   const relatedProducts = product?.related ?? [];
 
   const linkedProjects = product?.linked_projects ?? [];
 
-  const { add, remove, isInCompare, isFull } = useCompare();
-  const { addItem, items: cartItems } = useCart();
-  const inCompare = product ? isInCompare(product.id) : false;
-  const inCart = product ? cartItems.some((i) => i.productId === product.id) : false;
+  const { inCompare, inCart, isCompareFull, toggleCompare, addToCart } = useProductActions(
+    product ? {
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      image_url: product.image_url,
+      brand_name: brandName,
+      category_name: product.category?.name || product.category_name,
+    } : null,
+  );
 
   const entityImages = product?.images;
   const allGalleryImages = [
@@ -196,65 +176,15 @@ export default function ProductDetail() {
               {/* Image Gallery + Basic Info */}
               <div className="grid gap-8 md:grid-cols-2">
                 {/* Image + Gallery */}
-                <div className="space-y-3">
-                  <div className="group/img flex items-center justify-center overflow-hidden rounded-sm border bg-gradient-to-br from-muted to-muted/30 cursor-zoom-in">
-                    {imgError || !displayImage ? (
-                      <div className="flex flex-col items-center justify-center gap-2 p-12">
-                        <Package className="h-24 w-24 text-muted-foreground/20" />
-                        <span className="text-sm text-muted-foreground">
-                          Hình ảnh sản phẩm
-                        </span>
-                      </div>
-                    ) : (
-                      <img
-                        src={displayImage}
-                        alt={product.name}
-                        className="aspect-square w-full object-contain p-6 transition-transform duration-500 ease-out group-hover/img:scale-110"
-                        onError={() => setImgError(true)}
-                      />
-                    )}
-                  </div>
-                  {/* Thumbnail gallery */}
-                  {(allGalleryImages.length > 0 || product.image_url) && (
-                    <div className="flex gap-2 overflow-x-auto pb-1">
-                      {product.image_url && (
-                        <button
-                          type="button"
-                          onClick={() => setMainImage(product.image_url)}
-                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-sm border-2 transition-all duration-200 ${
-                            displayImage === product.image_url
-                              ? "border-primary ring-2 ring-primary/20"
-                              : "border-transparent hover:border-primary/50"
-                          }`}
-                        >
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                          />
-                        </button>
-                      )}
-                      {allGalleryImages.map((img) => (
-                        <button
-                          key={img.id}
-                          type="button"
-                          onClick={() => setMainImage(img.url)}
-                          className={`h-16 w-16 shrink-0 overflow-hidden rounded-sm border-2 transition-all duration-200 ${
-                            displayImage === img.url
-                              ? "border-primary ring-2 ring-primary/20"
-                              : "border-transparent hover:border-primary/50"
-                          }`}
-                        >
-                          <img
-                            src={img.url}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <ProductImageGallery
+                  productName={product.name}
+                  displayImage={displayImage}
+                  primaryImageUrl={product.image_url}
+                  galleryImages={allGalleryImages}
+                  imgError={imgError}
+                  onImgError={() => setImgError(true)}
+                  onSelectImage={setMainImage}
+                />
 
                 {/* Product info */}
                 <div className="space-y-5">
@@ -280,13 +210,6 @@ export default function ProductDetail() {
                         {brandName || brand}
                       </Badge>
                     )}
-                    {/* Inventory Status Badge */}
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 text-xs font-medium ${inventoryInfo.className}`}
-                    >
-                      <InventoryIcon className="h-3 w-3" />
-                      {inventoryInfo.label}
-                    </span>
                   </div>
 
                   <h1 className="text-2xl font-bold md:text-3xl">{product.name}</h1>
@@ -346,44 +269,7 @@ export default function ProductDetail() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.15 }}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <Cpu className="h-5 w-5 text-primary" />
-                      <h2 className="text-xl font-semibold">Thông số kỹ thuật</h2>
-                    </div>
-                    <span className="rounded-sm bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                      {specEntries.length} thông số
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto -mx-1 px-1 rounded-sm border">
-                    <table className="w-full min-w-[480px]">
-                      <thead>
-                        <tr className="bg-muted/70">
-                          <th className="w-2/5 px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                            Thông số
-                          </th>
-                          <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                            Giá trị
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {specEntries.map(([key, value], i) => (
-                          <tr
-                            key={key}
-                            className={`border-t transition-colors hover:bg-primary/5 ${i % 2 === 0 ? "bg-muted/20" : "bg-background"}`}
-                          >
-                            <td className="px-5 py-3 text-sm font-medium text-foreground whitespace-nowrap">
-                              {key}
-                            </td>
-                            <td className="px-5 py-3 text-sm text-muted-foreground">
-                              {value}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ProductSpecTable specEntries={specEntries} />
                 </motion.div>
               )}
 
@@ -498,141 +384,22 @@ export default function ProductDetail() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="lg:sticky lg:top-24 lg:self-start space-y-4"
             >
-              {/* Quick Specs Card */}
-              <div className="rounded-sm border bg-card shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-5 py-3 border-b">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                    <Cpu className="h-4 w-4" />
-                    Tóm tắt kỹ thuật
-                  </h3>
-                </div>
-                <div className="p-5 space-y-3">
-                  {/* SKU / Model */}
-                  {modelNumber && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">SKU / Model</span>
-                      <span className="font-mono font-semibold">{modelNumber}</span>
-                    </div>
-                  )}
-                  {/* Brand */}
-                  {(brandName || brand) && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Thương hiệu</span>
-                      <span className="font-semibold flex items-center gap-1.5">
-                        {brandLogo && (
-                          <img src={brandLogo} alt="" className="h-4 w-4 rounded object-contain" />
-                        )}
-                        {brandName || brand}
-                      </span>
-                    </div>
-                  )}
-                  {/* Category */}
-                  {(product.category_name || product.category?.name) && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Danh mục</span>
-                      <span className="font-semibold">{product.category?.name || product.category_name}</span>
-                    </div>
-                  )}
-                  {/* Warranty */}
-                  {warranty && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Bảo hành</span>
-                      <span className="font-semibold flex items-center gap-1">
-                        <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                        {warranty}
-                      </span>
-                    </div>
-                  )}
-                  {/* Inventory */}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Tình trạng</span>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-sm border px-2 py-0.5 text-xs font-medium ${inventoryInfo.className}`}
-                    >
-                      <InventoryIcon className="h-3 w-3" />
-                      {inventoryInfo.label}
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* ─── B2B CTA Section ─── */}
-              <div className="rounded-sm border bg-card shadow-sm p-5 space-y-3">
-                <p className="text-sm font-bold text-foreground">
-                  Liên hệ báo giá dự án
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Nhận báo giá tốt nhất cho dự án của bạn từ đội ngũ kỹ thuật Song Linh Technologies.
-                </p>
-                <div className="flex flex-col gap-2">
-                  {/* Primary CTA — RFQ */}
-                  <Button
-                    size="lg"
-                    className="w-full font-semibold gap-2"
-                    onClick={() => {
-                      addItem({
-                        productId: product.id,
-                        slug: product.slug,
-                        name: product.name,
-                        imageUrl: product.image_url,
-                        categoryName: product.category?.name || product.category_name || null,
-                      });
-                    }}
-                  >
-                    <Send className="h-4 w-4" />
-                    {inCart ? "✓ Đã thêm — Yêu cầu báo giá" : "Yêu cầu báo giá dự án"}
-                  </Button>
-
-                  {/* Secondary CTA — Download Datasheet */}
-                  {product.spec_sheet_url && (
-                    <Button variant="outline" size="lg" className="w-full gap-2" asChild>
-                      <a
-                        href={product.spec_sheet_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Download className="h-4 w-4 text-primary" />
-                        Tải tài liệu kỹ thuật (PDF)
-                      </a>
-                    </Button>
-                  )}
-
-                  {/* Compare */}
-                  <Button
-                    variant={inCompare ? "default" : "outline"}
-                    size="default"
-                    className="w-full gap-2"
-                    onClick={() => {
-                      if (inCompare) {
-                        remove(product.id);
-                      } else if (!isFull) {
-                        add({
-                          id: product.id,
-                          slug: product.slug,
-                          name: product.name,
-                          image_url: product.image_url,
-                          brand_name: brandName || null,
-                        });
-                      }
-                    }}
-                    disabled={!inCompare && isFull}
-                  >
-                    <GitCompareArrows className="h-4 w-4" />
-                    {inCompare ? "Đã thêm so sánh" : "So sánh sản phẩm"}
-                  </Button>
-
-                  {/* Hotline */}
-                  <Button variant="ghost" size="sm" className="w-full gap-2 text-muted-foreground" asChild>
-                    <a href="tel:+84899194868">
-                      <Phone className="h-3.5 w-3.5" />
-                      Hotline: 0899.194.868
-                    </a>
-                  </Button>
-                </div>
-              </div>
+              <ProductSidebar
+                modelNumber={modelNumber}
+                brandName={brandName}
+                brandLogo={brandLogo}
+                brand={brand}
+                categoryName={product.category?.name || product.category_name}
+                warranty={warranty}
+                inventoryStatus={inventoryStatus}
+                specSheetUrl={product.spec_sheet_url}
+                inCompare={inCompare}
+                isFull={isCompareFull}
+                onToggleCompare={toggleCompare}
+                inCart={inCart}
+                onAddToCart={addToCart}
+              />
             </motion.div>
           </div>
         </div>

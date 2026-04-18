@@ -24,85 +24,7 @@ export const NAV_LINKS = [
   { label: "Thư viện", href: "/thu-vien" },
 ] as const;
 
-export const SOLUTIONS_DATA = [
-  {
-    slug: "he-thong-cctv-camera-quan-sat",
-    title: "Hệ thống CCTV Camera quan sát",
-    icon: "Camera",
-    description:
-      "Thiết kế, lắp đặt hệ thống camera quan sát CCTV chuyên nghiệp cho nhà xưởng, văn phòng, chung cư, trường học. Sử dụng các thương hiệu hàng đầu: Hikvision, Dahua, Hanwha Techwin.",
-  },
-  {
-    slug: "he-thong-bao-chay-chua-chay",
-    title: "Hệ thống Báo cháy – Chữa cháy",
-    icon: "Flame",
-    description:
-      "Tư vấn, thiết kế và thi công hệ thống PCCC theo tiêu chuẩn TCVN. Bao gồm báo cháy tự động, chữa cháy bằng khí, sprinkler, và hệ thống quản lý PCCC.",
-  },
-  {
-    slug: "he-thong-am-thanh-thong-bao",
-    title: "Hệ thống Âm thanh thông báo",
-    icon: "Volume2",
-    description:
-      "Hệ thống PA (Public Address) cho tòa nhà, trung tâm thương mại, nhà máy. Tích hợp với hệ thống báo cháy, phát thanh khẩn cấp.",
-  },
-  {
-    slug: "he-thong-mang-lan-wan",
-    title: "Hệ thống Mạng LAN/WAN",
-    icon: "Network",
-    description:
-      "Thiết kế hạ tầng mạng LAN/WAN, WiFi doanh nghiệp, hệ thống cáp quang, cáp đồng có cấu trúc cho tòa nhà và khu công nghiệp.",
-  },
-  {
-    slug: "he-thong-dien-nhe",
-    title: "Hệ thống Điện nhẹ",
-    icon: "Zap",
-    description:
-      "Thi công hệ thống điện nhẹ (ELV) bao gồm: điện thoại, intercom, truyền hình cáp, BMS, và các hệ thống điều khiển tự động.",
-  },
-  {
-    slug: "tong-dai-dien-thoai",
-    title: "Tổng đài Điện thoại",
-    icon: "Phone",
-    description:
-      "Cung cấp và lắp đặt tổng đài điện thoại IP-PBX, tổng đài analog cho văn phòng, khách sạn. Hỗ trợ tích hợp VoIP.",
-  },
-  {
-    slug: "he-thong-kiem-soat-ra-vao",
-    title: "Hệ thống Kiểm soát ra vào",
-    icon: "ShieldCheck",
-    description:
-      "Hệ thống Access Control bằng thẻ từ, vân tay, nhận diện khuôn mặt. Quản lý chấm công, kiểm soát thang máy, barrier.",
-  },
-  {
-    slug: "he-thong-bao-trom",
-    title: "Hệ thống Báo trộm",
-    icon: "Bell",
-    description:
-      "Lắp đặt hệ thống báo trộm chống đột nhập cho nhà ở, cửa hàng, kho bãi. Báo động qua app, SMS, và trung tâm giám sát.",
-  },
-  {
-    slug: "server-luu-tru",
-    title: "Server – Lưu trữ",
-    icon: "Server",
-    description:
-      "Cung cấp giải pháp Server, NAS, SAN và hệ thống lưu trữ dữ liệu cho doanh nghiệp. Tư vấn giải pháp backup và phục hồi dữ liệu.",
-  },
-  {
-    slug: "he-thong-quan-ly-toa-nha-bms",
-    title: "Hệ thống quản lý tòa nhà (BMS)",
-    icon: "Building2",
-    description:
-      "Tích hợp và quản lý tất cả hệ thống kỹ thuật trong tòa nhà: HVAC, chiếu sáng, an ninh, PCCC trên một nền tảng BMS thống nhất.",
-  },
-  {
-    slug: "tu-van-thiet-ke-du-an",
-    title: "Tư vấn – Thiết kế dự án",
-    icon: "FileCheck",
-    description:
-      "Dịch vụ tư vấn, khảo sát và thiết kế hệ thống M&E toàn diện. Lập dự toán, bản vẽ shop drawing và hồ sơ hoàn công.",
-  },
-] as const;
+// SOLUTIONS_DATA removed — solutions are now served from /api/solutions
 
 export const COMPANY_ACTIVITIES = [
   "Tư vấn giải pháp, thiết kế hệ thống Công nghệ thông tin",
@@ -197,7 +119,7 @@ export const COMPANY_STATS = [
   { value: 100, suffix: "%", label: "Khách hàng hài lòng" },
 ] as const;
 
-/** Featured projects — static fallback, real data comes from API (is_featured=1) */
+/** @deprecated Fallback only — real data comes from /api/projects?featured=true. Remove once FeaturedProjects.tsx uses API exclusively. */
 export const FEATURED_PROJECTS = [
   {
     slug: "toa-nha-lotus-tower",
@@ -237,7 +159,7 @@ export const FEATURED_PROJECTS = [
   },
 ] as const;
 
-/** Blog posts — static fallback when API returns empty */
+/** @deprecated Fallback only — real data comes from /api/posts. Remove once Blog.tsx and BlogPost.tsx use API exclusively. */
 export const BLOG_POSTS = [
   {
     slug: "5-loi-ich-lap-dat-camera-doanh-nghiep",

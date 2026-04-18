@@ -19,7 +19,10 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById("root")!).render(
+import { hydrateRoot } from "react-dom/client";
+
+const rootElement = document.getElementById("root")!;
+const app = (
   <StrictMode>
     <ThemeProvider>
       <HelmetProvider>
@@ -32,5 +35,11 @@ createRoot(document.getElementById("root")!).render(
         </QueryClientProvider>
       </HelmetProvider>
     </ThemeProvider>
-  </StrictMode>,
+  </StrictMode>
 );
+
+if (rootElement.hasChildNodes()) {
+  hydrateRoot(rootElement, app);
+} else {
+  createRoot(rootElement).render(app);
+}

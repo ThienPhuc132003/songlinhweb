@@ -26,6 +26,19 @@ export function useProductCategories() {
   });
 }
 
+export function useCategoryTree() {
+  return useQuery({
+    queryKey: ["product-category-tree"],
+    queryFn: async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/products/categories/tree`);
+      if (!res.ok) throw new Error("Failed to fetch category tree");
+      const json = await res.json();
+      return json.data;
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+}
+
 export function useProductFeatures() {
   return useQuery({
     queryKey: ["product-features"],

@@ -4,7 +4,27 @@ import Layout from "./components/layout/Layout";
 import LoadingSpinner from "./components/ui/loading-spinner";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 
-// Lazy-load all page components for code splitting
+// Admin layout wrapper
+import AdminLayout from "./components/admin/AdminLayout";
+import { AuthProvider } from "./contexts/AuthContext";
+
+/* ─── Lazy-load helper ─── */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function lazyRoute(Component: React.LazyExoticComponent<React.ComponentType<any>>) {
+  return {
+    element: (
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Component />
+        </Suspense>
+      </ErrorBoundary>
+    ),
+  };
+}
+
+/* ─── Lazy-loaded Pages ─── */
+
 const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
 const Solutions = lazy(() => import("./pages/Solutions"));
@@ -20,7 +40,8 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const QuoteCart = lazy(() => import("./pages/QuoteCart"));
 
-// Admin pages
+/* ─── Lazy-loaded Admin Pages ─── */
+
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminProjects = lazy(() => import("./pages/admin/AdminProjects"));
@@ -36,134 +57,26 @@ const AdminFeatures = lazy(() => import("./pages/admin/AdminFeatures"));
 const AdminQuotations = lazy(() => import("./pages/admin/AdminQuotations"));
 const AdminSolutions = lazy(() => import("./pages/admin/AdminSolutions"));
 
-// Admin layout wrapper
-import AdminLayout from "./components/admin/AdminLayout";
-import { AuthProvider } from "./contexts/AuthContext";
-
-function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-    </ErrorBoundary>
-  );
-}
+/* ─── Router ─── */
 
 export const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      {
-        index: true,
-        element: (
-          <SuspenseWrapper>
-            <Home />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "gioi-thieu",
-        element: (
-          <SuspenseWrapper>
-            <About />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "giai-phap",
-        element: (
-          <SuspenseWrapper>
-            <Solutions />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "giai-phap/:slug",
-        element: (
-          <SuspenseWrapper>
-            <SolutionDetail />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "san-pham",
-        element: (
-          <SuspenseWrapper>
-            <Products />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "san-pham/:slug",
-        element: (
-          <SuspenseWrapper>
-            <ProductDetail />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "du-an",
-        element: (
-          <SuspenseWrapper>
-            <Projects />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "du-an/:slug",
-        element: (
-          <SuspenseWrapper>
-            <ProjectDetail />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "tin-tuc",
-        element: (
-          <SuspenseWrapper>
-            <Blog />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "tin-tuc/:slug",
-        element: (
-          <SuspenseWrapper>
-            <BlogPost />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "thu-vien",
-        element: (
-          <SuspenseWrapper>
-            <Gallery />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "gio-hang-bao-gia",
-        element: (
-          <SuspenseWrapper>
-            <QuoteCart />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "lien-he",
-        element: (
-          <SuspenseWrapper>
-            <Contact />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "*",
-        element: (
-          <SuspenseWrapper>
-            <NotFound />
-          </SuspenseWrapper>
-        ),
-      },
+      { index: true, ...lazyRoute(Home) },
+      { path: "gioi-thieu", ...lazyRoute(About) },
+      { path: "giai-phap", ...lazyRoute(Solutions) },
+      { path: "giai-phap/:slug", ...lazyRoute(SolutionDetail) },
+      { path: "san-pham", ...lazyRoute(Products) },
+      { path: "san-pham/:slug", ...lazyRoute(ProductDetail) },
+      { path: "du-an", ...lazyRoute(Projects) },
+      { path: "du-an/:slug", ...lazyRoute(ProjectDetail) },
+      { path: "tin-tuc", ...lazyRoute(Blog) },
+      { path: "tin-tuc/:slug", ...lazyRoute(BlogPost) },
+      { path: "thu-vien", ...lazyRoute(Gallery) },
+      { path: "gio-hang-bao-gia", ...lazyRoute(QuoteCart) },
+      { path: "lien-he", ...lazyRoute(Contact) },
+      { path: "*", ...lazyRoute(NotFound) },
     ],
   },
   // Admin login (no layout wrapper)
@@ -171,9 +84,11 @@ export const router = createBrowserRouter([
     path: "admin/login",
     element: (
       <AuthProvider>
-        <SuspenseWrapper>
-          <AdminLogin />
-        </SuspenseWrapper>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdminLogin />
+          </Suspense>
+        </ErrorBoundary>
       </AuthProvider>
     ),
   },
@@ -186,110 +101,19 @@ export const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      {
-        index: true,
-        element: (
-          <SuspenseWrapper>
-            <AdminDashboard />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "projects",
-        element: (
-          <SuspenseWrapper>
-            <AdminProjects />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "products",
-        element: (
-          <SuspenseWrapper>
-            <AdminProducts />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "brands",
-        element: (
-          <SuspenseWrapper>
-            <AdminBrands />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "categories",
-        element: (
-          <SuspenseWrapper>
-            <AdminCategories />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "posts",
-        element: (
-          <SuspenseWrapper>
-            <AdminPosts />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "gallery",
-        element: (
-          <SuspenseWrapper>
-            <AdminGallery />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "partners",
-        element: (
-          <SuspenseWrapper>
-            <AdminPartners />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "contacts",
-        element: (
-          <SuspenseWrapper>
-            <AdminContacts />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "settings",
-        element: (
-          <SuspenseWrapper>
-            <AdminSettings />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "features",
-        element: (
-          <SuspenseWrapper>
-            <AdminFeatures />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "quotations",
-        element: (
-          <SuspenseWrapper>
-            <AdminQuotations />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: "solutions",
-        element: (
-          <SuspenseWrapper>
-            <AdminSolutions />
-          </SuspenseWrapper>
-        ),
-      },
+      { index: true, ...lazyRoute(AdminDashboard) },
+      { path: "projects", ...lazyRoute(AdminProjects) },
+      { path: "products", ...lazyRoute(AdminProducts) },
+      { path: "brands", ...lazyRoute(AdminBrands) },
+      { path: "categories", ...lazyRoute(AdminCategories) },
+      { path: "posts", ...lazyRoute(AdminPosts) },
+      { path: "gallery", ...lazyRoute(AdminGallery) },
+      { path: "partners", ...lazyRoute(AdminPartners) },
+      { path: "contacts", ...lazyRoute(AdminContacts) },
+      { path: "settings", ...lazyRoute(AdminSettings) },
+      { path: "features", ...lazyRoute(AdminFeatures) },
+      { path: "quotations", ...lazyRoute(AdminQuotations) },
+      { path: "solutions", ...lazyRoute(AdminSolutions) },
     ],
   },
 ]);

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { SEO } from "@/components/ui/seo";
 import { PageHero } from "@/components/ui/page-hero";
 import { SITE } from "@/lib/constants";
+import { useSiteConfig } from "@/hooks/useApi";
 import {
   isHoneypotTriggered,
 } from "@/lib/email";
@@ -34,6 +35,16 @@ const initialForm: ContactFormData = {
 };
 
 export default function Contact() {
+  const { data: config } = useSiteConfig();
+  const c = config || {};
+  
+  const phone = c.company_hotline || SITE.phone;
+  const email = c.company_email || SITE.email;
+  const address = c.company_address || SITE.address;
+  const workingHours = c.company_hours || SITE.workingHours;
+  const mapEmbedUrl = c.map_embed_url || SITE.mapEmbedUrl;
+  const displayName = c.company_name || SITE.displayName;
+
   const [form, setForm] = useState<ContactFormData>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const honeypotRef = useRef<HTMLInputElement>(null);
@@ -90,20 +101,20 @@ export default function Contact() {
     {
       icon: Phone,
       label: "Hotline",
-      value: SITE.phone,
-      href: `tel:${SITE.phoneRaw}`,
+      value: phone,
+      href: `tel:${phone.replace(/\D/g, '')}`,
     },
     {
       icon: Mail,
       label: "Email",
-      value: SITE.email,
-      href: `mailto:${SITE.email}`,
+      value: email,
+      href: `mailto:${email}`,
     },
-    { icon: MapPin, label: "Địa chỉ", value: SITE.address },
+    { icon: MapPin, label: "Địa chỉ", value: address },
     {
       icon: Clock,
       label: "Giờ làm việc",
-      value: `Thứ 2 – Thứ 7: ${SITE.workingHours}`,
+      value: `Thứ 2 – Thứ 7: ${workingHours}`,
     },
   ];
 
@@ -111,7 +122,7 @@ export default function Contact() {
     <>
       <SEO
         title="Liên hệ"
-        description="Liên hệ Song Linh Technologies để được tư vấn giải pháp công nghệ cho doanh nghiệp."
+        description={`Liên hệ ${displayName} để được tư vấn giải pháp công nghệ cho doanh nghiệp.`}
         url="/lien-he"
       />
 
@@ -316,14 +327,14 @@ export default function Contact() {
               {/* Map */}
               <div className="aspect-video overflow-hidden rounded-sm border">
                 <iframe
-                  src={SITE.mapEmbedUrl}
+                  src={mapEmbedUrl}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Song Linh Technologies map"
+                  title={`${displayName} map`}
                 />
               </div>
             </motion.div>
