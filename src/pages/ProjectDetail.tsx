@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router";
 import { SEO } from "@/components/ui/seo";
-import { useProject } from "@/hooks/useApi";
+import { useProject, useProjects } from "@/hooks/useApi";
 import { useMarkdown } from "@/hooks/useMarkdown";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,6 +95,7 @@ export default function ProjectDetail() {
   // ─── Parse data ──────────────────────────────────────────────────────────────
   const systemTypes = parseJson<string[]>(project.system_types, []);
   const brandsUsed = parseJson<string[]>(project.brands_used, []);
+  const complianceStandards = parseJson<string[]>(project.compliance_standards, []);
   const keyMetrics = parseJson<Record<string, string | number>>(project.key_metrics, {});
   const galleryImages = project.images ?? [];
   const linkedProducts = project.linked_products ?? [];
@@ -211,16 +212,6 @@ export default function ProjectDetail() {
                 </div>
               )}
 
-              {/* Challenges callout */}
-              {project.challenges && (
-                <div className="rounded-sm border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/10 p-5">
-                  <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                    Thách thức
-                  </h3>
-                  <p className="text-sm leading-relaxed text-foreground/80">{project.challenges}</p>
-                </div>
-              )}
-
               {/* Video embed */}
               {videoEmbed && (
                 <div className="space-y-2">
@@ -246,6 +237,8 @@ export default function ProjectDetail() {
                   location={project.location}
                   clientIndustry={project.client_industry}
                   systemTypes={systemTypes}
+                  brandsUsed={brandsUsed}
+                  complianceStandards={complianceStandards}
                 />
                 <div className="space-y-3">
                   <Button asChild className="w-full bg-[#3C5DAA] hover:bg-[#2E4A8A]">
@@ -279,6 +272,9 @@ export default function ProjectDetail() {
         </section>
       )}
 
+      {/* ═══ RELATED PROJECTS ═══ */}
+      <RelatedProjects currentSlug={slug ?? ""} />
+
       {/* ═══ 7. CTA — Editorial ═══ */}
       <section className="border-t bg-slate-950 py-16 md:py-20">
         <div className="container-custom max-w-2xl text-center">
@@ -300,5 +296,62 @@ export default function ProjectDetail() {
         </div>
       </section>
     </>
+  );
+}
+
+function RelatedProjects({ currentSlug }: { currentSlug: string }) {
+  const { data } = useProjects();
+  const projects = data?.items?.filter((p) => p.slug !== currentSlug).slice(0, 4) || [];
+
+  if (!data || projects.length === 0) return null;
+
+  return (
+    <section className="section-padding bg-[#F8FAFC] dark:bg-slate-900 border-t">
+      <div className="container-custom max-w-7xl mx-auto">
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            Dự án tiêu biểu khác
+          </h2>
+          <Button asChild variant="ghost" className="hidden sm:inline-flex text-[#3C5DAA] hover:bg-[#3C5DAA]/10">
+            <Link to="/du-an">
+              Xem tất cả <ChevronRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {projects.map((p) => (
+            <Link
+              key={p.slug}
+              to={`/du-an/${p.slug}`}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="group flex flex-col overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:border-[#3C5DAA]/30 hover:shadow-md hover:-translate-y-1 dark:border-slate-800 dark:bg-slate-950"
+            >
+              <div className="relative shrink-0 overflow-hidden aspect-video bg-slate-100">
+                <img
+                  src={p.thumbnail_url || `/images/projects/${p.slug}.jpg`}
+                  alt={p.title}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (!target.src.includes('placehold.co')) {
+                      target.src = "https://placehold.co/600x400/e2e8f0/475569?text=DA";
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-5">
+                <span className="text-[#3C5DAA] mb-2 block text-[10px] font-bold tracking-wider uppercase">
+                  {p.category}
+                </span>
+                <h3 className="group-hover:text-[#3C5DAA] line-clamp-2 text-sm font-semibold leading-snug transition-colors dark:text-slate-200">
+                  {p.title}
+                </h3>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

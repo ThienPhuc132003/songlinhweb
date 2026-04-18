@@ -3,6 +3,7 @@ import type { Env, SolutionRow } from "../types";
 import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { logAudit } from "../lib/audit";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 /** Ensure a value is a valid JSON string, fallback to default */
 function safeJson(val: unknown, fallback: string): string {
@@ -215,36 +216,19 @@ solutions.put("/:id", requireAuth, async (c) => {
       if (slugCheck) return err(`Slug "${body.slug}" đã được sử dụng.`, 409);
     }
 
-    const sets: string[] = [];
-    const values: unknown[] = [];
+    const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+      "title", "slug", "description", "excerpt", "content_md", "icon",
+      "hero_image_url", "sort_order", "is_active", "meta_title", "meta_description",
+    ]);
 
-    const fields: Array<[keyof SolutionRow, string]> = [
-      ["title", "title"],
-      ["slug", "slug"],
-      ["description", "description"],
-      ["excerpt", "excerpt"],
-      ["content_md", "content_md"],
-      ["icon", "icon"],
-      ["hero_image_url", "hero_image_url"],
-      ["features", "features"],
-      ["applications", "applications"],
-      ["sort_order", "sort_order"],
-      ["is_active", "is_active"],
-      ["meta_title", "meta_title"],
-      ["meta_description", "meta_description"],
-    ];
-
-    for (const [key, col] of fields) {
-      if ((body as Record<string, unknown>)[key] !== undefined) {
-        // Ensure JSON fields are valid
-        if (key === "features" || key === "applications") {
-          sets.push(`${col} = ?`);
-          values.push(safeJson((body as Record<string, unknown>)[key], "[]"));
-        } else {
-          sets.push(`${col} = ?`);
-          values.push((body as Record<string, unknown>)[key]);
-        }
-      }
+    // JSON fields need safeJson sanitization
+    if ((body as Record<string, unknown>).features !== undefined) {
+      sets.push("features = ?");
+      values.push(safeJson((body as Record<string, unknown>).features, "[]"));
+    }
+    if ((body as Record<string, unknown>).applications !== undefined) {
+      sets.push("applications = ?");
+      values.push(safeJson((body as Record<string, unknown>).applications, "[]"));
     }
 
     if (sets.length > 0) {

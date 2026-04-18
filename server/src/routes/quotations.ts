@@ -3,6 +3,7 @@ import type { Env, QuotationRequestRow, QuotationItemRow } from "../types";
 import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
+import { verifyTurnstile } from "../lib/turnstile";
 import {
   generateQuotationXlsx,
   getXlsxFileName,
@@ -36,6 +37,7 @@ quotations.post("/", rateLimit(5, 3600), async (c) => {
       quantity: number;
       notes?: string | null;
     }>;
+    cf_turnstile_response?: string;
   }>();
 
   // ── Validation ──
@@ -53,6 +55,15 @@ quotations.post("/", rateLimit(5, 3600), async (c) => {
 
   if (body.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
     return err("Email không hợp lệ");
+  }
+
+  // Turnstile bot verification (opt-in: skipped when secret key not configured)
+  if (c.env.TURNSTILE_SECRET_KEY) {
+    const token = body.cf_turnstile_response;
+    if (!token) return err("Vui lòng xác minh bạn không phải robot", 403);
+    const ip = c.req.header("CF-Connecting-IP");
+    const valid = await verifyTurnstile(token, c.env.TURNSTILE_SECRET_KEY, ip);
+    if (!valid) return err("Xác minh Turnstile thất bại. Vui lòng thử lại.", 403);
   }
 
   // ── 1. Insert quotation_requests ──

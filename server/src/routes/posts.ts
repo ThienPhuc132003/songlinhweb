@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env, PostRow } from "../types";
 import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 const posts = new Hono<{ Bindings: Env }>();
 
@@ -201,74 +202,29 @@ posts.put("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<PostRow> & { tags?: string[] }>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
+  // Simple fields via shared helper
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "title", "slug", "excerpt", "thumbnail_url", "author",
+    "is_published", "published_at", "category", "is_featured",
+    "meta_title", "meta_description", "reviewed_by",
+  ]);
 
-  if (body.title !== undefined) {
-    sets.push("title = ?");
-    values.push(body.title);
-  }
-  if (body.slug !== undefined) {
-    sets.push("slug = ?");
-    values.push(body.slug);
-  }
-  if (body.excerpt !== undefined) {
-    sets.push("excerpt = ?");
-    values.push(body.excerpt);
-  }
+  // Special fields with custom logic
   if (body.content_md !== undefined) {
     sets.push("content_md = ?");
     values.push(body.content_md);
-    // Auto-recalculate reading time
     sets.push("reading_time_min = ?");
     values.push(calcReadingTime(body.content_md));
-  }
-  if (body.thumbnail_url !== undefined) {
-    sets.push("thumbnail_url = ?");
-    values.push(body.thumbnail_url);
-  }
-  if (body.author !== undefined) {
-    sets.push("author = ?");
-    values.push(body.author);
   }
   if (body.tags !== undefined) {
     sets.push("tags = ?");
     values.push(JSON.stringify(body.tags));
   }
-  if (body.is_published !== undefined) {
-    sets.push("is_published = ?");
-    values.push(body.is_published);
-  }
-  if (body.published_at !== undefined) {
-    sets.push("published_at = ?");
-    values.push(body.published_at);
-  }
   if (body.status !== undefined) {
     sets.push("status = ?");
     values.push(body.status);
-    // Sync is_published with status
     sets.push("is_published = ?");
     values.push(body.status === "published" ? 1 : 0);
-  }
-  if (body.category !== undefined) {
-    sets.push("category = ?");
-    values.push(body.category);
-  }
-  if (body.is_featured !== undefined) {
-    sets.push("is_featured = ?");
-    values.push(body.is_featured);
-  }
-  if (body.meta_title !== undefined) {
-    sets.push("meta_title = ?");
-    values.push(body.meta_title);
-  }
-  if (body.meta_description !== undefined) {
-    sets.push("meta_description = ?");
-    values.push(body.meta_description);
-  }
-  if (body.reviewed_by !== undefined) {
-    sets.push("reviewed_by = ?");
-    values.push(body.reviewed_by);
   }
   if (body.references !== undefined) {
     sets.push("[references] = ?");

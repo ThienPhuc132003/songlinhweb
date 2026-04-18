@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 interface ProductFeatureRow {
   id: number;
@@ -106,48 +107,19 @@ features.put("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<ProductFeatureRow>>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
-
-  if (body.name !== undefined) {
-    sets.push("name = ?");
-    values.push(body.name);
-  }
+  // Slug requires duplicate check before updating
   if (body.slug !== undefined) {
-    // Check duplicate slug
     const existing = await c.env.DB.prepare(
       "SELECT id FROM product_features WHERE slug = ? AND id != ?",
     )
       .bind(body.slug, id)
       .first();
     if (existing) return err(`Slug "${body.slug}" đã được sử dụng`, 409);
-    sets.push("slug = ?");
-    values.push(body.slug);
   }
-  if (body.group_name !== undefined) {
-    sets.push("group_name = ?");
-    values.push(body.group_name);
-  }
-  if (body.sort_order !== undefined) {
-    sets.push("sort_order = ?");
-    values.push(body.sort_order);
-  }
-  if (body.is_active !== undefined) {
-    sets.push("is_active = ?");
-    values.push(body.is_active);
-  }
-  if (body.color !== undefined) {
-    sets.push("color = ?");
-    values.push(body.color);
-  }
-  if (body.icon !== undefined) {
-    sets.push("icon = ?");
-    values.push(body.icon);
-  }
-  if (body.is_priority !== undefined) {
-    sets.push("is_priority = ?");
-    values.push(body.is_priority);
-  }
+
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "name", "slug", "group_name", "sort_order", "is_active", "color", "icon", "is_priority",
+  ]);
 
   if (sets.length === 0) return err("No fields to update");
   sets.push("updated_at = datetime('now')");

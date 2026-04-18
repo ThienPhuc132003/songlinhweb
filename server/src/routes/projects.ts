@@ -3,6 +3,8 @@ import type { Env, ProjectRow } from "../types";
 import { ok, err, paginated, parsePagination } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { logAudit } from "../lib/audit";
+import { ProjectJSONValidator } from "../lib/validators";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 /** Ensure a value is a valid JSON string, fallback to default */
 function safeJson(val: unknown, fallback: string): string {
@@ -158,7 +160,7 @@ projects.get("/:slug", async (c) => {
 });
 
 /** POST /api/admin/projects */
-projects.post("/", requireAuth, async (c) => {
+projects.post("/", requireAuth, ProjectJSONValidator, async (c) => {
   try {
     const body = await c.req.json<Partial<ProjectRow>>();
     if (!body.slug || !body.title) return err("slug and title are required", 400);
@@ -259,7 +261,7 @@ projects.post("/", requireAuth, async (c) => {
 });
 
 /** PUT /api/admin/projects/:id */
-projects.put("/:id", requireAuth, async (c) => {
+projects.put("/:id", requireAuth, ProjectJSONValidator, async (c) => {
   try {
     const id = Number(c.req.param("id"));
     if (!id || isNaN(id)) return err("ID dự án không hợp lệ", 400);
@@ -280,48 +282,16 @@ projects.put("/:id", requireAuth, async (c) => {
       if (slugCheck) return err(`Slug "${body.slug}" đã được sử dụng.`, 409);
     }
 
-    const sets: string[] = [];
-    const values: unknown[] = [];
-
-    const fields: Array<[keyof ProjectRow, string]> = [
-      ["title", "title"],
-      ["slug", "slug"],
-      ["description", "description"],
-      ["location", "location"],
-      ["client_name", "client_name"],
-      ["thumbnail_url", "thumbnail_url"],
-      ["content_md", "content_md"],
-      ["category", "category"],
-      ["year", "year"],
-      ["sort_order", "sort_order"],
-      ["is_featured", "is_featured"],
-      ["is_active", "is_active"],
-      ["system_types", "system_types"],
-      ["brands_used", "brands_used"],
-      ["area_sqm", "area_sqm"],
-      ["duration_months", "duration_months"],
-      ["key_metrics", "key_metrics"],
-      ["compliance_standards", "compliance_standards"],
-      ["client_industry", "client_industry"],
-      ["project_scale", "project_scale"],
-      ["meta_title", "meta_title"],
-      ["meta_description", "meta_description"],
-      ["completion_year", "completion_year"],
-      ["related_solutions", "related_solutions"],
-      ["related_products", "related_products"],
-      ["challenges", "challenges"],
-      ["outcomes", "outcomes"],
-      ["testimonial_name", "testimonial_name"],
-      ["testimonial_content", "testimonial_content"],
-      ["video_url", "video_url"],
-    ];
-
-    for (const [key, col] of fields) {
-      if ((body as Record<string, unknown>)[key] !== undefined) {
-        sets.push(`${col} = ?`);
-        values.push((body as Record<string, unknown>)[key]);
-      }
-    }
+    const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+      "title", "slug", "description", "location", "client_name",
+      "thumbnail_url", "content_md", "category", "year",
+      "sort_order", "is_featured", "is_active",
+      "system_types", "brands_used", "area_sqm", "duration_months",
+      "key_metrics", "compliance_standards", "client_industry", "project_scale",
+      "meta_title", "meta_description", "completion_year",
+      "related_solutions", "related_products",
+      "challenges", "outcomes", "testimonial_name", "testimonial_content", "video_url",
+    ]);
 
     // Build batch for gallery + junction sync (transactional)
     const batchStmts: ReturnType<typeof c.env.DB.prepare>[] = [];

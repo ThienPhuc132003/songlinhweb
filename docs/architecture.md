@@ -254,7 +254,7 @@ graph LR
 
 | Context | Persistence | Scope |
 |---------|------------|-------|
-| `AuthContext` | `localStorage` (`sltech_admin_key`) | Admin panel only |
+| `AuthContext` | HttpOnly Cookie (`sltech_session`) | Admin panel only |
 | `CartContext` | `localStorage` (`sltech-rfq-cart`) | Global (public pages) |
 | `CompareContext` | In-memory (lost on refresh) | Global (product pages) |
 | `ThemeProvider` | `localStorage` | Global |
@@ -289,6 +289,7 @@ graph TD
 |--------|---------|-----------|--------|
 | `GET` | `/api/products` | [products.ts](file:///d:/GitHub/SongLinh_Website/server/src/routes/products.ts) | List SP (category, brand, search, tags, pagination) |
 | `GET` | `/api/products/categories` | products.ts | List danh mục |
+| `GET` | `/api/products/categories/tree` | products.ts | Dynamic Mega Menu Nested Tree |
 | `GET` | `/api/products/:slug` | products.ts | Chi tiết SP + related |
 | `GET` | `/api/brands` | [brands.ts](file:///d:/GitHub/SongLinh_Website/server/src/routes/brands.ts) | List thương hiệu |
 | `GET` | `/api/projects` | [projects.ts](file:///d:/GitHub/SongLinh_Website/server/src/routes/projects.ts) | List dự án (category, industry, featured) |
@@ -324,7 +325,8 @@ graph TD
 | [auth.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/auth.ts) | Xác thực `X-API-Key` header so với `ADMIN_API_KEY` env secret |
 | [cors.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/cors.ts) | CORS policy (whitelist các domain) |
 | [error-handler.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/error-handler.ts) | Global try/catch, trả JSON error |
-| [rate-limit.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/rate-limit.ts) | Rate limiting (chưa active) |
+| [validators.ts](file:///d:/GitHub/SongLinh_Website/server/src/lib/validators.ts) | Zod Schema Validation (Products, Projects) chăn Injection vào JSON columns |
+| [rate-limit.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/rate-limit.ts) | In-memory rate limiting (active on `/api/contact` & `/api/quotations`: 5 req/IP/hour) |
 
 ### 3.4 Services
 
@@ -649,22 +651,23 @@ sequenceDiagram
     participant BE as Backend (Hono)
 
     Admin->>FE: Nhập API Key
-    FE->>FE: setApiKey() → localStorage
-    FE->>BE: GET /api/admin/products/items/all?limit=1<br/>Header: X-API-Key: ***
-    BE->>BE: requireAuth middleware<br/>Compare with ADMIN_API_KEY env
+    FE->>BE: POST /api/admin/login
+    BE->>BE: Verify API Key
     alt Valid Key
-        BE-->>FE: 200 OK
-        FE->>FE: setAuth(true)
+        BE-->>FE: Set-Cookie: sltech_session=*** (HttpOnly, Secure)
         FE->>Admin: Redirect to /admin
     else Invalid Key
         BE-->>FE: 401 Unauthorized
-        FE->>FE: clearApiKey()
         FE->>Admin: Show error
     end
+
+    Admin->>FE: Access Admin Panel
+    FE->>BE: GET /api/admin/* (credentials: include)
+    BE->>BE: requireAuth middleware checks Cookie
 ```
 
 > [!IMPORTANT]
-> Hệ thống sử dụng **static API Key** (không phải JWT/OAuth). Key được lưu trong `localStorage` dưới key `sltech_admin_key`. Mọi admin request gửi kèm header `X-API-Key`.
+> Hệ thống sử dụng **HttpOnly Cookies**. Không dùng JWT/localStorage. Hono Middleware chặn XSS token extraction. Mọi request cần kèm theo cờ `credentials: "include"`.
 
 ### 5.2 Security Measures
 
@@ -702,7 +705,8 @@ graph LR
         Workers["Workers<br/>sltech-api"]
         D1DB["D1 Database<br/>songlinh-db"]
         R2Store["R2 Storage<br/>songlinh-web"]
-        CronJob["Cron Trigger<br/>Daily 3 AM UTC"]
+        CronJob["Cron Triggers<br/>Daily Cleanup & Weekly Backup"]
+        CF_API["Cloudflare REST API<br/>(For D1 Export)"]
     end
 
     Dev -->|"git push"| Repo
@@ -713,6 +717,8 @@ graph LR
     Workers --> D1DB
     Workers --> R2Store
     CronJob --> Workers
+    Workers -.->|"Trigger Backup"| CF_API
+    CF_API -.->|"SQL Dump"| R2Store
 ```
 
 ### Deploy Commands

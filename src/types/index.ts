@@ -241,6 +241,19 @@ export interface SiteConfig {
   description: string | null;
 }
 
+/** Category tree node returned by /api/products/categories/tree */
+export interface CategoryTreeNode {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  parent_id: number | null;
+  sort_order: number;
+  is_active: number;
+  children: CategoryTreeNode[];
+}
+
 // ===== API Types =====
 
 export interface ApiResponse<T> {
@@ -263,6 +276,8 @@ export interface ContactForm {
   phone: string;
   address: string;
   message: string;
+  /** Cloudflare Turnstile token (opt-in) */
+  cf_turnstile_response?: string;
 }
 
 // ===== Component Props Types =====
@@ -316,6 +331,8 @@ export interface QuoteRequestPayload {
     quantity: number;
     notes: string | null;
   }>;
+  /** Cloudflare Turnstile token (opt-in) */
+  cf_turnstile_response?: string;
 }
 
 // ===== Quotation Management Types (Admin) =====

@@ -264,8 +264,8 @@ export default function AdminDashboard() {
       {/* ── Stats Grid ── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <Link key={s.label} to={s.href} className="group">
-            <Card className="transition-all hover:shadow-md hover:border-primary/30 group-hover:bg-slate-50/50">
+          <Link key={s.label} to={s.href} className="group block h-full focus:outline-none">
+            <Card className="h-full transition-all hover:shadow-md hover:border-primary/30 group-hover:bg-slate-50/50 flex flex-col">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   {s.label}
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                   <s.icon className="h-4 w-4" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col justify-end flex-grow">
                 <div className="text-3xl font-bold">
                   {dashStats.isLoading ? (
                     <span className="inline-block h-8 w-16 animate-pulse rounded bg-slate-200" />
@@ -282,9 +282,9 @@ export default function AdminDashboard() {
                     s.value
                   )}
                 </div>
-                {"trend" in s && s.trend && (
-                  <div className="mt-1.5">{s.trend}</div>
-                )}
+                <div className="min-h-[20px] mt-1.5">
+                  {"trend" in s && s.trend && s.trend}
+                </div>
               </CardContent>
             </Card>
           </Link>

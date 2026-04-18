@@ -294,14 +294,6 @@ export function ProjectFormSheet({
                     />
                   </div>
 
-                  {/* Challenges */}
-                  <StringListEditor
-                    label="Thách thức (Challenges)"
-                    value={form.challenges || "[]"}
-                    onChange={(json) => setForm((f) => ({ ...f, challenges: json }))}
-                    placeholder="Các thách thức kỹ thuật trong dự án..."
-                  />
-
                   {/* Outcomes */}
                   <StringListEditor
                     label="Kết quả đạt được / Điểm nổi bật (Outcomes)"

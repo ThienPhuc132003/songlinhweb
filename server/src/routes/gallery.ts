@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env, GalleryAlbumRow, GalleryImageRow } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 const gallery = new Hono<{ Bindings: Env }>();
 
@@ -125,16 +126,9 @@ gallery.put("/albums/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<GalleryAlbumRow>>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
-
-  if (body.title !== undefined) { sets.push("title = ?"); values.push(body.title); }
-  if (body.slug !== undefined) { sets.push("slug = ?"); values.push(body.slug); }
-  if (body.cover_url !== undefined) { sets.push("cover_url = ?"); values.push(body.cover_url); }
-  if (body.description !== undefined) { sets.push("description = ?"); values.push(body.description); }
-  if (body.category !== undefined) { sets.push("category = ?"); values.push(body.category); }
-  if (body.sort_order !== undefined) { sets.push("sort_order = ?"); values.push(body.sort_order); }
-  if (body.is_active !== undefined) { sets.push("is_active = ?"); values.push(body.is_active); }
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "title", "slug", "cover_url", "description", "category", "sort_order", "is_active",
+  ]);
 
   if (sets.length === 0) return err("No fields to update");
   values.push(id);
@@ -252,11 +246,9 @@ gallery.put("/images/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<GalleryImageRow>>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
-
-  if (body.caption !== undefined) { sets.push("caption = ?"); values.push(body.caption); }
-  if (body.sort_order !== undefined) { sets.push("sort_order = ?"); values.push(body.sort_order); }
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "caption", "sort_order",
+  ]);
 
   if (sets.length === 0) return err("No fields to update");
   values.push(id);

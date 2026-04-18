@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env, PartnerRow } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
+import { buildDynamicUpdate } from "../lib/query-builder";
 
 const partners = new Hono<{ Bindings: Env }>();
 
@@ -47,29 +48,9 @@ partners.put("/:id", requireAuth, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<PartnerRow>>();
 
-  const sets: string[] = [];
-  const values: unknown[] = [];
-
-  if (body.name !== undefined) {
-    sets.push("name = ?");
-    values.push(body.name);
-  }
-  if (body.logo_url !== undefined) {
-    sets.push("logo_url = ?");
-    values.push(body.logo_url);
-  }
-  if (body.website_url !== undefined) {
-    sets.push("website_url = ?");
-    values.push(body.website_url);
-  }
-  if (body.sort_order !== undefined) {
-    sets.push("sort_order = ?");
-    values.push(body.sort_order);
-  }
-  if (body.is_active !== undefined) {
-    sets.push("is_active = ?");
-    values.push(body.is_active);
-  }
+  const { sets, values } = buildDynamicUpdate(body as Record<string, unknown>, [
+    "name", "logo_url", "website_url", "sort_order", "is_active",
+  ]);
 
   if (sets.length === 0) return err("No fields to update");
   values.push(id);

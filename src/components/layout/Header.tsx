@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router";
 import { Menu, X, ChevronDown, Camera, ShieldCheck, Flame, Network, Volume2, Cpu, Package, Phone } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/constants";
-import { useSolutions } from "@/hooks/useApi";
+import { useSolutions, useSiteConfig } from "@/hooks/useApi";
 import { SolutionIcon, SolutionIconBadge } from "@/components/ui/SolutionIcon";
+import type { CategoryTreeNode } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -11,48 +12,16 @@ import { CartBadge } from "@/components/cart/CartBadge";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { cn } from "@/lib/utils";
 
-/* ─── Product Categories for Mega Menu ─── */
-const PRODUCT_MENU_COLUMNS = [
-  {
-    title: "Camera & An ninh",
-    icon: Camera,
-    items: [
-      { label: "Camera IP", slug: "camera-ip" },
-      { label: "Camera Analog", slug: "camera-analog" },
-      { label: "Đầu ghi hình NVR/DVR", slug: "dau-ghi-hinh" },
-      { label: "Phụ kiện Camera", slug: "phu-kien-camera" },
-    ],
-  },
-  {
-    title: "Kiểm soát ra vào",
-    icon: ShieldCheck,
-    items: [
-      { label: "Máy chấm công", slug: "may-cham-cong" },
-      { label: "Khóa điện tử", slug: "khoa-dien-tu" },
-      { label: "Barrier tự động", slug: "barrier-tu-dong" },
-      { label: "Cổng từ an ninh", slug: "cong-tu-an-ninh" },
-    ],
-  },
-  {
-    title: "PCCC & Báo cháy",
-    icon: Flame,
-    items: [
-      { label: "Trung tâm báo cháy", slug: "trung-tam-bao-chay" },
-      { label: "Đầu báo khói/nhiệt", slug: "dau-bao-khoi-nhiet" },
-      { label: "Hệ thống chữa cháy", slug: "he-thong-chua-chay" },
-    ],
-  },
-  {
-    title: "Mạng & Hạ tầng IT",
-    icon: Network,
-    items: [
-      { label: "Switch PoE", slug: "switch-poe" },
-      { label: "Router doanh nghiệp", slug: "router-doanh-nghiep" },
-      { label: "Cáp mạng & Phụ kiện", slug: "cap-mang" },
-      { label: "Tủ rack & UPS", slug: "tu-rack-ups" },
-    ],
-  },
-];
+import { useCategoryTree } from "@/hooks/useApi";
+
+/* ─── Generic Icon Map ─── */
+const getCategoryIcon = (slug: string) => {
+  if (slug.includes('camera') || slug.includes('cctv')) return Camera;
+  if (slug.includes('kiem-soat') || slug.includes('access')) return ShieldCheck;
+  if (slug.includes('pccc') || slug.includes('chay')) return Flame;
+  if (slug.includes('mang') || slug.includes('tai') || slug.includes('rack')) return Network;
+  return Package;
+};
 
 /* ─── Custom Hooks & Abstractions ─── */
 function useHoverMenu(delay = 150) {
@@ -107,6 +76,11 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { data: config } = useSiteConfig();
+  const c = config || {};
+  
+  const displayName = c.company_name || SITE.displayName;
+  const tagline = c.company_slogan || SITE.tagline;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -127,14 +101,14 @@ export default function Header() {
           <Link to="/" className="flex shrink-0 items-center gap-3">
             <img
               src="/logo.webp"
-              alt={SITE.displayName}
+              alt={displayName}
               className="h-10 w-auto lg:h-11"
             />
             <div className="hidden sm:block">
               <p className="text-primary text-sm font-bold leading-tight">
-                {SITE.displayName}
+                {displayName}
               </p>
-              <p className="text-muted-foreground text-[11px]">{SITE.tagline}</p>
+              <p className="text-muted-foreground text-[11px]">{tagline}</p>
             </div>
           </Link>
 
@@ -290,6 +264,8 @@ function ProductsDropdown() {
   const location = useLocation();
   const { isOpen, setIsOpen, handleEnter, handleLeave } = useHoverMenu();
   const isActive = location.pathname.startsWith("/san-pham");
+  const { data: tree } = useCategoryTree();
+  const categories = (tree || []) as CategoryTreeNode[];
 
   return (
     <div
@@ -336,30 +312,37 @@ function ProductsDropdown() {
             </Link>
           </div>
 
-          {/* 4-column mega menu */}
+          {/* 4-column mega menu dynamically from API */}
           <div className="grid grid-cols-4 gap-8">
-            {PRODUCT_MENU_COLUMNS.map((col) => (
-              <div key={col.title}>
-                <div className="mb-3 flex items-center gap-2">
-                  <col.icon className="h-5 w-5 text-[#3C5DAA]" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA]">
-                    {col.title}
-                  </span>
+            {categories.map((cat) => {
+              const Icon = getCategoryIcon(cat.slug);
+              return (
+                <div key={cat.id}>
+                  <Link
+                    to={`/san-pham?category=${cat.slug}`}
+                    onClick={() => setIsOpen(false)}
+                    className="mb-3 flex items-center gap-2 group"
+                  >
+                    <Icon className="h-5 w-5 text-[#3C5DAA] transition-transform group-hover:scale-110" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#3C5DAA] group-hover:underline">
+                      {cat.name}
+                    </span>
+                  </Link>
+                  <div className="space-y-0.5">
+                    {cat.children && cat.children.map((child) => (
+                      <Link
+                        key={child.id}
+                        to={`/san-pham?category=${child.slug}`}
+                        onClick={() => setIsOpen(false)}
+                        className="block rounded-sm px-2 py-1.5 text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#3C5DAA] dark:text-slate-400 dark:hover:bg-slate-800/50"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  {col.items.map((item) => (
-                    <Link
-                      key={item.slug}
-                      to={`/san-pham?category=${item.slug}`}
-                      onClick={() => setIsOpen(false)}
-                      className="block rounded-sm px-2 py-1.5 text-xs text-slate-600 transition-colors hover:bg-slate-50 hover:text-[#3C5DAA] dark:text-slate-400 dark:hover:bg-slate-800/50"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -371,8 +354,10 @@ function ProductsDropdown() {
 
 function MobileNav({ onClose }: { onClose: () => void }) {
   const location = useLocation();
-  const { data } = useSolutions();
-  const solutions = data?.items ?? [];
+  const { data: solutionsData } = useSolutions();
+  const solutions = solutionsData?.items ?? [];
+  const { data: tree } = useCategoryTree();
+  const categories = (tree || []) as CategoryTreeNode[];
 
   return (
     <nav className="mt-8 flex flex-col gap-1">
@@ -414,18 +399,26 @@ function MobileNav({ onClose }: { onClose: () => void }) {
             >
               Tất cả sản phẩm
             </Link>
-            {PRODUCT_MENU_COLUMNS.flatMap((col) =>
-              col.items.map((item) => (
+            {categories.flatMap((cat) => [
+              <Link
+                key={cat.id}
+                to={`/san-pham?category=${cat.slug}`}
+                onClick={onClose}
+                className="rounded-sm px-3 py-2 text-xs font-semibold text-foreground/80 hover:bg-accent"
+              >
+                {cat.name}
+              </Link>,
+              ...(cat.children || []).map((child) => (
                 <Link
-                  key={item.slug}
-                  to={`/san-pham?category=${item.slug}`}
+                  key={child.id}
+                  to={`/san-pham?category=${child.slug}`}
                   onClick={onClose}
-                  className="rounded-sm px-3 py-2 text-xs text-foreground/70 hover:bg-accent hover:text-foreground"
+                  className="rounded-sm pl-6 pr-3 py-2 text-xs text-foreground/60 hover:bg-accent hover:text-foreground"
                 >
-                  {item.label}
+                  - {child.name}
                 </Link>
               )),
-            )}
+            ])}
           </MobileAccordionItem>
         ) : (
           <Link
