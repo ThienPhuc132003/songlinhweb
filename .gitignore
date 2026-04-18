@@ -26,7 +26,6 @@ Thumbs.db
 .wrangler/
 
 # Debug/review screenshots
-*.png
 docs/screenshots/*.png
 
 # Raw reference data (not for production bundle)
