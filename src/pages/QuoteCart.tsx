@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { api } from "@/lib/api";
 import { isHoneypotTriggered } from "@/lib/email";
+import { TurnstileWidget, isTurnstileEnabled } from "@/components/ui/TurnstileWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,7 @@ export default function QuoteCart() {
   const [quoteId, setQuoteId] = useState<number | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof QuoteFormData, string>>>({});
   const [honeypot, setHoneypot] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   function validate(): boolean {
     const errs: typeof errors = {};
@@ -70,6 +72,7 @@ export default function QuoteCart() {
     try {
       const result = await api.quotations.submit({
         ...form,
+        cf_turnstile_response: turnstileToken ?? undefined,
         items: items.map((item) => ({
           product_id: item.productId,
           product_name: item.name,
@@ -389,11 +392,16 @@ export default function QuoteCart() {
                 />
               </div>
 
+              <TurnstileWidget
+                onSuccess={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+              />
+
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={submitting || items.length === 0}
+                disabled={submitting || items.length === 0 || (isTurnstileEnabled() && !turnstileToken)}
               >
                 {submitting ? (
                   <>

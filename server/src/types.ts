@@ -17,6 +17,8 @@ export interface Env {
   CF_ACCOUNT_ID?: string;
   CF_API_TOKEN?: string;
   D1_DATABASE_ID?: string;
+  /** Cloudflare Turnstile secret key for server-side bot verification */
+  TURNSTILE_SECRET_KEY?: string;
 }
 
 /** Standard API response */

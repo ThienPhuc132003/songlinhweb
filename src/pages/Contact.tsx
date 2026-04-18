@@ -8,6 +8,7 @@ import { useSiteConfig } from "@/hooks/useApi";
 import {
   isHoneypotTriggered,
 } from "@/lib/email";
+import { TurnstileWidget, isTurnstileEnabled } from "@/components/ui/TurnstileWidget";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ export default function Contact() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof ContactFormData, string>>
   >({});
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   function validate(): boolean {
     const errs: typeof errors = {};
@@ -82,7 +84,7 @@ export default function Contact() {
     setSubmitting(true);
     try {
       // Save to database via backend API (also sends Resend email notification)
-      await api.contact(form);
+      await api.contact({ ...form, cf_turnstile_response: turnstileToken ?? undefined });
 
       toast.success("Gửi yêu cầu thành công!", {
         description: "Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.",
@@ -261,11 +263,16 @@ export default function Contact() {
                       </div>
                     </div>
 
+                    <TurnstileWidget
+                      onSuccess={setTurnstileToken}
+                      onExpire={() => setTurnstileToken(null)}
+                    />
+
                     <Button
                       type="submit"
                       className="w-full"
                       size="lg"
-                      disabled={submitting}
+                      disabled={submitting || (isTurnstileEnabled() && !turnstileToken)}
                     >
                       {submitting ? (
                         <>

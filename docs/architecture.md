@@ -326,7 +326,7 @@ graph TD
 | [cors.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/cors.ts) | CORS policy (whitelist các domain) |
 | [error-handler.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/error-handler.ts) | Global try/catch, trả JSON error |
 | [validators.ts](file:///d:/GitHub/SongLinh_Website/server/src/lib/validators.ts) | Zod Schema Validation (Products, Projects) chăn Injection vào JSON columns |
-| [rate-limit.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/rate-limit.ts) | Rate limiting (chưa active) |
+| [rate-limit.ts](file:///d:/GitHub/SongLinh_Website/server/src/middleware/rate-limit.ts) | In-memory rate limiting (active on `/api/contact` & `/api/quotations`: 5 req/IP/hour) |
 
 ### 3.4 Services
 

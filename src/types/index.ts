@@ -276,6 +276,8 @@ export interface ContactForm {
   phone: string;
   address: string;
   message: string;
+  /** Cloudflare Turnstile token (opt-in) */
+  cf_turnstile_response?: string;
 }
 
 // ===== Component Props Types =====
@@ -329,6 +331,8 @@ export interface QuoteRequestPayload {
     quantity: number;
     notes: string | null;
   }>;
+  /** Cloudflare Turnstile token (opt-in) */
+  cf_turnstile_response?: string;
 }
 
 // ===== Quotation Management Types (Admin) =====

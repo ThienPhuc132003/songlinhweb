@@ -3,6 +3,7 @@ import type { Env, ContactRow } from "../types";
 import { ok, err } from "../lib/response";
 import { requireAuth } from "../middleware/auth";
 import { rateLimit } from "../middleware/rate-limit";
+import { verifyTurnstile } from "../lib/turnstile";
 import { sendContactAdminEmail } from "../services/email";
 
 const contact = new Hono<{ Bindings: Env }>();
@@ -16,6 +17,7 @@ contact.post("/", rateLimit(5, 3600), async (c) => {
     phone: string;
     address?: string;
     message: string;
+    cf_turnstile_response?: string;
   }>();
 
   // Validation
@@ -27,6 +29,15 @@ contact.post("/", rateLimit(5, 3600), async (c) => {
   // Simple email format check
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
     return err("Email không hợp lệ");
+  }
+
+  // Turnstile bot verification (opt-in: skipped when secret key not configured)
+  if (c.env.TURNSTILE_SECRET_KEY) {
+    const token = body.cf_turnstile_response;
+    if (!token) return err("Vui lòng xác minh bạn không phải robot", 403);
+    const ip = c.req.header("CF-Connecting-IP");
+    const valid = await verifyTurnstile(token, c.env.TURNSTILE_SECRET_KEY, ip);
+    if (!valid) return err("Xác minh Turnstile thất bại. Vui lòng thử lại.", 403);
   }
 
   const result = await c.env.DB.prepare(
